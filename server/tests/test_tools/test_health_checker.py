@@ -34,12 +34,15 @@ async def test_list_monitors_unauthenticated(client: AsyncClient) -> None:
 async def test_create_monitor(
     auth_client: AsyncClient,
 ) -> None:
-    with patch(
-        "app.services.health_checker.is_public_http_url",
-        return_value=True,
-    ), patch(
-        "app.services.health_checker.probe_url",
-        new=AsyncMock(return_value=_ok_outcome()),
+    with (
+        patch(
+            "app.services.health_checker.is_public_http_url",
+            return_value=True,
+        ),
+        patch(
+            "app.services.health_checker.probe_url",
+            new=AsyncMock(return_value=_ok_outcome()),
+        ),
     ):
         resp = await auth_client.post(
             "/api/tools/health-checker",
@@ -79,12 +82,15 @@ async def test_list_scoped_to_owner(
         email="hc-other@glorng.dev",
         permissions=["health-checker:read", "health-checker:write"],
     )
-    with patch(
-        "app.services.health_checker.is_public_http_url",
-        return_value=True,
-    ), patch(
-        "app.services.health_checker.probe_url",
-        new=AsyncMock(return_value=_ok_outcome()),
+    with (
+        patch(
+            "app.services.health_checker.is_public_http_url",
+            return_value=True,
+        ),
+        patch(
+            "app.services.health_checker.probe_url",
+            new=AsyncMock(return_value=_ok_outcome()),
+        ),
     ):
         from app.services.health_checker import HealthMonitorService
 
@@ -113,12 +119,15 @@ async def test_list_scoped_to_owner(
 
 @pytest.mark.asyncio
 async def test_history_and_check_now(auth_client: AsyncClient) -> None:
-    with patch(
-        "app.services.health_checker.is_public_http_url",
-        return_value=True,
-    ), patch(
-        "app.services.health_checker.probe_url",
-        new=AsyncMock(return_value=_ok_outcome()),
+    with (
+        patch(
+            "app.services.health_checker.is_public_http_url",
+            return_value=True,
+        ),
+        patch(
+            "app.services.health_checker.probe_url",
+            new=AsyncMock(return_value=_ok_outcome()),
+        ),
     ):
         create = await auth_client.post(
             "/api/tools/health-checker",
@@ -133,9 +142,7 @@ async def test_history_and_check_now(auth_client: AsyncClient) -> None:
         assert history.status_code == 200
         assert len(history.json()["items"]) >= 1
 
-        check = await auth_client.post(
-            f"/api/tools/health-checker/{monitor_id}/check"
-        )
+        check = await auth_client.post(f"/api/tools/health-checker/{monitor_id}/check")
         assert check.status_code == 200
         assert check.json()["last_ok"] is True
 
@@ -151,12 +158,15 @@ async def test_other_users_monitor_forbidden(
         email="hc-forbid@glorng.dev",
         permissions=["health-checker:read", "health-checker:write"],
     )
-    with patch(
-        "app.services.health_checker.is_public_http_url",
-        return_value=True,
-    ), patch(
-        "app.services.health_checker.probe_url",
-        new=AsyncMock(return_value=_ok_outcome()),
+    with (
+        patch(
+            "app.services.health_checker.is_public_http_url",
+            return_value=True,
+        ),
+        patch(
+            "app.services.health_checker.probe_url",
+            new=AsyncMock(return_value=_ok_outcome()),
+        ),
     ):
         from app.services.health_checker import HealthMonitorService
 
@@ -182,12 +192,15 @@ async def test_other_users_monitor_forbidden(
 
 @pytest.mark.asyncio
 async def test_delete_monitor(auth_client: AsyncClient) -> None:
-    with patch(
-        "app.services.health_checker.is_public_http_url",
-        return_value=True,
-    ), patch(
-        "app.services.health_checker.probe_url",
-        new=AsyncMock(return_value=_ok_outcome()),
+    with (
+        patch(
+            "app.services.health_checker.is_public_http_url",
+            return_value=True,
+        ),
+        patch(
+            "app.services.health_checker.probe_url",
+            new=AsyncMock(return_value=_ok_outcome()),
+        ),
     ):
         create = await auth_client.post(
             "/api/tools/health-checker",

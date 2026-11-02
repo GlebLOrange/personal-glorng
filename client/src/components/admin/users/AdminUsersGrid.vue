@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UsersIcon from "@/components/icons/UsersIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { userRoleClass, userStatusClass } from "@/constants/filterColors";
 import type { AdminUserSummary } from "@/types";
@@ -55,11 +56,14 @@ function statusBadges(user: AdminUserSummary): BadgeView[] {
     >
       <span class="flex min-h-full flex-col gap-4">
         <span class="flex items-start justify-between gap-3">
-          <span class="min-w-0">
-            <span class="block truncate text-base font-semibold text-surface-light">
-              {{ user.display_name || user.email }}
+          <span class="flex min-w-0 items-start gap-2">
+            <UsersIcon class-name="mt-0.5 size-3.5 shrink-0 text-surface-mid" />
+            <span class="min-w-0">
+              <span class="block truncate text-base font-semibold text-surface-light">
+                {{ user.display_name || user.email }}
+              </span>
+              <span class="mt-1 block truncate text-xs text-surface-mid">{{ user.email }}</span>
             </span>
-            <span class="mt-1 block truncate text-xs text-surface-mid">{{ user.email }}</span>
           </span>
           <StatusBadge :label="roleBadge(user).label" :class-name="roleBadge(user).className" />
         </span>

@@ -4,6 +4,7 @@ from sqlalchemy.sql.elements import ColumnElement
 
 from app.core.elasticsearch import is_elasticsearch_enabled
 from app.core.logging import logger
+from app.core.text import sanitize_text
 from app.db.documents.search import SearchDocument, SearchVisibility
 from app.db.registry import DatabaseRegistry
 from app.db.search_index import SEARCH_INDEX_CONFIG
@@ -221,7 +222,7 @@ class SearchIndexService:
         limit: int = DEFAULT_SEARCH_LIMIT,
         source_types: list[str] | None = None,
     ) -> list[SearchResult]:
-        cleaned = query.strip()
+        cleaned = sanitize_text(query, max_length=500)
         if not cleaned or not visibilities:
             return []
 

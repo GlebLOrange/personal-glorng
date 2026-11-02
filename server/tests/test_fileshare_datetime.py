@@ -3,7 +3,12 @@ from datetime import UTC, datetime, timedelta, timezone
 import pytest
 
 from app.core.exceptions import ApiError
-from app.core.utils import as_utc, format_display_date, format_scheduled_at, local_naive_to_utc
+from app.core.utils import (
+    as_utc,
+    format_display_date,
+    format_scheduled_at,
+    local_naive_to_utc,
+)
 from app.db.documents.fileshare import SharedFile
 from app.db.registry import DatabaseRegistry
 from app.services import fileshare as fileshare_service

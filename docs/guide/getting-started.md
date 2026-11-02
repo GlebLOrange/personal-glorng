@@ -17,7 +17,7 @@ cp .env.example .env
 make                   # terminal 1: mongodb, redis, API, nginx (lite default)
 make dev-lite-client   # terminal 2: Vite on :3000
 make db-init           # if migrate did not run on stack start
-make seed-db           # admin + mock data (needs SEED_PASSWORD in .env)
+make seed-db           # maintenance seed CLI (or admin seed job; needs SEED_PASSWORD)
 ```
 
 Open [http://localhost](http://localhost) (nginx + Vite) or [http://localhost:3000](http://localhost:3000).
@@ -54,5 +54,5 @@ Set `AI_SEARCH_ENABLED`, `GROQ_API_KEY`, and `VITE_AI_SEARCH_ENABLED` in `.env`.
 - [Development modes](/guide/development) — all `make dev-*` targets
 - [Architecture](/guide/architecture) — how requests and services fit together
 - [Deployment](/operations/deployment) — production checklist
-- [Handbook site](https://gleblorange.github.io/personal-glorng/) — published VitePress docs (enable GitHub Pages → GitHub Actions once)
+- [Handbook site](https://gleblorange.github.io/personal-glorng/) — published VitePress docs
 - Regenerate API/architecture fragments after backend changes: `make docs-generate`

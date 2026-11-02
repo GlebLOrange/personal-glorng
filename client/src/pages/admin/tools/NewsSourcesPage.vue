@@ -1,10 +1,17 @@
 <script setup lang="ts">
+import AdminDataRow from "@/components/admin/AdminDataRow.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
-import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import {
+  ADMIN_TD_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TH_CLASS,
+  ADMIN_TH_ROW_CLASS,
+} from "@/constants/adminDataTable";
+import PageShell from "@/components/layout/PageShell.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -60,45 +67,53 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" title="manage news sources" max-width="5xl" back-to="/admin">
-    <div class="mb-3 flex min-w-0 flex-wrap items-center gap-2">
-      <AdminFilterDropdown
-        ref="filterDropdown"
-        :has-active-filters="hasActiveFilters"
-        :active-label="activeFilterLabel"
-        :option-labels="ENABLED_FILTERS.map((chip) => chip.label)"
-        @clear="clearFilters"
-      >
-        <template #chips>
-          <AdminFilterChip
-            v-for="chip in ENABLED_FILTERS"
-            :key="chip.value"
-            :label="chip.label"
-            :active="enabledFilter === chip.value"
-            :color-class="newsSourceEnabledClass(chip.value === 'enabled')"
-            :disabled="loading"
-            @click="setEnabledFilter(chip.value)"
-          />
-        </template>
-      </AdminFilterDropdown>
-
-      <template v-if="canWrite">
-        <ToolbarPillButton
-          action="create"
-          class="ml-auto gap-1.5"
-          :disabled="refreshing || loading"
-          @click="refreshSources"
+  <PageShell
+    title="manage news sources"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'manage news sources' }]"
+    back-to="/tools"
+    body-width="column"
+  >
+    <div class="page-tool-actions">
+      <div class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
+        <AdminFilterDropdown
+          ref="filterDropdown"
+          :has-active-filters="hasActiveFilters"
+          :active-label="activeFilterLabel"
+          :option-labels="ENABLED_FILTERS.map((chip) => chip.label)"
+          @clear="clearFilters"
         >
-          <RefreshIcon class-name="size-3.5" />
-          {{ refreshButtonText }}
-        </ToolbarPillButton>
-        <ToolbarPillButton action="create" :disabled="loading" @click="openCreate">
-          + source
-        </ToolbarPillButton>
-      </template>
+          <template #chips>
+            <AdminFilterChip
+              v-for="chip in ENABLED_FILTERS"
+              :key="chip.value"
+              :label="chip.label"
+              :active="enabledFilter === chip.value"
+              :color-class="newsSourceEnabledClass(chip.value === 'enabled')"
+              :disabled="loading"
+              @click="setEnabledFilter(chip.value)"
+            />
+          </template>
+        </AdminFilterDropdown>
+
+        <template v-if="canWrite">
+          <ToolbarPillButton
+            action="create"
+            :icon="false"
+            class="w-auto gap-1.5"
+            :disabled="refreshing || loading"
+            @click="refreshSources"
+          >
+            <RefreshIcon class-name="size-3.5" />
+            {{ refreshButtonText }}
+          </ToolbarPillButton>
+          <ToolbarPillButton action="create" class="w-auto" :disabled="loading" @click="openCreate">
+            source
+          </ToolbarPillButton>
+        </template>
+      </div>
     </div>
 
-    <div class="min-w-0">
+    <div class="w-full min-w-0 self-stretch">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
       <ErrorState
@@ -112,78 +127,78 @@ const {
         <EmptyState v-if="sources.length === 0" :description="emptyFilterDescription" />
 
         <div v-else class="mt-1 min-w-0">
-          <AdminListRow
-            v-for="source in sources"
-            :key="source.id"
-            :interactive="canWrite"
-            :nested-interactive="canWrite"
-            reveal-actions-on-hover
-            :status-class="newsSourceEnabledClass(source.enabled)"
-            @click="openEditableSource(source)"
-          >
-            <template #leading>
-              <input
+          <AdminDataTable table-label="news sources">
+            <template #header>
+              <th v-if="canWrite" :class="ADMIN_TH_CLASS" scope="col">select</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">status</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">name</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">meta</th>
+              <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
+            </template>
+
+            <AdminDataRow
+              v-for="source in sources"
+              :key="source.id"
+              :interactive="canWrite"
+              nested-interactive
+              :col-span="canWrite ? 5 : 4"
+              @click="openEditableSource(source)"
+            >
+              <td
                 v-if="canWrite"
-                v-model="selectedSourceIds"
-                type="checkbox"
-                class="size-4 shrink-0 align-middle accent-accent-blue"
-                :value="source.id"
-                :disabled="refreshing || !source.enabled"
-                :aria-label="`select ${source.name} for parser refresh`"
+                :class="ADMIN_TD_CLASS"
+                data-admin-row-stop
                 @click.stop
                 @keydown.stop
-              />
-            </template>
-            <template #badge>
-              <StatusBadge
-                :label="source.enabled ? 'enabled' : 'disabled'"
-                :class-name="newsSourceEnabledClass(source.enabled)"
-              />
-            </template>
-            <template #primary>
-              <span :title="source.name">{{ source.name }}</span>
-            </template>
-            <template v-if="source.last_fetched_at" #meta>
-              {{ sourceMeta(source) }}
-            </template>
-            <template #actions>
-              <span
-                v-if="source.last_error"
-                class="inline-flex text-status-warning"
-                :title="source.last_error"
-                aria-label="source has fetch error"
               >
-                <StatusIcon status="warning" class-name="size-4" />
-              </span>
-              <IconEditButton
-                v-if="canWrite"
-                aria-label="edit source"
-                @click="openEditableSource(source)"
-              />
-              <IconCloseButton
-                v-if="canWrite"
-                aria-label="delete source"
-                :disabled="deletingId === source.id"
-                @click="requestDeleteSource(source, $event)"
-              />
-            </template>
-          </AdminListRow>
+                <input
+                  v-model="selectedSourceIds"
+                  type="checkbox"
+                  class="size-4 shrink-0 align-middle accent-accent-coral"
+                  :value="source.id"
+                  :disabled="refreshing || !source.enabled"
+                  :aria-label="`select ${source.name} for parser refresh`"
+                />
+              </td>
+              <td :class="ADMIN_TD_CLASS">
+                <StatusBadge
+                  :label="source.enabled ? 'enabled' : 'disabled'"
+                  :class-name="newsSourceEnabledClass(source.enabled)"
+                />
+              </td>
+              <th :class="ADMIN_TH_ROW_CLASS" scope="row">
+                <p class="truncate text-sm text-surface-light" :title="source.name">
+                  {{ source.name }}
+                </p>
+              </th>
+              <td :class="ADMIN_TD_MUTED_CLASS" :title="sourceMeta(source) || undefined">
+                {{ sourceMeta(source) || "—" }}
+              </td>
+              <template #actions>
+                <span
+                  v-if="source.last_error"
+                  class="inline-flex text-status-warning"
+                  :title="source.last_error"
+                  aria-label="source has fetch error"
+                >
+                  <StatusIcon status="warning" class-name="size-4" />
+                </span>
+                <IconEditButton
+                  v-if="canWrite"
+                  aria-label="edit source"
+                  @click="openEditableSource(source)"
+                />
+                <IconCloseButton
+                  v-if="canWrite"
+                  aria-label="delete source"
+                  :disabled="deletingId === source.id"
+                  @click="requestDeleteSource(source, $event)"
+                />
+              </template>
+            </AdminDataRow>
+          </AdminDataTable>
         </div>
 
-        <AdminListFooter
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="loading"
-          item-label="sources"
-          aria-label="news sources pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
       </template>
     </div>
 
@@ -210,5 +225,22 @@ const {
       @confirm="confirmDeleteSource"
       @cancel="cancelDeleteSource"
     />
-  </AdminPageLayout>
+    <template #footer>
+      <AdminListFooter
+        v-if="!loading && !loadError"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="loading"
+        item-label="sources"
+        aria-label="news sources pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </template>
+  </PageShell>
 </template>

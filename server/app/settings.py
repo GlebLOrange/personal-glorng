@@ -35,8 +35,8 @@ def _env_file_path() -> Path:
     return _repo_root() / ".env"
 
 
-def _is_deployed_env(app_env: str) -> bool:
-    """True for production and staging (same secret hardening)."""
+def is_deployed_env(app_env: str) -> bool:
+    """True for production and staging (same secret hardening / Secure cookies)."""
     return app_env in {"production", "staging"}
 
 
@@ -256,46 +256,47 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _check_production_secrets(self) -> Settings:
-        if _is_deployed_env(self.APP_ENV) and (
+        if is_deployed_env(self.APP_ENV) and (
             len(self.JWT_SECRET) < 32
             or any(m in self.JWT_SECRET.lower() for m in _WEAK_SECRET_MARKERS)
         ):
             msg = "JWT_SECRET is too weak for production/staging; use 32+ chars"
             raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV):
+        if is_deployed_env(self.APP_ENV):
             fernet = self.FERNET_SECRET.strip()
             if len(fernet) < 32 or any(
                 m in fernet.lower() for m in _WEAK_SECRET_MARKERS
             ):
-                msg = (
-                    "FERNET_SECRET is too weak for production/staging; "
-                    "use 32+ chars"
-                )
+                msg = "FERNET_SECRET is too weak for production/staging; use 32+ chars"
                 raise ValueError(msg)
             if fernet == self.JWT_SECRET:
-                msg = (
-                    "FERNET_SECRET must differ from JWT_SECRET "
-                    "in production/staging"
-                )
+                msg = "FERNET_SECRET must differ from JWT_SECRET in production/staging"
                 raise ValueError(msg)
         # Credentials are always enabled in CORSMiddleware; never allow "*".
         if any(origin.strip() == "*" for origin in self.CORS_ORIGINS):
             msg = "CORS_ORIGINS cannot include '*' when allow_credentials is enabled"
             raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV) and self.LOG_REQUEST_BODIES:
+        if is_deployed_env(self.APP_ENV) and self.LOG_REQUEST_BODIES:
             msg = "LOG_REQUEST_BODIES must be false in production/staging"
             raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV) and (
+        if (
+            is_deployed_env(self.APP_ENV)
+            and self.UNTRUSTED_URL_TOOLS_ENABLED
+            and not self.UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED
+        ):
+            msg = (
+                "UNTRUSTED_URL_TOOLS_ENABLED requires "
+                "UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED=true in production/staging"
+            )
+            raise ValueError(msg)
+        if is_deployed_env(self.APP_ENV) and (
             len(self.RABBITMQ_PASSWORD) < 16
             or any(m in self.RABBITMQ_PASSWORD.lower() for m in _WEAK_SECRET_MARKERS)
         ):
-            msg = (
-                "RABBITMQ_PASSWORD is too weak for production/staging; "
-                "use 16+ chars"
-            )
+            msg = "RABBITMQ_PASSWORD is too weak for production/staging; use 16+ chars"
             raise ValueError(msg)
         if (
-            _is_deployed_env(self.APP_ENV)
+            is_deployed_env(self.APP_ENV)
             and self.TELEGRAM_BOT_TO_DO_TOKEN
             and not self.TELEGRAM_ALLOWED_USER_ID
         ):
@@ -304,7 +305,7 @@ class Settings(BaseSettings):
                 "TELEGRAM_BOT_TO_DO_TOKEN is configured in production/staging"
             )
             raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV):
+        if is_deployed_env(self.APP_ENV):
             _validate_production_password(
                 "REDIS_PASSWORD",
                 _password_from_redis_url(self.REDIS_URL),
@@ -549,9 +550,6 @@ class Settings(BaseSettings):
 
     # Auth
     ALLOWED_EMAIL: str
-    FIREBASE_AUTH_ENABLED: bool = False
-    FIREBASE_PROJECT_ID: str = ""
-    FIREBASE_SERVICE_ACCOUNT_JSON: str = ""
 
     # Email
     EMAIL_BACKEND: str
@@ -624,13 +622,17 @@ class Settings(BaseSettings):
     EXPENSES_ENABLED: bool = False
     # yt-dlp, file-share, outbound health-checker (opt-in; off on public deploys)
     UNTRUSTED_URL_TOOLS_ENABLED: bool = False
+    # Operator acknowledgement that untrusted tools run with isolated egress.
+    UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED: bool = False
 
     # Cloudflare Turnstile (public site key; secret stays on the server)
     TURNSTILE_SITE_KEY: str = ""
     TURNSTILE_SECRET_KEY: str = ""
-    # Host-only DB maintenance button (ultra-lite / host API; off in Docker API)
+    # Host-only backup/stale script (ultra-lite / host API; off in Docker API)
     DB_MAINTENANCE_ENABLED: bool = False
     DB_MAINTENANCE_SCRIPT: str = ""
+    # Allow admin seed job in production (default: only non-production)
+    MAINTENANCE_SEED_ENABLED: bool = False
 
     def turnstile_configured(self) -> bool:
         """Whether both Turnstile keys are set."""
@@ -639,7 +641,7 @@ class Settings(BaseSettings):
         )
 
     def db_maintenance_ready(self) -> bool:
-        """Whether the admin button may spawn the maintenance script."""
+        """Whether backup/stale host-script jobs may spawn."""
         return (
             self.DB_MAINTENANCE_ENABLED
             and bool(self.DB_MAINTENANCE_SCRIPT.strip())

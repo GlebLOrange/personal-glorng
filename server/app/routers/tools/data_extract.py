@@ -234,6 +234,7 @@ async def list_import_batches(
         total=result.total,
         page=safe_page,
         per_page=limit,
+        response_cls=ImportBatchListResponse,
     )
 
 

@@ -39,6 +39,13 @@ def sanitize_required_text(text: str, *, max_length: int | None = None) -> str:
     return cleaned
 
 
+def sanitize_fetched_text(value: str | None, *, max_length: int) -> str:
+    """Sanitize optional fetched/external text; empty when missing or blank."""
+    if not value:
+        return ""
+    return sanitize_text(value, max_length=max_length)
+
+
 def sanitize_email_subject(subject: str) -> str:
     """Sanitize email subject; reject line breaks to prevent header injection."""
     if "\r" in subject or "\n" in subject:

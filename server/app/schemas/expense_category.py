@@ -25,6 +25,12 @@ class ExpenseCategoryUpdate(BaseModel):
         return validate_clean_required(value, max_length=64, field_name="Name")
 
 
+class ExpenseCategoryDelete(BaseModel):
+    """Reassignment target when deleting a category that still has expenses."""
+
+    replacement_category_id: int | None
+
+
 class ExpenseCategoryResponse(BaseModel):
     id: int
     name: str

@@ -1,0 +1,9 @@
+---
+description: >-
+  Toss-style visual language plus UX and accessibility priorities for the Vue client.
+  Use when changing pages, layout, styling, motion, forms, or accessibility.
+globs: ["client/src/**/*.vue", "client/src/**/*.css", "client/src/**/*.scss", "client/tailwind.config.*"]
+alwaysApply: false
+---
+
+When this rule applies, follow the `client-ui` skill: read `.cursor/skills/client-ui/SKILL.md` and apply it.

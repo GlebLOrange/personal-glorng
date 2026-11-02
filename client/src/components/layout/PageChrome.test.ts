@@ -5,25 +5,42 @@ import PageChrome from "@/components/layout/PageChrome.vue";
 
 const stubs = {
   BackLink: {
-    props: ["to", "size"],
+    props: ["to"],
     inheritAttrs: false,
     template:
-      '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" :data-size="size" v-bind="$attrs">back</a>',
+      '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" v-bind="$attrs">back</a>',
   },
   PageBreadcrumbs: {
     props: ["segments", "elevated"],
     template:
       '<nav data-testid="crumbs"><span v-for="(s, i) in segments" :key="i" :data-elevated="elevated ? \'true\' : \'false\'" :data-to="s.to || \'\'">{{ s.label }}</span></nav>',
   },
+  FieldHelp: {
+    props: ["text", "size", "align", "placement", "interactive"],
+    template:
+      '<span data-testid="field-help" :data-text="text" :data-size="size" :data-align="align" :data-placement="placement" :data-interactive="interactive === false ? \'false\' : \'true\'">?</span>',
+  },
 };
 
 describe("PageChrome", () => {
+  it("renders Back in the breadcrumb row at the shell outer edge", () => {
+    const wrapper = mount(PageChrome, {
+      props: { title: "users", breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "users" }], backTo: "/admin" },
+      global: { stubs },
+    });
+    const back = wrapper.get("[data-testid=back]");
+    expect(back.attributes("href")).toBe("/admin");
+    expect(back.classes()).toEqual(
+      expect.arrayContaining(["chrome-rail-end", "top-1/2", "-translate-y-1/2"]),
+    );
+    expect(back.element.parentElement?.querySelector("[data-testid=crumbs]")).not.toBeNull();
+  });
+
   it("shows parent + current crumbs elevated when last matches title (admin child)", () => {
     const wrapper = mount(PageChrome, {
       props: {
         title: "users",
         breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "users" }],
-        backTo: "/admin",
       },
       global: { stubs },
     });
@@ -36,20 +53,7 @@ describe("PageChrome", () => {
     expect(crumbs[1].attributes("data-elevated")).toBe("true");
     expect(wrapper.get("h1").classes()).toContain("sr-only");
     expect(wrapper.get("h1").text()).toBe("users");
-    const back = wrapper.get("[data-testid=back]");
-    expect(back.attributes("href")).toBe("/admin");
-    expect(back.attributes("data-size")).toBe("compact");
-    // Back sits in the breadcrumb row (same vertical band) and parks on the nav rail.
-    expect(back.element.parentElement?.className).toContain("my-[15px]");
-    expect(back.element.parentElement?.className).toContain("min-h-10");
-    expect(
-      wrapper
-        .findAll("div")
-        .some((node) => node.classes().includes("h-10") && node.classes().includes("items-center")),
-    ).toBe(true);
-    expect(back.classes()).toContain("shell-outside-end");
-    expect(back.classes()).toContain("!-right-6");
-    expect(back.classes()).toContain("top-1/2");
+    expect(wrapper.find("[data-testid=back]").exists()).toBe(false);
   });
 
   it("shows tools parent + tool crumb for tools trails", () => {
@@ -57,7 +61,6 @@ describe("PageChrome", () => {
       props: {
         title: "calculator",
         breadcrumbs: [{ label: "tools", to: "/tools" }, { label: "calculator" }],
-        backTo: "/tools",
       },
       global: { stubs },
     });
@@ -75,7 +78,6 @@ describe("PageChrome", () => {
       props: {
         title: "Some Article",
         breadcrumbs: [{ label: "news", to: "/news" }, { label: "demo-news-1" }],
-        backTo: "/news",
       },
       global: { stubs },
     });
@@ -93,12 +95,43 @@ describe("PageChrome", () => {
       props: {
         title: "Some Article",
         breadcrumbs: [{ label: "news", to: "/news" }, { label: "demo-news-1" }],
-        backTo: "/news",
         omitHeading: true,
       },
       global: { stubs },
     });
 
     expect(wrapper.find("h1").exists()).toBe(false);
+  });
+
+  it("renders FieldHelp tip bottom-right when description is set", () => {
+    const wrapper = mount(PageChrome, {
+      props: {
+        title: "db maintenance",
+        breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "db maintenance" }],
+        description: "backs up mongo, redis, and media.",
+      },
+      global: { stubs },
+    });
+
+    const pin = wrapper.get('[data-testid="page-chrome-help"]');
+    expect(pin.classes()).toEqual(expect.arrayContaining(["absolute", "bottom-2", "right-0"]));
+    const help = pin.get('[data-testid="field-help"]');
+    expect(help.attributes("data-text")).toBe("backs up mongo, redis, and media.");
+    expect(help.attributes("data-size")).toBe("sm");
+    expect(help.attributes("data-align")).toBe("end");
+    expect(help.attributes("data-placement")).toBe("top");
+    expect(help.attributes("data-interactive")).toBe("true");
+  });
+
+  it("omits FieldHelp when description is unset", () => {
+    const wrapper = mount(PageChrome, {
+      props: {
+        title: "admin",
+        breadcrumbs: [{ label: "admin", to: "/admin" }],
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[data-testid="page-chrome-help"]').exists()).toBe(false);
   });
 });

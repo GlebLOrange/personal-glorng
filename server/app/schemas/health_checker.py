@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from datetime import datetime
 from typing import Annotated, Literal
 
@@ -15,32 +14,13 @@ from pydantic import (
     field_validator,
 )
 
+from app.core.url_safety import ensure_http_scheme
 from app.schemas.common import PaginatedResponse
 from app.schemas.validators import validate_clean_optional
 
-_HAS_AUTHORITY_SCHEME = re.compile(r"^[a-z][a-z0-9+.-]*://", re.IGNORECASE)
-
 IntervalMinutes = Literal[1, 5, 15, 60]
 
-
-def _ensure_http_scheme(value: object) -> object:
-    """Prepend https:// when there is no scheme."""
-    if not isinstance(value, str):
-        return value
-    trimmed = value.strip()
-    if not trimmed:
-        return trimmed
-    lower = trimmed.lower()
-    if lower.startswith(("http://", "https://")):
-        return trimmed
-    if trimmed.startswith("//"):
-        return f"https:{trimmed}"
-    if _HAS_AUTHORITY_SCHEME.match(trimmed):
-        return trimmed
-    return f"https://{trimmed}"
-
-
-HttpMonitorUrl = Annotated[HttpUrl, BeforeValidator(_ensure_http_scheme)]
+HttpMonitorUrl = Annotated[HttpUrl, BeforeValidator(ensure_http_scheme)]
 
 
 class DnsRecordResponse(BaseModel):

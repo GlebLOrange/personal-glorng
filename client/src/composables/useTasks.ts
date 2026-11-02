@@ -6,8 +6,9 @@ import { useNotify } from "@/composables/useNotify";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { effectiveSearchQuery } from "@/constants/search";
 import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
-import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
+import { datetimeLocalValue, isValidIsoDate, parseDatetimeLocalToIso } from "@/utils/dates";
 import type {
+  BotPingResult,
   PaginatedList,
   SyncQueueItem,
   TaskDetail,
@@ -21,21 +22,30 @@ export interface TaskCreateForm {
   scheduled_at: string;
   description: string;
   location: string;
-  reminder_minutes: string;
+}
+
+export interface TaskCreateErrors {
+  title?: string;
+  scheduled_at?: string;
 }
 
 export function useTasks() {
   const tasks = ref<TaskItem[]>([]);
+  const calendarTasks = ref<TaskItem[]>([]);
+  const calendarTruncated = ref(false);
   const syncQueue = ref<SyncQueueItem[]>([]);
   const intakes = ref<TaskIntakeItem[]>([]);
   const selectedTask = ref<TaskDetail | null>(null);
   const stats = ref<TaskStats | null>(null);
-  const DEFAULT_FILTER_STATUS = "pending";
+  const DEFAULT_FILTER_STATUS = "";
   const filterStatus = ref(DEFAULT_FILTER_STATUS);
   const searchQuery = ref("");
+  /** Defaults to newest first; When header toggles. */
+  const sort = ref<"when_desc" | "when_asc" | null>("when_desc");
   const page = ref(1);
   const intakePage = ref(1);
   const syncPage = ref(1);
+  const syncSort = ref<"queued_desc" | "queued_asc">("queued_desc");
   const totalPages = ref(0);
   const intakeTotalPages = ref(0);
   const syncTotalPages = ref(0);
@@ -48,17 +58,21 @@ export function useTasks() {
     scheduled_at: "",
     description: "",
     location: "",
-    reminder_minutes: "",
   });
+  const createErrors = ref<TaskCreateErrors>({});
+  /** Last calendar month window; reused to refresh month view after create. */
+  const calendarRange = ref<{ start: string; end: string } | null>(null);
 
   const { loading: listLoading, run: runList } = useApiAction();
+  const { loading: calendarLoading, run: runCalendar } = useApiAction();
   const { loading: intakesLoading, run: runIntakes } = useApiAction();
   const { loading: syncLoading, run: runSync } = useApiAction();
   const { loading: detailLoading, run: runDetail } = useApiAction();
   const { loading: saving, run: runSave } = useApiAction();
   const { loading: statusUpdating, run: runStatusUpdate } = useApiAction();
   const { loading: rescheduling, run: runReschedule } = useApiAction();
-  const { run: runRetry } = useApiAction();
+  const { loading: pingingBot, run: runPingBot } = useApiAction();
+  const { loading: syncProcessing, run: runRetry } = useApiAction();
   const { run: runStats } = useApiAction();
   const { toast } = useNotify();
 
@@ -82,6 +96,9 @@ export function useTasks() {
     if (q) {
       params.q = q;
     }
+    if (sort.value) {
+      params.sort = sort.value;
+    }
 
     const data = await runList(
       async () => {
@@ -94,6 +111,29 @@ export function useTasks() {
       tasks.value = data.items;
       totalPages.value = data.pages;
       total.value = data.total;
+    }
+  }
+
+  async function loadCalendarMonth(startIso: string, endIso: string): Promise<void> {
+    calendarRange.value = { start: startIso, end: endIso };
+    const data = await runCalendar(
+      async () => {
+        const response = await api.get<PaginatedList<TaskItem>>("/tools/tasks", {
+          params: {
+            page: 1,
+            per_page: 100,
+            start: startIso,
+            end: endIso,
+            sort: "when_asc",
+          },
+        });
+        return response.data;
+      },
+      { errorFallback: "Failed to load calendar" },
+    );
+    if (data) {
+      calendarTasks.value = data.items;
+      calendarTruncated.value = data.total > data.items.length;
     }
   }
 
@@ -118,7 +158,7 @@ export function useTasks() {
     const data = await runSync(
       async () => {
         const response = await api.get<PaginatedList<SyncQueueItem>>("/tools/tasks/sync-queue", {
-          params: { page: syncPage.value, per_page: ADMIN_LIST_PAGE_SIZE },
+          params: { page: syncPage.value, per_page: ADMIN_LIST_PAGE_SIZE, sort: syncSort.value },
         });
         return response.data;
       },
@@ -186,6 +226,19 @@ export function useTasks() {
     await loadStats();
   }
 
+  async function pingBot(): Promise<void> {
+    const result = await runPingBot(
+      async () => {
+        const { data } = await api.post<BotPingResult>("/tools/tasks/bot-ping");
+        return data;
+      },
+      { errorFallback: "Failed to ping TodoBot" },
+    );
+    if (!result) return;
+    const label = result.bot_username ? `@${result.bot_username}` : "TodoBot";
+    toast(`TodoBot ${label} OK`, "success");
+  }
+
   async function updateTaskStatus(taskId: number, status: TaskStatus): Promise<void> {
     const result = await runStatusUpdate(
       async () => {
@@ -225,32 +278,42 @@ export function useTasks() {
     await Promise.all([loadTasks(), loadStats()]);
   }
 
-  function openCreate(): void {
+  function scheduledAtFromSeed(seedDate?: string | null): string {
+    if (seedDate && isValidIsoDate(seedDate)) {
+      const now = new Date();
+      const [year, month, day] = seedDate.split("-").map(Number);
+      return datetimeLocalValue(new Date(year, month - 1, day, now.getHours(), now.getMinutes()));
+    }
+    return datetimeLocalValue();
+  }
+
+  /** Open create drawer; optional YYYY-MM-DD seeds scheduled_at for that day (current local time). */
+  function openCreate(seedDate?: string | null): void {
+    createErrors.value = {};
     createForm.value = {
       title: "",
-      scheduled_at: datetimeLocalValue(),
+      scheduled_at: scheduledAtFromSeed(seedDate),
       description: "",
       location: "",
-      reminder_minutes: "",
     };
     showCreateForm.value = true;
   }
 
   async function createTask(): Promise<void> {
-    if (!createForm.value.title.trim() || !createForm.value.scheduled_at) {
-      toast("Title and scheduled time are required", "error");
-      return;
+    const nextErrors: TaskCreateErrors = {};
+    if (!createForm.value.title.trim()) {
+      nextErrors.title = "Title is required";
     }
     const scheduledAt = parseDatetimeLocalToIso(createForm.value.scheduled_at);
-    if (!scheduledAt) {
-      toast("Scheduled time is invalid", "error");
-      return;
+    if (!createForm.value.scheduled_at) {
+      nextErrors.scheduled_at = "Scheduled time is required";
+    } else if (!scheduledAt) {
+      nextErrors.scheduled_at = "Scheduled time is invalid";
+    } else if (new Date(scheduledAt).getTime() < Date.now()) {
+      nextErrors.scheduled_at = "Scheduled time must not be in the past";
     }
-
-    const reminderRaw = createForm.value.reminder_minutes.trim();
-    const reminderMinutes = reminderRaw ? Number(reminderRaw) : null;
-    if (reminderRaw && (!Number.isInteger(reminderMinutes) || (reminderMinutes ?? 0) < 1)) {
-      toast("Reminder minutes must be a positive integer", "error");
+    createErrors.value = nextErrors;
+    if (nextErrors.title || nextErrors.scheduled_at || !scheduledAt) {
       return;
     }
 
@@ -261,15 +324,20 @@ export function useTasks() {
           scheduled_at: scheduledAt,
           description: createForm.value.description.trim() || null,
           location: createForm.value.location.trim() || null,
-          reminder_minutes: reminderMinutes,
         });
+        return true as const;
       },
       { successMessage: "Task created", errorFallback: "Failed to create task" },
     );
-    if (result !== null) {
+    if (result) {
       showCreateForm.value = false;
+      createErrors.value = {};
       page.value = 1;
-      await Promise.all([loadTasks(), loadStats()]);
+      const refreshes: Promise<void>[] = [loadTasks(), loadStats()];
+      if (calendarRange.value) {
+        refreshes.push(loadCalendarMonth(calendarRange.value.start, calendarRange.value.end));
+      }
+      await Promise.all(refreshes);
     }
   }
 
@@ -279,11 +347,39 @@ export function useTasks() {
     page.value = nextPage;
   }
 
+  function toggleWhenSort(): void {
+    sort.value = sort.value === "when_desc" ? "when_asc" : "when_desc";
+    if (page.value !== 1) {
+      page.value = 1;
+      return;
+    }
+    void loadTasks();
+  }
+
+  const whenAriaSort = computed(() => {
+    if (sort.value === "when_asc") return "ascending" as const;
+    if (sort.value === "when_desc") return "descending" as const;
+    return "none" as const;
+  });
+
   function goToIntakePage(nextPage: number): void {
     if (nextPage < 1) return;
     if (intakeTotalPages.value > 0 && nextPage > intakeTotalPages.value) return;
     intakePage.value = nextPage;
   }
+
+  function toggleSyncSort(): void {
+    syncSort.value = syncSort.value === "queued_desc" ? "queued_asc" : "queued_desc";
+    if (syncPage.value !== 1) {
+      syncPage.value = 1;
+      return;
+    }
+    void loadSyncQueue();
+  }
+
+  const syncAriaSort = computed(() =>
+    syncSort.value === "queued_asc" ? ("ascending" as const) : ("descending" as const),
+  );
 
   function goToSyncPage(nextPage: number): void {
     if (nextPage < 1) return;
@@ -324,12 +420,19 @@ export function useTasks() {
   return {
     DEFAULT_FILTER_STATUS,
     tasks,
+    calendarTasks,
+    calendarTruncated,
     syncQueue,
+    syncProcessing,
+    syncAriaSort,
+    toggleSyncSort,
     intakes,
     selectedTask,
     stats,
     filterStatus,
     searchQuery,
+    sort,
+    whenAriaSort,
     page,
     intakePage,
     syncPage,
@@ -341,13 +444,16 @@ export function useTasks() {
     syncTotal,
     showCreateForm,
     createForm,
+    createErrors,
     listLoading,
+    calendarLoading,
     intakesLoading,
     syncLoading,
     detailLoading,
     saving,
     statusUpdating,
     rescheduling,
+    pingingBot,
     hasNextPage,
     hasPreviousPage,
     hasNextIntakePage,
@@ -355,6 +461,7 @@ export function useTasks() {
     hasNextSyncPage,
     hasPreviousSyncPage,
     loadTasks,
+    loadCalendarMonth,
     loadIntakes,
     loadSyncQueue,
     loadStats,
@@ -362,6 +469,7 @@ export function useTasks() {
     closeDetail,
     retrySync,
     processSyncQueueNow,
+    pingBot,
     updateTaskStatus,
     rescheduleTask,
     openCreate,
@@ -369,5 +477,6 @@ export function useTasks() {
     goToPage,
     goToIntakePage,
     goToSyncPage,
+    toggleWhenSort,
   };
 }

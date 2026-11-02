@@ -2,7 +2,11 @@
 import { computed, useAttrs, useId } from "vue";
 
 import FieldHelp from "@/components/ui/FieldHelp.vue";
-import { buildFieldAccessibleName, buildFieldDescribedBy, resolveFieldCopy } from "@/components/ui/fieldA11y";
+import {
+  buildFieldAccessibleName,
+  buildFieldDescribedBy,
+  resolveFieldCopy,
+} from "@/components/ui/fieldA11y";
 import {
   FIELD_INLINE_END_LABEL_CLASS,
   FIELD_LABEL_TEXT_CLASS,
@@ -28,8 +32,8 @@ const props = withDefaults(
     error?: string;
     compact?: boolean;
     /**
-     * `start` — border-notch label.
-     * `end` — label + help inside the control, left of the chevron (default).
+     * `end` — no visible name (sr-only / aria; default).
+     * `start` — border-notch label (opt-in).
      */
     labelAlign?: "start" | "end";
   }>(),
@@ -45,9 +49,11 @@ const fieldCopy = computed(() => resolveFieldCopy(props.label));
 const isInlineEnd = computed(() => props.labelAlign === "end");
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
-const showInlineEndLabel = computed(() => isInlineEnd.value && showLabelRow.value);
+/** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
+const showInlineEndLabel = computed(() => isInlineEnd.value && Boolean(props.hint && !props.error));
 const showBorderNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
 const hasBorderNotch = computed(() => showBorderNotchRow.value || Boolean(props.error));
+const showSrOnlyLabel = computed(() => isInlineEnd.value && Boolean(props.label) && !props.error);
 const describedBy = computed(() =>
   buildFieldDescribedBy({
     ariaDescribedBy: attrs["aria-describedby"],
@@ -66,7 +72,7 @@ const selectClass = computed(() => {
 const ariaLabel = computed(() =>
   buildFieldAccessibleName({
     ariaLabel: attrs["aria-label"],
-    hasVisibleLabel: showLabelNotch.value,
+    hasVisibleLabel: showLabelNotch.value || showSrOnlyLabel.value,
     label: props.label,
   }),
 );
@@ -81,6 +87,7 @@ const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top
 
 <template>
   <div :class="[FIELD_WRAPPER_CLASS, hasBorderNotch ? 'pt-2.5' : undefined, attrs.class]">
+    <label v-if="showSrOnlyLabel" :for="selectId" class="sr-only">{{ label }}</label>
     <select
       :id="selectId"
       v-model="model"
@@ -91,27 +98,20 @@ const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top
       :class="[
         selectClass,
         'w-full',
-        error ? 'ring-status-error focus-visible:ring-status-error' : undefined,
+        error
+          ? 'ring-1 ring-inset ring-status-error focus-visible:ring-2 focus-visible:ring-status-error'
+          : undefined,
       ]"
     >
       <slot />
     </select>
     <div v-if="showInlineEndLabel" :class="FIELD_INLINE_END_LABEL_CLASS">
-      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-      <label
-        v-if="showLabelNotch"
-        :for="selectId"
-        :class="['pointer-events-auto truncate', FIELD_LABEL_TEXT_CLASS]"
-      >
-        {{ label }}
-      </label>
       <span class="pointer-events-auto">
         <FieldHelp
-          v-if="hint"
           size="sm"
           :align="helpAlign"
           :placement="helpPlacement"
-          :text="hint"
+          :text="hint ?? ''"
           :content-id="hintId"
         />
       </span>
@@ -126,13 +126,7 @@ const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp
-          v-if="hint"
-          size="sm"
-          :align="helpAlign"
-          :text="hint"
-          :content-id="hintId"
-        />
+        <FieldHelp v-if="hint" size="sm" :align="helpAlign" :text="hint" :content-id="hintId" />
       </span>
     </div>
     <p

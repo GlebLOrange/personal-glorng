@@ -4,11 +4,14 @@ import hashlib
 import hmac
 import json
 import time
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
 
 from app.routers.donations import STRIPE_WEBHOOK_MAX_BODY_BYTES
+from app.services.stripe_donations import create_checkout_session
+from app.settings import get_settings
 from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
 
 
@@ -51,6 +54,36 @@ async def test_create_checkout_session(
     resp = await client.post("/api/donations/checkout")
     assert resp.status_code == 200
     assert resp.json()["url"].startswith("https://checkout.stripe.com/")
+
+
+@pytest.mark.asyncio
+async def test_create_checkout_session_sends_donate_metadata() -> None:
+    """Checkout Session form body includes donate CTA and donation metadata."""
+    get_settings.cache_clear()
+    settings = get_settings()
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "id": "cs_test_meta",
+        "url": "https://checkout.stripe.com/c/pay/cs_test_meta",
+    }
+    mock_client = AsyncMock()
+    mock_client.post = AsyncMock(return_value=mock_resp)
+    mock_client.__aenter__.return_value = mock_client
+    mock_client.__aexit__.return_value = None
+
+    with patch(
+        "app.services.stripe_donations.httpx.AsyncClient",
+        return_value=mock_client,
+    ):
+        result = await create_checkout_session(settings)
+
+    assert result["session_id"] == "cs_test_meta"
+    posted = mock_client.post.call_args.kwargs["data"]
+    assert posted["submit_type"] == "donate"
+    assert posted["metadata[purpose]"] == "donation"
+    assert posted["metadata[source]"] == "portfolio"
 
 
 @pytest.mark.asyncio

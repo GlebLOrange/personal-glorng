@@ -17,6 +17,7 @@ from defusedxml.common import DefusedXmlException
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
+from app.core.text import sanitize_fetched_text
 from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.xml_security import has_unsafe_xml_declaration, parse_xml
 from app.db.documents.news import NewsSource
@@ -24,6 +25,8 @@ from app.schemas.news import (
     ALLOWED_NEWS_TAGS,
     NewsArticleCreate,
     NewsIngestResponse,
+    NewsSourceCreate,
+    NewsSourceUpdate,
 )
 from app.services.llm_json import complete_json, groq_api_key
 from app.services.news import NewsService
@@ -35,6 +38,10 @@ _XML_ENCODING_RE = re.compile(
     re.IGNORECASE,
 )
 _MAX_FEED_BYTES = 1_000_000
+# ponytail: DW-only allowlist; drop this skip when adding a second publisher.
+DW_FEED_URL = "https://rss.dw.com/xml/rss-en-all"
+DW_SOURCE_NAME = "DW"
+DW_HOST = "dw.com"
 _TRACKING_QUERY_KEYS = frozenset(
     {
         "utm_source",
@@ -89,11 +96,11 @@ class FeedItem:
 
 
 def _clean_text(value: str | None, *, max_length: int = 2_000) -> str:
-    """Strip HTML tags and normalize whitespace."""
+    """Strip HTML tags, then sanitize control chars and whitespace."""
     if not value:
         return ""
     text = html.unescape(_TAG_RE.sub(" ", value))
-    return " ".join(text.split())[:max_length]
+    return sanitize_fetched_text(text, max_length=max_length)
 
 
 def _local_name(tag: str) -> str:
@@ -279,7 +286,9 @@ def _feed_entries(root: Element) -> list[Element]:
     return root.findall(".//{*}item")
 
 
-def _entries_to_items(entries: list[Element], source: NewsSourceConfig) -> list[FeedItem]:
+def _entries_to_items(
+    entries: list[Element], source: NewsSourceConfig
+) -> list[FeedItem]:
     """Normalize RSS/Atom entry elements into FeedItem values."""
     items: list[FeedItem] = []
     for entry in entries:
@@ -326,12 +335,12 @@ def decode_feed_body(content: bytes, *, fallback_encoding: str | None = None) ->
         encoding = match.group(1).decode("ascii", errors="ignore")
         try:
             return content.decode(encoding)
-        except (LookupError, UnicodeDecodeError):
+        except LookupError, UnicodeDecodeError:
             pass
     encoding = fallback_encoding or "utf-8"
     try:
         return content.decode(encoding)
-    except (LookupError, UnicodeDecodeError):
+    except LookupError, UnicodeDecodeError:
         return content.decode("utf-8", errors="replace")
 
 
@@ -368,6 +377,24 @@ def _validate_ai_payload(
     }
 
 
+def _feed_only_payload(
+    source: NewsSourceConfig,
+    item: FeedItem,
+) -> dict[str, Any]:
+    """Build a publishable payload from feed metadata when Groq is unset."""
+    title = _clean_text(item.title, max_length=90) or "Untitled"
+    summary = _clean_text(item.excerpt, max_length=600) or title
+    detail = _clean_text(item.excerpt, max_length=180) or (
+        "See the original article for details."
+    )
+    return {
+        "title": title,
+        "summary": summary,
+        "bullets": [_clean_text(item.title, max_length=180) or title, detail],
+        "tags": list(source.default_themes),
+    }
+
+
 async def _summarize_item(
     source: NewsSourceConfig,
     item: FeedItem,
@@ -396,6 +423,7 @@ async def _summarize_item(
         model=settings.GROQ_CHAT_MODEL,
         system_prompt=_SYSTEM_PROMPT,
         user_content=user_content,
+        task="news",
         temperature=0.1,
         api_base_url=settings.GROQ_API_BASE_URL,
     )
@@ -422,13 +450,12 @@ async def _read_feed_bytes(response: httpx.Response) -> bytes:
     content_length = response.headers.get("content-length")
     if content_length is not None:
         try:
-            declared = int(content_length)
+            declared_size = int(content_length)
         except ValueError:
-            declared = None
-        else:
-            if declared > _MAX_FEED_BYTES:
-                msg = "Feed response is too large"
-                raise ValueError(msg)
+            declared_size = None
+        if declared_size is not None and declared_size > _MAX_FEED_BYTES:
+            msg = "Feed response is too large"
+            raise ValueError(msg)
     content = await response.aread()
     if len(content) > _MAX_FEED_BYTES:
         msg = "Feed response is too large"
@@ -442,6 +469,51 @@ class NewsIngestService:
     def __init__(self, news_svc: NewsService) -> None:
         """Initialize the ingestion service."""
         self.news_svc = news_svc
+
+    async def _prepare_dw_only(self) -> None:
+        """Enable Deutsche Welle English RSS only; draft seeded demo articles.
+
+        ponytail: allowlist is DW only; drop this skip when adding a second publisher.
+        """
+        if self.news_svc.registry.news_sources is None:
+            return
+        sources = await self.news_svc.list_all_sources()
+        dw = next(
+            (
+                source
+                for source in sources
+                if source.name == DW_SOURCE_NAME or source.host == DW_HOST
+            ),
+            None,
+        )
+        if dw is None:
+            dw = await self.news_svc.create_source(
+                NewsSourceCreate(
+                    name=DW_SOURCE_NAME,
+                    feed_url=DW_FEED_URL,
+                    host=DW_HOST,
+                    category="world",
+                    region="global",
+                    enabled=True,
+                )
+            )
+        elif dw.feed_url != DW_FEED_URL or not dw.enabled or dw.host != DW_HOST:
+            dw = await self.news_svc.update_source(
+                dw.id,
+                NewsSourceUpdate(
+                    feed_url=DW_FEED_URL,
+                    host=DW_HOST,
+                    enabled=True,
+                ),
+            )
+        for source in sources:
+            if source.id == dw.id or not source.enabled:
+                continue
+            await self.news_svc.update_source(
+                source.id,
+                NewsSourceUpdate(enabled=False),
+            )
+        await self.news_svc.draft_demo_articles()
 
     async def _load_sources(
         self,
@@ -487,17 +559,18 @@ class NewsIngestService:
         """Fetch and parse one feed. Return None when the feed is unchanged (304)."""
         if not is_public_http_url(source.feed_url):
             raise ValueError("Feed URL is not allowed")
-        response = await get_public_http_url(
+        result = await get_public_http_url(
             client,
             source.feed_url,
             headers=_conditional_headers(source),
         )
+        response = result.response
         try:
             if response.status_code == 304:
                 await self._record_fetch(source, clear_error=True)
                 return None
             response.raise_for_status()
-            if not is_public_http_url(str(response.url)):
+            if not is_public_http_url(result.url):
                 raise ValueError("Feed redirect target is not allowed")
             content = await _read_feed_bytes(response)
             xml_text = decode_feed_body(content, fallback_encoding=response.encoding)
@@ -520,11 +593,13 @@ class NewsIngestService:
     ) -> NewsIngestResponse:
         """Run ingestion for all enabled sources."""
         settings = get_settings()
+        await self._prepare_dw_only()
         sources = [
             source for source in await self._load_sources(source_ids) if source.enabled
         ]
         processed = created = skipped = failed = 0
         remaining = max(1, settings.NEWS_INGEST_MAX_ITEMS_PER_RUN)
+        use_groq = bool(groq_api_key())
         async with httpx.AsyncClient(timeout=15) as client:
             for source in sources:
                 if remaining <= 0:
@@ -549,7 +624,23 @@ class NewsIngestService:
                         skipped += 1
                         continue
                     try:
-                        ai = await _summarize_item(source, item)
+                        ai_model: str | None = None
+                        if use_groq:
+                            try:
+                                ai = await _summarize_item(source, item)
+                                ai_model = settings.GROQ_CHAT_MODEL
+                            except Exception as exc:
+                                logger.warning(
+                                    "News AI summarize failed; using feed metadata",
+                                    context={
+                                        "source": source.name,
+                                        "url": item.url,
+                                        "error": str(exc)[:200],
+                                    },
+                                )
+                                ai = _feed_only_payload(source, item)
+                        else:
+                            ai = _feed_only_payload(source, item)
                         article = await self.news_svc.create_article(
                             NewsArticleCreate(
                                 source_id=source.id,
@@ -564,7 +655,7 @@ class NewsIngestService:
                                 tags=ai["tags"],
                                 language=source.language,
                                 status="published",
-                                ai_model=settings.GROQ_CHAT_MODEL,
+                                ai_model=ai_model,
                                 ai_input_hash=_hash_input(source, item),
                             ),
                             actor_id=actor_id,

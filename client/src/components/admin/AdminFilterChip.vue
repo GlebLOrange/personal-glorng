@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import FilterIcon from "@/components/icons/FilterIcon.vue";
 import { FILTER_MENU_ROW_CLASS } from "@/constants/toolbarPopover";
 
 const props = withDefaults(
@@ -53,6 +54,7 @@ function onLeave(): void {
     @focus="onEnter"
     @blur="onLeave"
   >
+    <FilterIcon class-name="size-3.5 shrink-0" />
     {{ label }}
   </button>
 </template>

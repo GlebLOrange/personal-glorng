@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import { Card } from "@/components/ui/card";
+import { PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
 import type { ResumeData } from "@/types";
 import { buildGlanceStats } from "@/utils/resumeGlance";
 
@@ -13,7 +14,11 @@ const stats = computed(() => buildGlanceStats(props.resume));
 </script>
 
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div
+    v-if="stats.length"
+    class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+    :class="stats.length >= 3 ? 'lg:grid-cols-3' : ''"
+  >
     <Card
       v-for="stat in stats"
       :key="stat.label"
@@ -21,9 +26,9 @@ const stats = computed(() => buildGlanceStats(props.resume));
       :href="stat.href"
       variant="compact"
       hoverable
-      class="min-w-0 h-full"
+      :class="['min-w-0 h-full', PORTFOLIO_CV_TILE_CLASS]"
     >
-      <p class="text-label text-accent-blue mb-2">{{ stat.label }}</p>
+      <p class="text-label text-accent-coral mb-2">{{ stat.label }}</p>
       <p class="font-data text-3xl font-semibold tracking-tight text-surface-light mb-2">
         {{ stat.value }}
       </p>

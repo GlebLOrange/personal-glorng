@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ensureHttpsUrl } from "@/utils/ensureHttpsUrl";
+import { ensureHttpsUrl } from "@/utils/safeUrl";
 
 describe("ensureHttpsUrl", () => {
   it("leaves http(s) URLs unchanged aside from trim", () => {

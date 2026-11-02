@@ -1,15 +1,18 @@
-"""Persistent reply-keyboard main menu."""
+"""Persistent reply-keyboard main menu and welcome inline CTAs."""
 
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 
-LABEL_QUICK_TASK = "⚡ Quick task"
-LABEL_GUIDED_TASK = "🧭 Guided task"
-LABEL_MY_TASKS = "📋 My tasks"
-LABEL_CALENDAR = "📅 Calendar"
-LABEL_HELP = "❓ Help"
-LABEL_RESTART = "🔄 Restart"
-# Kept for expense module imports; expenses are hidden from the menu.
-LABEL_LOG_EXPENSE = "Log expense"
+LABEL_QUICK_TASK = "⚡ quick task"
+LABEL_GUIDED_TASK = "🧭 guided task"
+LABEL_MY_TASKS = "📋 tasks"
+LABEL_CALENDAR = "📅 calendar"
+LABEL_HELP = "❓ help"
+LABEL_RESTART = "🔄 restart"
 # Backward-compatible alias (maps to quick AI intake).
 LABEL_NEW_TASK = LABEL_QUICK_TASK
 
@@ -24,7 +27,7 @@ ALL_LABELS = {
 
 
 def main_menu() -> ReplyKeyboardMarkup:
-    """Build the persistent main menu keyboard."""
+    """Build the persistent main menu keyboard (same order as welcome inline)."""
     return ReplyKeyboardMarkup(
         keyboard=[
             [
@@ -39,4 +42,32 @@ def main_menu() -> ReplyKeyboardMarkup:
         ],
         resize_keyboard=True,
         is_persistent=True,
+    )
+
+
+def welcome_inline(*, calendar_connected: bool) -> InlineKeyboardMarkup:
+    """Fixed welcome menu: quick|guided, tasks|calendar, help|restart."""
+    calendar_btn = (
+        InlineKeyboardButton(text="📅 calendar", callback_data="w:cal")
+        if calendar_connected
+        else InlineKeyboardButton(
+            text="📅 connect calendar",
+            callback_data="w:connect",
+        )
+    )
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="⚡ quick task", callback_data="w:quick"),
+                InlineKeyboardButton(text="🧭 guided task", callback_data="w:guided"),
+            ],
+            [
+                InlineKeyboardButton(text="📋 tasks", callback_data="w:tasks"),
+                calendar_btn,
+            ],
+            [
+                InlineKeyboardButton(text="❓ help", callback_data="w:help"),
+                InlineKeyboardButton(text="🔄 restart", callback_data="w:restart"),
+            ],
+        ],
     )

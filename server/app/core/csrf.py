@@ -8,7 +8,6 @@ _MUTATING_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 _EXEMPT_PREFIXES = (
     "/api/auth/login",
     "/api/auth/register",
-    "/api/auth/firebase",
     "/api/auth/forgot-password",
     "/api/auth/reset-password",
     "/api/auth/verify",

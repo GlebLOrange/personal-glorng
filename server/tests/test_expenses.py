@@ -98,7 +98,7 @@ class TestExpensesCRUD:
         assert resp.status_code == 200
         names = [item["name"] for item in resp.json()]
         assert "AI" in names
-        assert "Groceries" in names
+        assert "Food" in names
 
     async def test_summary_aggregation(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
@@ -196,7 +196,7 @@ class TestExpensesCRUD:
         assert data["valid"] is True
         assert data["amount"] == "89.50"
         assert data["currency"] == "PLN"
-        assert data["category"] == "Groceries"
+        assert data["category"] == "Food"
         assert data["tool_name"] == "Biedronka"
 
     async def test_export_expenses_csv(self, auth_client: AsyncClient):

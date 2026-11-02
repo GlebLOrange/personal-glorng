@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import Response
 
 from app.core.catalogs import (
@@ -36,10 +36,11 @@ from app.schemas.expense import (
 )
 from app.schemas.expense_category import (
     ExpenseCategoryCreate,
+    ExpenseCategoryDelete,
     ExpenseCategoryResponse,
     ExpenseCategoryUpdate,
 )
-from app.todobot.utils.expense_nlp import parse_expense_text
+from app.services.expense_nlp import parse_expense_text
 
 router = APIRouter(
     prefix="/expenses",
@@ -126,8 +127,9 @@ async def delete_category(
     category_id: int,
     svc: ExpenseCategoryServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
+    body: Annotated[ExpenseCategoryDelete | None, Body()] = None,
 ) -> None:
-    await svc.delete_category(category_id)
+    await svc.delete_category(category_id, replacement=body)
 
 
 @router.get(
@@ -211,7 +213,7 @@ async def parse_expense(
     return ExpenseParseResponse(
         valid=True,
         amount=parsed.amount,
-        currency=parsed.currency,  # type: ignore[arg-type]
+        currency=parsed.currency,
         category=parsed.category,
         tool_name=parsed.tool_name,
         expense_date=parsed.expense_date,

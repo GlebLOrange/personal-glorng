@@ -12,10 +12,10 @@ from urllib.parse import urlparse
 
 import httpx
 
-from app.core.exceptions import ConflictError, ForbiddenError, ValidationError
+from app.core.exceptions import ConflictError, ValidationError
 from app.core.pagination import build_paginated
 from app.core.url_safety import get_public_http_url, is_public_http_url
-from app.core.utils import DEFAULT_PER_PAGE, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, assert_owner_or_superuser, paginate_params
 from app.db.documents.base import utc_now
 from app.db.documents.health_checker import DnsRecord, HealthCheckResult, HealthMonitor
 from app.db.registry import DatabaseRegistry
@@ -88,12 +88,19 @@ def _resolve_dns(hostname: str) -> list[DnsRecord]:
     return records
 
 
-def _ssl_expiry(hostname: str, port: int = 443) -> datetime | None:
-    """Return certificate notAfter in UTC, or None on failure."""
+def _ssl_expiry(hostname: str, resolved_ip: str, port: int = 443) -> datetime | None:
+    """Return certificate notAfter in UTC, or None on failure.
+
+    Connects to the already-resolved public IP and keeps hostname verification
+    via SNI, so this probe cannot be redirected by a second DNS answer.
+    """
     context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     try:
         with (
-            socket.create_connection((hostname, port), timeout=PROBE_TIMEOUT_SECONDS) as sock,
+            socket.create_connection(
+                (resolved_ip, port), timeout=PROBE_TIMEOUT_SECONDS
+            ) as sock,
             context.wrap_socket(sock, server_hostname=hostname) as ssock,
         ):
             cert = ssock.getpeercert()
@@ -122,8 +129,6 @@ async def probe_url(url: str) -> ProbeOutcome:
     ssl_expires_at: datetime | None = None
     if hostname:
         dns = await asyncio.to_thread(_resolve_dns, hostname)
-        if urlparse(url).scheme == "https":
-            ssl_expires_at = await asyncio.to_thread(_ssl_expiry, hostname)
 
     status_code: int | None = None
     response_ms: float | None = None
@@ -132,13 +137,22 @@ async def probe_url(url: str) -> ProbeOutcome:
     started = time.perf_counter()
     try:
         async with httpx.AsyncClient(timeout=PROBE_TIMEOUT_SECONDS) as client:
-            response = await get_public_http_url(client, url)
+            result = await get_public_http_url(client, url)
+            response = result.response
             status_code = response.status_code
             response_ms = round((time.perf_counter() - started) * 1000, 2)
             await response.aclose()
             ok = 200 <= status_code < 400
             if not ok:
                 error = f"HTTP {status_code}"
+            if hostname and urlparse(url).scheme == "https":
+                port = urlparse(url).port or 443
+                ssl_expires_at = await asyncio.to_thread(
+                    _ssl_expiry,
+                    hostname,
+                    result.resolved_ip,
+                    port,
+                )
     except ValueError as exc:
         response_ms = round((time.perf_counter() - started) * 1000, 2)
         error = str(exc)
@@ -181,10 +195,12 @@ class HealthMonitorService:
         *,
         is_superuser: bool = False,
     ) -> None:
-        if is_superuser:
-            return
-        if monitor.created_by != actor_id:
-            raise ForbiddenError("You do not have permission to access this monitor")
+        assert_owner_or_superuser(
+            monitor.created_by,
+            actor_id,
+            is_superuser=is_superuser,
+            detail="You do not have permission to access this monitor",
+        )
 
     async def _get_owned(
         self,
@@ -218,6 +234,7 @@ class HealthMonitorService:
             total=total,
             page=max(1, page),
             per_page=limit,
+            response_cls=HealthMonitorListResponse,
         )
 
     async def get_monitor(
@@ -227,9 +244,7 @@ class HealthMonitorService:
         *,
         is_superuser: bool = False,
     ) -> HealthMonitor:
-        return await self._get_owned(
-            monitor_id, actor_id, is_superuser=is_superuser
-        )
+        return await self._get_owned(monitor_id, actor_id, is_superuser=is_superuser)
 
     async def create_monitor(
         self,
@@ -246,9 +261,7 @@ class HealthMonitorService:
 
         count = await self._monitors().count(created_by=created_by)
         if count >= MAX_MONITORS_PER_USER:
-            raise ConflictError(
-                f"Maximum of {MAX_MONITORS_PER_USER} monitors per user"
-            )
+            raise ConflictError(f"Maximum of {MAX_MONITORS_PER_USER} monitors per user")
 
         now = utc_now()
         monitor = HealthMonitor(
@@ -278,9 +291,7 @@ class HealthMonitorService:
         is_superuser: bool = False,
         fields: dict[str, object] | None = None,
     ) -> HealthMonitor:
-        monitor = await self._get_owned(
-            monitor_id, actor_id, is_superuser=is_superuser
-        )
+        monitor = await self._get_owned(monitor_id, actor_id, is_superuser=is_superuser)
         payload = dict(fields or {})
         updates: dict[str, object] = {}
         if "label" in payload:

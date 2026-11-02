@@ -5,11 +5,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import Response
 
-from app.core.deps import AuthorizedUser, require_capability
+from app.core.deps import AuthorizedUser, QrLibraryServiceDep, require_capability
 from app.core.permissions import SUPERUSER_PERMISSION, user_has_permission
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import DEFAULT_PER_PAGE
-from app.db.deps import DbRegistry
 from app.openapi import requires_capability
 from app.schemas.qr_generator import (
     QrCodeCreate,
@@ -18,7 +17,7 @@ from app.schemas.qr_generator import (
     QrCodeStoredResponse,
     QrCodeUpdate,
 )
-from app.services.qr_generator import QrLibraryService, generate_qr
+from app.services.qr_generator import generate_qr
 
 router = APIRouter(
     prefix="/qr-generator",
@@ -48,12 +47,11 @@ async def generate_qr_code(data: QrCodeCreate) -> QrCodeGenerateResponse:
     dependencies=[Depends(require_capability("qr-generator", "read"))],
 )
 async def list_saved_qr_codes(
-    registry: DbRegistry,
+    svc: QrLibraryServiceDep,
     user: AuthorizedUser,
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> QrCodeListResponse:
-    svc = QrLibraryService(registry)
     return await svc.list_by_owner(created_by=user.id, page=page, per_page=per_page)
 
 
@@ -67,10 +65,9 @@ async def list_saved_qr_codes(
 )
 async def create_saved_qr_code(
     data: QrCodeCreate,
-    registry: DbRegistry,
+    svc: QrLibraryServiceDep,
     user: AuthorizedUser,
 ) -> QrCodeStoredResponse:
-    svc = QrLibraryService(registry)
     return await svc.create_saved(data, created_by=user.id)
 
 
@@ -83,10 +80,9 @@ async def create_saved_qr_code(
 )
 async def get_saved_qr_code(
     qr_id: Annotated[int, Path(ge=1)],
-    registry: DbRegistry,
+    svc: QrLibraryServiceDep,
     user: AuthorizedUser,
 ) -> QrCodeStoredResponse:
-    svc = QrLibraryService(registry)
     return await svc.get_stored(
         qr_id,
         actor_id=user.id,
@@ -104,10 +100,9 @@ async def get_saved_qr_code(
 async def update_saved_qr_code(
     qr_id: Annotated[int, Path(ge=1)],
     data: QrCodeUpdate,
-    registry: DbRegistry,
+    svc: QrLibraryServiceDep,
     user: AuthorizedUser,
 ) -> QrCodeStoredResponse:
-    svc = QrLibraryService(registry)
     return await svc.update_saved(
         qr_id,
         data,
@@ -125,10 +120,9 @@ async def update_saved_qr_code(
 )
 async def delete_saved_qr_code(
     qr_id: Annotated[int, Path(ge=1)],
-    registry: DbRegistry,
+    svc: QrLibraryServiceDep,
     user: AuthorizedUser,
 ) -> None:
-    svc = QrLibraryService(registry)
     await svc.delete_saved(
         qr_id,
         actor_id=user.id,
@@ -145,10 +139,9 @@ async def delete_saved_qr_code(
 )
 async def get_saved_qr_svg(
     qr_id: Annotated[int, Path(ge=1)],
-    registry: DbRegistry,
+    svc: QrLibraryServiceDep,
     user: AuthorizedUser,
 ) -> Response:
-    svc = QrLibraryService(registry)
     svg = await svc.render_svg(
         qr_id,
         actor_id=user.id,

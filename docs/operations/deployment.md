@@ -12,7 +12,7 @@ Production runbook for starting and operating the Docker Compose stack ([`docker
 6. [Day-2 ops](#6-day-2-ops) — logs, stop, rebuild (prod compose file)
 7. [Optional add-ons](#7-optional-add-ons) — Postgres, AI search, Cloudflare
 
-Later: [Sentry releases](#sentry-releases-optional-ci) · [Staging checks](#staging-manual-checks-p3) · [Celery DLQ](#celery-dead-letter-queue)
+Later: [GitHub publish (mirror + images)](#github-publish-mirror--ghcr) · [Sentry releases](#sentry-releases-optional-ci) · [Staging checks](#staging-manual-checks-p3) · [Celery DLQ](#celery-dead-letter-queue)
 
 GitHub / CI gates (development vs production): [DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd).
 
@@ -43,7 +43,10 @@ Compose service inventory: [architecture inventory (generated)](/generated/archi
    - `REDIS_CACHE_URL` pointing at the `redis-cache` service (cache isolation; staging/production warn if shared with `REDIS_URL`)
    - Optional EDOT: `OTEL_EXPORTER_OTLP_ENDPOINT` + `OTEL_EXPORTER_OTLP_HEADERS` (see [Configuration](/reference/configuration#edot-opentelemetry-opt-in))
 4. `CORS_ORIGINS` — explicit HTTPS origins (no `*`).
-5. `RUN_MIGRATIONS=false` and `RUN_SEED=false` — schema work goes through the one-shot `migrate` service, not API boot seed.
+5. `BASE_URL` — public HTTPS origin (sitemap, robots, redirects). Set `VITE_PUBLIC_ORIGIN` to the same value so the SPA build bakes correct Open Graph image URLs (compose falls back to `BASE_URL` when unset). For news link previews without executing the SPA, the API serves static OG HTML at `/og/news/{slug}` (proxied like `/sitemap.xml`). Production nginx routes link-preview bots (Facebook, Slack, etc.) from `/news/{slug}` to that endpoint; search crawlers still get the SPA shell.
+6. `RUN_MIGRATIONS=false` and `RUN_SEED=false` — schema work goes through the one-shot `migrate` service, not API boot seed.
+
+**Public SPA loading:** `/` paints from client `RESUME_FALLBACK` even if the API is down; `/news` shows a list skeleton until the API responds. CSS remains a single Tailwind bundle (~126 KB raw) — route-level CSS split is deferred unless LCP regresses after deploy.
 
 Process env overrides dotenv when you inject secrets without editing `.env`. Full variable list: [Configuration](/reference/configuration).
 
@@ -163,6 +166,35 @@ Run `make reindex-search` after deploy or schema changes.
 ### Firebase Analytics in production
 
 Set `VITE_FIREBASE_ENABLED=true` and the other `VITE_FIREBASE_*` IDs in host `.env`, then rebuild the client (`make prod`). Those values are Docker build args, not runtime env. Visitors still must accept the Analytics cookie category.
+
+---
+
+## GitHub publish (mirror + GHCR)
+
+After each successful **CI** run on **`main`**, [`.github/workflows/publish.yml`](../../.github/workflows/publish.yml) runs automatically:
+
+| Job | What it does |
+|-----|----------------|
+| `mirror-bitbucket` | Pushes the same commit as GitHub `main` to Bitbucket (`refs/heads/main`). Skipped with a log line if secrets are missing. |
+| `publish-server-image` | Builds [`server/Dockerfile`](../../server/Dockerfile) target `production` and pushes to GHCR. |
+
+**Git:** Pull requests and reviews stay on GitHub only; Bitbucket is a backup mirror of `main`, not a second PR target.
+
+**Images:** One image covers `server`, `migrate`, `worker`, `beat`, and `todobot` in prod (same Dockerfile). Tags:
+
+- `ghcr.io/gleblorange/personal-glorng-server:<git-sha>`
+- `ghcr.io/gleblorange/personal-glorng-server:main`
+
+The client SPA is not published to GHCR (Firebase build args come from host `.env` at `make prod`). **Production deploy on the host still uses `make prod` / local `docker compose build`** unless you later point Compose at these tags.
+
+**One-time GitHub Actions secrets** (repo **Settings → Secrets and variables → Actions**):
+
+| Secret | Value |
+|--------|--------|
+| `BITBUCKET_REPO` | Bitbucket slug `workspace/repository` (no `.git`) |
+| `BITBUCKET_TOKEN` | Bitbucket repository access token with **repository write** |
+
+Create an empty Bitbucket Cloud repo first. The workflow file must be on `main` before the first automatic run.
 
 ---
 

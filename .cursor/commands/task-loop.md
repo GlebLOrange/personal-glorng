@@ -1,92 +1,63 @@
-# Task loop (Manager → Developer → Reviewer)
+# Task loop (Manager → Developer)
 
-You are the **parent Cursor control surface**. Orchestrate one controlled pass. Personas must not call each other — only you spawn them.
-
-User request (after the command):
+Parent Cursor control surface: one controlled pass. Only you spawn personas.
 
 ```text
 $ARGUMENTS
 ```
 
-If `$ARGUMENTS` is empty, ask once for the task text and stop.
+If empty, ask once for the task text and stop.
 
-## Rules
+## Constraints
 
-- Do **not** modify application code yourself. Delegate.
-- Do **not** commit, push, open a PR, or merge unless the user later asks.
-- Git branch prefix is **`cursor/<slug>`** only (never `agent/TASK-*`).
-- Gortex is a **tool** for agents, not a persona. Do not spawn a Gortex agent.
-- **QA is out of this loop.** Do not spawn `qa` here.
-- At most **one** changes-requested retry (developer fix → reviewer re-check), then stop.
+- Do not modify application code; delegate. No commit/push/PR/merge unless the user later asks.
+- Create `cursor/<slug>` before Developer (never `agent/TASK-*`); slug from Manager `branch_hint` or the request.
+- Do not spawn Gortex, `qa`, or `code-reviewer`. Stop after Developer.
 
-## Step 1 — Manager (Assign)
+## 1 — Manager (Assign)
 
-Spawn the `manager` subagent with this prompt:
+Spawn `manager` with:
 
 ```text
 Mode: Assign (task-loop).
-
 User request:
 <paste $ARGUMENTS>
 
-Do NOT modify files.
-
-1. Use Gortex (explore/task, search, relations as needed) to find scope.
-2. Emit exactly one TASK yaml contract (see manager Assign mode), then stop.
+Do not modify files, spawn personas, or write a task file.
+Use Gortex per .cursor/rules/gortex-workflow.mdc.
+Emit exactly one TASK yaml that passes .cursor/agents/README.md requirement bar, then stop.
 ```
 
-Wait for the TASK yaml. If Manager returns recommendations instead of a single TASK, ask Manager once to emit Assign-mode yaml only. If still no TASK, stop and show the user what Manager returned.
+Wait for TASK yaml. If recommendations instead, ask once for Assign-mode yaml only; else stop and show what Manager returned.
 
-## Step 2 — Developer
+## 2 — Branch
 
-Spawn the `developer` subagent with **only** the TASK yaml (plus this instruction):
+Create `cursor/<slug>` from `branch_hint` (or short kebab) if not already on it.
+
+## 3 — Developer
+
+Spawn `developer` with the TASK yaml plus:
 
 ```text
 Implement this TASK from /task-loop.
-
-- Follow agent-git-workflow: work on cursor/<slug> (create if on main after asking once).
-- Use Gortex before mutating (impact; verify if signatures change).
-- Run only the checks listed under `checks:` in the TASK (that counts as the user asking for those checks).
-- Do NOT commit, push, open a PR, or merge.
-- Return the evidence handoff block required by developer.md.
+- Stay on existing branch cursor/<slug>; do not ask about the branch.
+- Read CODING_STANDARDS.md before app edits; stay in scope.
+- Gortex: .cursor/rules/gortex-workflow.mdc.
+- Run only TASK `checks:`; empty checks → SKIPPED (empty checks).
+- Do not commit, push, or open a PR.
+- Return the developer evidence block (requirement-bar one-liner included).
 ```
 
-Wait for the evidence report (changed files, check results, `git diff --stat`).
+Wait for evidence, then stop.
 
-## Step 3 — Reviewer
-
-Spawn the `code-reviewer` subagent with:
-
-```text
-Review this /task-loop handoff.
-
-TASK yaml:
-<paste TASK>
-
-Developer evidence:
-<paste developer report>
-
-Inspect the branch diff (git diff against the base branch). Review against the TASK acceptance criteria.
-Verdict must be APPROVE or REQUEST CHANGES.
-```
-
-## Step 4 — Retry or stop
-
-- If **APPROVE**: stop. Summarize for the user: branch name, TASK id/goal, reviewer overview. Tell them merge/commit is theirs.
-- If **REQUEST CHANGES**:
-  1. Spawn `developer` once with the TASK, prior evidence, and the reviewer’s required findings. Same constraints (checks in TASK, no commit/PR/merge).
-  2. Spawn `code-reviewer` once with updated evidence + diff.
-  3. Stop with the final verdict. Do **not** retry again.
-
-## Final message to the user
-
-Always end with:
+## Final message
 
 ```text
 ## Task-loop result
 - Branch: …
-- Verdict: APPROVE | REQUEST CHANGES
-- Changed: … (from developer evidence)
-- Checks: … (from developer evidence)
+- TASK: …
+- Requirement bar: …
+- Changed: …
+- Checks: …
 - Next: you commit / open PR / merge when ready
 ```

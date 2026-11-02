@@ -21,14 +21,12 @@ const props = withDefaults(
     interactive?: boolean;
     align?: "left" | "center" | "right";
     dense?: boolean;
-    size?: "default" | "chrome";
   }>(),
   {
     query: "",
     interactive: false,
     align: "left",
     dense: false,
-    size: "default",
   },
 );
 
@@ -47,24 +45,16 @@ const skeletonClass = computed(() => {
 });
 
 const timeClass = computed(() => {
-  if (props.size === "chrome") {
-    return "text-lg font-bold leading-none text-surface-light tabular-nums tracking-tight";
-  }
   if (props.dense) {
     return "text-2xl font-bold text-surface-light tabular-nums tracking-tight";
   }
   return "text-2xl sm:text-3xl font-bold text-surface-light tabular-nums tracking-tight";
 });
 
-const dateClass = computed(() =>
-  props.size === "chrome" ? "text-xs leading-none text-surface-mid" : "text-sm text-surface-mid",
-);
+const dateClass = computed(() => "text-sm text-surface-mid");
 
 const conditionsClass = computed(() => {
-  const base =
-    props.size === "chrome"
-      ? "flex w-full max-w-full items-center gap-1 min-w-0 text-xs leading-none text-surface-mid"
-      : "flex items-center gap-1.5 min-w-0 text-sm text-surface-mid";
+  const base = "flex items-center gap-1.5 min-w-0 text-sm text-surface-mid";
   if (isCenter.value) return `${base} justify-center`;
   if (isRight.value) return `${base} justify-end`;
   return base;
@@ -72,7 +62,6 @@ const conditionsClass = computed(() => {
 
 const rootClass = computed(() => [
   "font-data min-w-0",
-  props.size === "chrome" && "w-full max-w-full",
   props.interactive && "rounded-lg transition-colors",
 ]);
 
@@ -127,7 +116,7 @@ onMounted(async () => {
 
     <div v-else-if="error" class="text-sm space-y-2" :class="stackClass">
       <p class="text-status-error">{{ error }}</p>
-      <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="refresh">
+      <BaseButton variant="ghost" size="sm" :icon="false" class="gap-1.5" @click="refresh">
         <RefreshIcon class-name="size-3.5" />
         retry
       </BaseButton>
@@ -150,7 +139,7 @@ onMounted(async () => {
           :kind="weatherKind"
           class-name="size-4 inline-block align-[-0.125em]"
         />
-        <span class="font-bold font-data text-accent-blue tabular-nums shrink-0"
+        <span class="font-bold font-data text-accent-coral tabular-nums shrink-0"
           >{{ temperature }}°C</span
         >
         <span aria-hidden="true" class="text-surface-muted">·</span>
@@ -168,7 +157,7 @@ onMounted(async () => {
       :class="stackClass"
     >
       weather unavailable.
-      <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="refresh">
+      <BaseButton variant="ghost" size="sm" :icon="false" class="gap-1.5" @click="refresh">
         <RefreshIcon class-name="size-3.5" />
         retry
       </BaseButton>

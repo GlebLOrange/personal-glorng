@@ -6,7 +6,10 @@ import { absoluteUrl, applyPageSeo, publicOrigin } from "@/utils/pageSeo";
 afterEach(() => {
   document.title = "";
   document.head.querySelectorAll("meta[name], meta[property]").forEach((el) => el.remove());
-  document.head.querySelectorAll('link[rel="amphtml"]').forEach((el) => el.remove());
+  document.head
+    .querySelectorAll('link[rel="amphtml"], link[rel="canonical"]')
+    .forEach((el) => el.remove());
+  document.getElementById("glorng-json-ld")?.remove();
   vi.unstubAllEnvs();
 });
 
@@ -71,13 +74,35 @@ describe("applyPageSeo", () => {
     );
   });
 
-  it("sets amphtml only when requested", () => {
-    applyPageSeo({ title: "Home", path: "/", amphtml: true });
-    const link = document.querySelector('link[rel="amphtml"]');
-    expect(link).toBeTruthy();
-    expect(link?.getAttribute("href")).toContain("/amp");
+  it("removes leftover amphtml links", () => {
+    const leftover = document.createElement("link");
+    leftover.setAttribute("rel", "amphtml");
+    leftover.setAttribute("href", "/amp");
+    document.head.appendChild(leftover);
 
-    applyPageSeo({ title: "News", path: "/news", amphtml: false });
+    applyPageSeo({ title: "Home", path: "/" });
     expect(document.querySelector('link[rel="amphtml"]')).toBeNull();
+  });
+
+  it("sets a canonical link matching og:url", () => {
+    applyPageSeo({ title: "Tools", path: "/tools" });
+    const canonical = document.querySelector('link[rel="canonical"]');
+    const ogUrl = document.querySelector('meta[property="og:url"]')?.getAttribute("content");
+    expect(canonical?.getAttribute("href")).toBe(ogUrl);
+    expect(canonical?.getAttribute("href")).toContain("/tools");
+  });
+
+  it("injects and clears JSON-LD when requested", () => {
+    applyPageSeo({
+      title: "Home",
+      path: "/",
+      jsonLd: { "@context": "https://schema.org", "@type": "Person", name: "Gleb.Y" },
+    });
+    const script = document.getElementById("glorng-json-ld");
+    expect(script?.getAttribute("type")).toBe("application/ld+json");
+    expect(script?.textContent).toContain('"name":"Gleb.Y"');
+
+    applyPageSeo({ title: "News", path: "/news", jsonLd: null });
+    expect(document.getElementById("glorng-json-ld")).toBeNull();
   });
 });

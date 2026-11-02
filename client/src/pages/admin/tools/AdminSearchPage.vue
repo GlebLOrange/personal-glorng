@@ -4,7 +4,7 @@ import { RouterLink } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import SearchInput from "@/components/ui/SearchInput.vue";
@@ -117,35 +117,40 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="search">
-    <p class="mb-4 text-sm text-surface-mid">
-      Indexed kinds: resume, news, recipes, tasks, expenses, feedback, and short URLs.
-    </p>
-    <div class="mb-6 flex min-w-0 flex-wrap items-center gap-2">
-      <AdminFilterDropdown
-        ref="filterDropdown"
-        :has-active-filters="hasActiveFilters"
-        :active-label="activeFilterLabel"
-        :option-labels="sourceTypeOptions.map((option) => option.label)"
-        @clear="clearFilters"
-      >
-        <template #chips>
-          <AdminFilterChip
-            v-for="option in sourceTypeOptions"
-            :key="option.value"
-            :label="option.label"
-            :active="sourceType === option.value"
-            @click="setSourceTypeFilter(option.value)"
-          />
-        </template>
-      </AdminFilterDropdown>
-      <SearchInput
-        :model-value="query"
-        placeholder="search (admin content)"
-        aria-label="search admin content"
-        class="min-w-0 flex-1"
-        @update:model-value="onQueryChange"
-      />
+  <PageShell
+    title="search"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'search' }]"
+    back-to="/tools"
+    body-width="column"
+  >
+    <div class="page-tool-actions">
+      <div class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
+        <AdminFilterDropdown
+          ref="filterDropdown"
+          :has-active-filters="hasActiveFilters"
+          :active-label="activeFilterLabel"
+          :option-labels="sourceTypeOptions.map((option) => option.label)"
+          @clear="clearFilters"
+        >
+          <template #chips>
+            <AdminFilterChip
+              v-for="option in sourceTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :active="sourceType === option.value"
+              @click="setSourceTypeFilter(option.value)"
+            />
+          </template>
+        </AdminFilterDropdown>
+        <SearchInput
+          :model-value="query"
+          placeholder="search (admin content)"
+          aria-label="search admin content"
+          class="min-w-0"
+          auto-width
+          @update:model-value="onQueryChange"
+        />
+      </div>
     </div>
 
     <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="searching">
@@ -160,14 +165,10 @@ onUnmounted(() => {
       <p class="text-xs text-surface-muted">{{ resultSummary }} for “{{ query.trim() }}”</p>
       <Card v-for="hit in displayHits" :key="`${hit.source_type}:${hit.id}`" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">
-          <span class="text-xs px-2 py-0.5 rounded bg-accent-blue/20 text-accent-blue">
+          <span class="text-xs px-2 py-0.5 rounded bg-accent-coral/20 text-accent-coral">
             {{ sourceLabel(hit.source_type) }}
           </span>
-          <RouterLink
-            v-if="hit.path"
-            :to="hit.path"
-            class="font-medium text-accent-blue hover:underline"
-          >
+          <RouterLink v-if="hit.path" :to="hit.path" class="text-link font-medium">
             {{ hit.title }}
           </RouterLink>
           <span v-else class="font-medium text-surface-light">{{ hit.title }}</span>
@@ -175,5 +176,5 @@ onUnmounted(() => {
         <p class="text-xs text-surface-mid">{{ hit.snippet }}</p>
       </Card>
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

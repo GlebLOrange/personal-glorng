@@ -1,6 +1,0 @@
----
-description: Guardrails for commits, destructive actions, and sensitive files
-alwaysApply: true
----
-
-When this rule applies, follow the `agent-safety` skill: read `.cursor/skills/agent-safety/SKILL.md` and apply it.

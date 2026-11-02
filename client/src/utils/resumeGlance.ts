@@ -51,44 +51,38 @@ export function primaryStack(skills: SkillGroup[]): string {
   return picks.length > 0 ? picks.join(" · ") : "Full-stack";
 }
 
+/** Hiring-relevant glance only — years and shipped systems, not vanity cards. */
 export function buildGlanceStats(resume: ResumeData): GlanceStat[] {
   const years = computeYearsExperience(resume.experience);
-  const skillCount = countSkills(resume.skills);
-  const starts = resume.experience
-    .map((entry) => parsePeriodStart(entry.period))
-    .filter((year): year is number => year !== null);
-  const earliest = starts.length > 0 ? Math.min(...starts) : null;
+  const shipped = resume.projects.filter((project) => Boolean(project.result)).length;
+  const stats: GlanceStat[] = [];
 
-  return [
-    {
+  if (years > 0) {
+    stats.push({
       label: "Experience",
-      // ponytail: avoid bare "N+ yrs" seniority claim from calendar span
-      value: earliest !== null ? `since ${earliest}` : years > 0 ? `${years}+ yrs` : "—",
-      detail:
-        earliest !== null
-          ? "platform sample since 2022"
-          : years > 0
-            ? "building and shipping products"
-            : "no entries yet",
+      value: `${years}+`,
+      detail: "years across production backend roles",
       href: "#experience",
-    },
-    {
-      label: "Core stack",
-      value: primaryStack(resume.skills),
-      detail: `${skillCount} tools across ${resume.skills.length} areas`,
-      href: "#skills",
-    },
-    {
-      label: "Projects",
-      value: String(resume.projects.length),
-      detail: "one platform with live facets",
-      href: "#projects",
-    },
-    {
+    });
+  }
+
+  if (shipped > 0) {
+    stats.push({
+      label: "Case studies",
+      value: String(shipped),
+      detail: "production systems with written outcomes",
+      href: "#case-studies",
+    });
+  }
+
+  if (resume.availability) {
+    stats.push({
       label: "Availability",
-      value: resume.availability ? "open" : "—",
-      detail: resume.availability ?? resume.location ?? "add availability in resume data",
+      value: "open",
+      detail: resume.availability,
       href: "#contacts",
-    },
-  ];
+    });
+  }
+
+  return stats;
 }

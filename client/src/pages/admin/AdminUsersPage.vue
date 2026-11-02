@@ -197,7 +197,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="users" max-width="5xl">
+  <AdminPageLayout hub="tools" title="users" back-to="/tools">
     <div v-if="loading" class="space-y-4" aria-busy="true" aria-label="loading users">
       <Card v-for="index in 3" :key="index">
         <div class="animate-pulse space-y-4">
@@ -220,16 +220,8 @@ onUnmounted(() => {
         v-model:status-filter="statusFilter"
       />
 
-      <EmptyState v-if="users.length === 0"> No users match the current filters. </EmptyState>
-
-      <AdminUsersGrid
-        v-else
-        :users="users"
-        :draft-permissions="draftPermissions"
-        @select="openUserDrawer"
-      />
-
       <AdminListFooter
+        class="!mt-0 mb-4"
         :total="total"
         :page="page"
         :total-pages="totalPages"
@@ -244,6 +236,15 @@ onUnmounted(() => {
         @next="goToPage(page + 1)"
         @last="goToPage(totalPages)"
       />
+      <EmptyState v-if="users.length === 0"> No users match the current filters. </EmptyState>
+
+      <AdminUsersGrid
+        v-else
+        :users="users"
+        :draft-permissions="draftPermissions"
+        @select="openUserDrawer"
+      />
+
     </template>
 
     <AdminUsersPermissionsDrawer

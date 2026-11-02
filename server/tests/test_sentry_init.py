@@ -43,6 +43,7 @@ def test_sentry_enabled_matrix(
         "APP_ENV": app_env,
         "SERVER_SENTRY_DSN": _DSN,
         "SENTRY_ENABLED": sentry_enabled_flag,
+        "UNTRUSTED_URL_TOOLS_ENABLED": "false",
     }
     base = ENV_SCENARIOS_DIR / base_name if base_name else None
     env_kwargs = {"base": base, **overrides} if base is not None else overrides

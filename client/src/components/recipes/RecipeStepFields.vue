@@ -105,18 +105,14 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
           >
             +
           </IconActionButton>
-          <span
-            v-else
-            class="box-border h-10 w-10 min-w-10 shrink-0"
-            aria-hidden="true"
-          />
+          <span v-else class="box-border h-10 w-10 min-w-10 shrink-0" aria-hidden="true" />
           <BaseTextarea
             compact
             :model-value="steps[idx]"
             class="min-w-0 w-full flex-1"
             :rows="2"
-            placeholder="Preheat oven to 200°C"
-            :aria-label="`step ${idx + 1}`"
+            :label="`step ${idx + 1}`"
+            tip="Preheat oven to 200°C"
             data-recipe-step
             @update:model-value="updateStep(idx, String($event ?? ''))"
             @keydown="onStepModEnter($event, idx)"

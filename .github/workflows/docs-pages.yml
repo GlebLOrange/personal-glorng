@@ -39,6 +39,8 @@ jobs:
         with:
           enable-cache: true
 
+      - uses: dtolnay/rust-toolchain@stable
+
       - name: Generate OpenAPI and architecture inventory
         working-directory: server
         env:

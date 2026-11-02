@@ -54,7 +54,7 @@ onUnmounted(() => {
 
 <template>
   <p
-    class="fixed top-[max(0.5rem,env(safe-area-inset-top))] right-2 z-40 print:hidden"
+    class="print:hidden"
     aria-live="polite"
     :aria-label="`Development API status: ${appearance[status].label}`"
   >

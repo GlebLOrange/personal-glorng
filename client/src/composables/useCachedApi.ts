@@ -1,7 +1,5 @@
 import { ref, toValue, type MaybeRefOrGetter, type Ref } from "vue";
 
-import { api } from "@/composables/useApi";
-
 const cache = new Map<string, { data: unknown; ts: number }>();
 const inflight = new Map<string, Promise<unknown>>();
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
@@ -30,8 +28,9 @@ async function fetchAndCache<T>(url: string, ttlMs: number): Promise<T> {
     return existing as Promise<T>;
   }
 
-  const request = api
-    .get<T>(url)
+  // ponytail: defer axios until a fetch runs so clearCachedApi stays shell-safe
+  const request = import("@/composables/useApi")
+    .then(({ api }) => api.get<T>(url))
     .then((res) => {
       cache.set(url, { data: res.data, ts: Date.now() });
       pruneCache(ttlMs);
@@ -95,11 +94,6 @@ export function useCachedApi<T>(
   }
 
   return { data, loading, fetch: load };
-}
-
-/** Drop a cached entry so the next fetch hits the network. */
-export function invalidateCachedApi(url: string): void {
-  cache.delete(url);
 }
 
 /** Clear all cached API responses (e.g. on logout or session expiry). */

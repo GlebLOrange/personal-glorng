@@ -1,17 +1,25 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import * as CookieConsent from "vanilla-cookieconsent";
+import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import FilterIcon from "@/components/icons/FilterIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
-import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
-import SettingsQrLibrarySection from "@/components/settings/SettingsQrLibrarySection.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
+import { Card, CardBody } from "@/components/ui/card";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { useApiAction } from "@/composables/useApiAction";
 import { usePermissions } from "@/composables/usePermissions";
 import { PLATFORM_SERVICES } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
 import { passwordStrength } from "@/utils/passwordPolicy";
+
+// ponytail: badge pulls axios — keep it out of the production entry graph
+const DevApiStatusBadge = import.meta.env.DEV
+  ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
+  : null;
 
 const auth = useAuthStore();
 const { permissions, canAccess } = usePermissions();
@@ -34,23 +42,21 @@ const newPasswordConfirm = ref("");
 const { run: runProfile, loading: savingProfile } = useApiAction();
 const { run: runEmail, loading: savingEmail } = useApiAction();
 const { run: runPassword, loading: savingPassword } = useApiAction();
-const { run: runPrefs, loading: savingPrefs } = useApiAction();
 
 const passwordCheck = computed(() => passwordStrength(newPassword.value));
 const profileDisplayName = computed(() => displayName.value.trim() || null);
-const isProfileUnchanged = computed(
+const isNameUnchanged = computed(
   () => profileDisplayName.value === (auth.user?.display_name ?? null),
 );
-const canSaveProfile = computed(() => !isProfileUnchanged.value && !savingProfile.value);
 const isTimezoneUnchanged = computed(
   () => timezone.value.trim() === (auth.user?.timezone ?? "UTC"),
 );
 const isCurrencyUnchanged = computed(() => displayCurrency.value === savedCurrency.value);
-const canSavePrefs = computed(
+const canSaveProfile = computed(
   () =>
     !!timezone.value.trim() &&
-    (!isTimezoneUnchanged.value || !isCurrencyUnchanged.value) &&
-    !savingPrefs.value,
+    (!isNameUnchanged.value || !isTimezoneUnchanged.value || !isCurrencyUnchanged.value) &&
+    !savingProfile.value,
 );
 const isEmailUnchanged = computed(
   () => newEmail.value.trim().toLowerCase() === (auth.user?.email ?? "").toLowerCase(),
@@ -77,6 +83,10 @@ function syncFormFromUser(): void {
   newEmail.value = auth.user?.email ?? "";
 }
 
+function openCookiePreferences(): void {
+  CookieConsent.showPreferences();
+}
+
 onMounted(async () => {
   syncFormFromUser();
   await loadPreferences();
@@ -85,18 +95,13 @@ onMounted(async () => {
 
 async function saveProfile(): Promise<void> {
   if (!canSaveProfile.value) return;
-  await runProfile(() => auth.updateProfile({ display_name: profileDisplayName.value }), {
-    successMessage: "Profile updated",
-    errorMessage: "Profile update failed",
-  });
-}
-
-async function savePreferences(): Promise<void> {
-  if (!canSavePrefs.value) return;
-  await runPrefs(
+  await runProfile(
     async () => {
-      if (!isTimezoneUnchanged.value) {
-        await auth.updateProfile({ timezone: timezone.value.trim() });
+      if (!isNameUnchanged.value || !isTimezoneUnchanged.value) {
+        await auth.updateProfile({
+          ...(!isNameUnchanged.value ? { display_name: profileDisplayName.value } : {}),
+          ...(!isTimezoneUnchanged.value ? { timezone: timezone.value.trim() } : {}),
+        });
       }
       if (!isCurrencyUnchanged.value) {
         await saveDisplayCurrency(displayCurrency.value);
@@ -105,8 +110,8 @@ async function savePreferences(): Promise<void> {
       return true;
     },
     {
-      successMessage: "Preferences saved",
-      errorMessage: "Preferences update failed",
+      successMessage: "Profile updated",
+      errorMessage: "Profile update failed",
     },
   );
 }
@@ -151,17 +156,36 @@ async function savePassword(): Promise<void> {
     title="settings"
     :breadcrumbs="[{ label: 'settings', to: '/settings' }]"
     back-to="/"
-    max-width="5xl"
-    :narrow="false"
+    body-width="column"
   >
-    <div class="grid min-w-0 grid-cols-1 items-start gap-3 md:grid-cols-2">
-      <div class="flex min-w-0 flex-col gap-3">
+    <div class="page-tool-actions page-tool-actions-stack gap-8">
+      <div
+        v-if="DevApiStatusBadge"
+        class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-4"
+      >
+        <p class="text-xs text-surface-mid">development API</p>
+        <component :is="DevApiStatusBadge" />
+      </div>
+
+      <section id="profile" class="scroll-mt-40 md:scroll-mt-44" aria-label="profile">
+        <SettingsPreferencesSection
+          v-model:display-name="displayName"
+          v-model:timezone="timezone"
+          v-model:display-currency="displayCurrency"
+          :saving="savingProfile"
+          :can-save="canSaveProfile"
+          @save="saveProfile"
+        />
+      </section>
+
+      <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-label="account">
         <SettingsAccountSection
           v-model:new-email="newEmail"
           v-model:email-password="emailPassword"
           v-model:current-password="currentPassword"
           v-model:new-password="newPassword"
           v-model:new-password-confirm="newPasswordConfirm"
+          :permissions="permissions"
           :saving-email="savingEmail"
           :can-save-email="canSaveEmail"
           :saving-password="savingPassword"
@@ -169,47 +193,48 @@ async function savePassword(): Promise<void> {
           @save-email="saveEmail"
           @save-password="savePassword"
         />
+      </section>
 
-        <SettingsProfileSection
-          v-model:display-name="displayName"
-          :saving="savingProfile"
-          :can-save="canSaveProfile"
-          @save="saveProfile"
-        />
-      </div>
+      <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-label="privacy">
+        <Card variant="compact">
+          <CardBody>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <RouterLink to="/privacy" class="nav-link text-sm">privacy policy</RouterLink>
+              <BaseButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                :icon="false"
+                class="gap-1.5"
+                @click="openCookiePreferences"
+              >
+                <FilterIcon class-name="size-3.5 shrink-0" />
+                cookie preferences
+              </BaseButton>
+            </div>
+          </CardBody>
+        </Card>
+      </section>
 
-      <div class="flex min-w-0 flex-col gap-3">
-        <SettingsPreferencesSection
-          v-model:timezone="timezone"
-          v-model:display-currency="displayCurrency"
-          :permissions="permissions"
-          :saving="savingPrefs"
-          :can-save="canSavePrefs"
-          @save="savePreferences"
-        />
-
-        <SettingsQrLibrarySection />
-      </div>
+      <details
+        v-if="accessibleTools.length"
+        class="group rounded-lg border border-surface-border bg-surface-card p-4"
+      >
+        <summary
+          id="settings-tools-heading"
+          class="flex cursor-pointer list-none items-center justify-between gap-2 rounded text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 [&::-webkit-details-marker]:hidden"
+        >
+          <span class="underline-offset-2 group-open:underline">tools you can open</span>
+          <ChevronIcon class-name="size-3.5 text-surface-mid group-open:rotate-180" />
+        </summary>
+        <ul class="mt-3 flex flex-wrap gap-x-3 gap-y-2">
+          <li v-for="tool in accessibleTools" :key="tool.slug">
+            <RouterLink :to="tool.adminRoute" class="nav-link text-sm">
+              {{ tool.name }}
+            </RouterLink>
+          </li>
+        </ul>
+      </details>
     </div>
-
-    <section
-      v-if="accessibleTools.length"
-      class="mt-6 rounded-lg border border-surface-border bg-surface-card p-4"
-      aria-labelledby="settings-tools-heading"
-    >
-      <h2 id="settings-tools-heading" class="mb-2 text-sm font-medium text-surface-light">
-        tools you can open
-      </h2>
-      <p class="mb-3 text-sm text-surface-mid">
-        A tool you cannot access redirects to admin. Your account can open:
-      </p>
-      <ul class="flex flex-wrap gap-x-3 gap-y-2">
-        <li v-for="tool in accessibleTools" :key="tool.slug">
-          <RouterLink :to="tool.adminRoute" class="nav-link text-sm">
-            {{ tool.name }}
-          </RouterLink>
-        </li>
-      </ul>
-    </section>
   </PageShell>
 </template>

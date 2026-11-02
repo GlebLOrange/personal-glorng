@@ -20,7 +20,6 @@ from app.core.redis import blacklist_token
 from app.core.security import decode_token
 from app.db.deps import DbRegistry
 from app.schemas.auth import (
-    FirebaseLoginRequest,
     ForgotPasswordRequest,
     LoginRequest,
     LogoutRequest,
@@ -39,12 +38,8 @@ from app.services.auth import (
     reset_user_password,
     verify_user_email,
 )
-from app.services.firebase_auth import (
-    login_with_firebase_google,
-    verify_firebase_google_token,
-)
 from app.services.user import get_user_by_public_id
-from app.settings import Settings
+from app.settings import Settings, is_deployed_env
 from app.workers.job_names import JobName
 
 router = APIRouter()
@@ -63,7 +58,8 @@ class _CookieFlags(TypedDict):
 
 
 def _cookie_flags(settings: Settings) -> _CookieFlags:
-    secure = settings.APP_ENV == "production"
+    base = settings.BASE_URL.strip().lower()
+    secure = is_deployed_env(settings.APP_ENV) or base.startswith("https://")
     return {
         "httponly": True,
         "secure": secure,
@@ -144,35 +140,6 @@ async def login(
         response,
         access_token=access_token,
         refresh_token=refresh_token,
-        settings=settings,
-    )
-    return MessageResponse(message="Login successful")
-
-
-@router.post(
-    "/firebase",
-    response_model=MessageResponse,
-    summary="Log in with Firebase Google auth",
-    description=(
-        "Verify a Firebase Google ID token for an existing app account and "
-        "set HttpOnly auth cookies (tokens are not returned in the JSON body). "
-        "Does not create accounts."
-    ),
-    dependencies=[Depends(rate_limit_auth)],
-)
-async def firebase_login(
-    data: FirebaseLoginRequest,
-    registry: DbRegistry,
-    audit_svc: AuditServiceDep,
-    response: Response,
-    settings: AppSettings,
-) -> MessageResponse:
-    identity = verify_firebase_google_token(data.id_token, settings)
-    result = await login_with_firebase_google(registry, audit_svc, identity)
-    _set_auth_cookies(
-        response,
-        access_token=result.access_token,
-        refresh_token=result.refresh_token,
         settings=settings,
     )
     return MessageResponse(message="Login successful")

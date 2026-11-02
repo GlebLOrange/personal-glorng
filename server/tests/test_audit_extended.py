@@ -99,6 +99,9 @@ async def test_audit_list_uses_mongo_when_postgres_mirror_fails(
         def enable_postgres(self) -> bool:
             return True
 
+        def postgres_mirror_enabled(self) -> bool:
+            return True
+
     monkeypatch.setattr(AuditService, "_record_postgres", fail_record_postgres)
     monkeypatch.setattr(
         "app.services.audit.get_settings",

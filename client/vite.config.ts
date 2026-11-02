@@ -5,6 +5,8 @@ import { fileURLToPath, URL } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, loadEnv } from "vite";
 
+import { buildShellHeroHtml } from "./src/utils/shellHero.ts";
+
 function applyRepoRootViteEnv(mode: string): Record<string, string> {
   const repoRoot = fileURLToPath(new URL("..", import.meta.url));
   const clientDir = fileURLToPath(new URL(".", import.meta.url));
@@ -13,6 +15,37 @@ function applyRepoRootViteEnv(mode: string): Record<string, string> {
     if (!process.env[key]) process.env[key] = value;
   }
   return { ...rootEnv, ...loadEnv(mode, clientDir, "") };
+}
+
+function resolvePublicOrigin(mode: string, env: Record<string, string>): string {
+  const fromEnv =
+    env.VITE_PUBLIC_ORIGIN?.trim() ||
+    process.env.VITE_PUBLIC_ORIGIN?.trim() ||
+    loadEnv(mode, fileURLToPath(new URL("..", import.meta.url)), "").BASE_URL?.trim() ||
+    "";
+  const origin = fromEnv.replace(/\/$/, "");
+  if (mode !== "production") {
+    return origin || "http://localhost:3000";
+  }
+  if (!origin) {
+    throw new Error(
+      "Production build requires VITE_PUBLIC_ORIGIN (or BASE_URL) to the public HTTPS site origin — " +
+        "Open Graph URLs in index.html must not default to localhost.",
+    );
+  }
+  const lower = origin.toLowerCase();
+  if (lower.includes("localhost") || lower.includes("127.0.0.1")) {
+    throw new Error(
+      `Production build refuses localhost VITE_PUBLIC_ORIGIN/BASE_URL (${origin}). ` +
+        "Set the real public HTTPS origin before vite build.",
+    );
+  }
+  if (!lower.startsWith("https://")) {
+    throw new Error(
+      `Production build requires an HTTPS VITE_PUBLIC_ORIGIN/BASE_URL (got ${origin}).`,
+    );
+  }
+  return origin;
 }
 
 export default defineConfig(({ mode }) => {
@@ -31,21 +64,9 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes("node_modules/chart.js") || id.includes("node_modules/vue-chartjs")) {
-              return "charts";
-            }
-            if (id.includes("node_modules/firebase")) {
-              return "firebase";
-            }
-            if (id.includes("node_modules/axios")) {
-              return "axios";
-            }
-            if (id.includes("node_modules/dompurify")) {
-              return "dompurify";
-            }
-            if (id.includes("node_modules/vanilla-cookieconsent")) {
-              return "cookieconsent";
-            }
+            // Do not force chart.js into a named chunk: with Vite 8/Rolldown that
+            // shared chunk pulls Vue into it and index.html modulepreloads ~265KB on `/`.
+            // Chart components already use defineAsyncComponent.
             if (
               id.includes("node_modules/vue/") ||
               id.includes("node_modules/@vue/") ||
@@ -53,6 +74,15 @@ export default defineConfig(({ mode }) => {
               id.includes("node_modules/pinia")
             ) {
               return "vue-vendor";
+            }
+            if (id.includes("node_modules/firebase")) {
+              return "firebase";
+            }
+            if (id.includes("node_modules/dompurify")) {
+              return "dompurify";
+            }
+            if (id.includes("node_modules/vanilla-cookieconsent")) {
+              return "cookieconsent";
             }
           },
         },
@@ -64,8 +94,11 @@ export default defineConfig(({ mode }) => {
       {
         name: "html-public-origin",
         transformIndexHtml(html) {
-          const origin = (env.VITE_PUBLIC_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
-          return html.replaceAll("__PUBLIC_ORIGIN__", origin);
+          const origin = resolvePublicOrigin(mode, env);
+          const hero = buildShellHeroHtml();
+          return html
+            .replaceAll("__PUBLIC_ORIGIN__", origin)
+            .replace('<div id="app"></div>', `<div id="app">${hero}</div>`);
         },
       },
       sentryVitePlugin({

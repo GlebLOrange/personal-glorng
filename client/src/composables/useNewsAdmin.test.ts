@@ -113,7 +113,7 @@ describe("useNewsAdmin", () => {
     useAuthStore().user = makeUser(["news:write", "news-sources:read"]);
   });
 
-  it("defaults to published and restores that on clear", async () => {
+  it("defaults to all and restores that on clear", async () => {
     const {
       setStatusFilter,
       clearFilters,
@@ -123,24 +123,22 @@ describe("useNewsAdmin", () => {
       reloadAdminNews,
     } = useNewsAdmin();
     await reloadAdminNews();
-    expect(statusFilter.value).toBe("published");
+    expect(statusFilter.value).toBe("");
     expect(hasActiveFilters.value).toBe(false);
-    expect(loadNews).toHaveBeenCalledWith({ admin: true, status: "published" });
+    expect(loadNews).toHaveBeenCalledWith({ admin: true, status: undefined });
 
     adminPage.value = 2;
     setStatusFilter("draft");
     expect(statusFilter.value).toBe("draft");
     expect(hasActiveFilters.value).toBe(true);
     expect(adminPage.value).toBe(1);
-    await vi.waitFor(() =>
-      expect(loadNews).toHaveBeenCalledWith({ admin: true, status: "draft" }),
-    );
+    await vi.waitFor(() => expect(loadNews).toHaveBeenCalledWith({ admin: true, status: "draft" }));
 
     clearFilters();
-    expect(statusFilter.value).toBe("published");
+    expect(statusFilter.value).toBe("");
     expect(hasActiveFilters.value).toBe(false);
     await vi.waitFor(() =>
-      expect(loadNews).toHaveBeenCalledWith({ admin: true, status: "published" }),
+      expect(loadNews).toHaveBeenCalledWith({ admin: true, status: undefined }),
     );
   });
 

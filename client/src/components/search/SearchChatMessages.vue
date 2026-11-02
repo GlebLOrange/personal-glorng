@@ -28,13 +28,13 @@ const props = withDefaults(
     showRoleLabels: false,
     emptyMessage: "Search with natural language.",
     sourcesLabel: "Sources",
-    userClass: "bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-6",
+    userClass: "bg-accent-coral/10 border border-accent-coral/20 text-surface-light ml-6",
     assistantClass: "bg-surface-card border border-surface-border text-surface-sage mr-6",
-    roleUserClass: "text-accent-blue",
+    roleUserClass: "text-accent-coral",
     roleAssistantClass: "text-status-success",
     sourceLinkClass:
-      "block rounded-md border border-surface-border/80 bg-surface-dark/80 px-2 py-1.5 hover:border-accent-blue/40 transition-colors",
-    sourceTitleClass: "text-xs text-accent-blue font-medium",
+      "block rounded-md border border-surface-border/80 bg-surface-dark/80 px-2 py-1.5 hover:border-accent-coral/40 transition-colors",
+    sourceTitleClass: "text-xs text-accent-coral font-medium",
   },
 );
 
@@ -79,7 +79,7 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
     >
       <span
         v-if="showRoleLabels"
-        class="text-[10px] uppercase tracking-wider block mb-1"
+        class="text-xs uppercase tracking-wider block mb-1"
         :class="msg.role === 'user' ? roleUserClass : roleAssistantClass"
       >
         {{ msg.role }}
@@ -87,14 +87,14 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
       {{ msg.content
       }}<span
         v-if="loading && msg.role === 'assistant' && index === messages.length - 1"
-        class="inline-block w-2 h-4 ml-0.5 bg-accent-blue/60 animate-pulse align-middle"
+        class="inline-block w-2 h-4 ml-0.5 bg-accent-coral/60 animate-pulse align-middle"
       />
 
       <div
         v-if="msg.role === 'assistant' && msg.sources?.length"
         class="mt-3 pt-2 border-t border-surface-border/60 space-y-2"
       >
-        <p class="text-[10px] uppercase tracking-wider text-surface-mid">
+        <p class="text-xs uppercase tracking-wider text-surface-mid">
           {{ sourcesLabel }}
         </p>
         <template v-for="(source, sourceIndex) in msg.sources" :key="source.id">
@@ -108,20 +108,20 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
             :class="sourceLinkClass"
           >
             <span :class="sourceTitleClass">{{ source.title }}</span>
-            <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-            <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+            <span class="text-xs text-surface-mid block">{{ source.source_type }}</span>
+            <span class="text-xs text-surface-mid line-clamp-2">{{ source.snippet }}</span>
           </a>
           <div v-else :class="sourceLinkClass">
             <span :class="sourceTitleClass">{{ source.title }}</span>
-            <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-            <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+            <span class="text-xs text-surface-mid block">{{ source.source_type }}</span>
+            <span class="text-xs text-surface-mid line-clamp-2">{{ source.snippet }}</span>
           </div>
         </template>
       </div>
 
       <p
         v-else-if="!loading && showEmptySourcesWarning(msg)"
-        class="mt-2 text-[11px] text-status-warning/90"
+        class="mt-2 text-xs text-status-warning/90"
       >
         No matching documents — answer may be limited.
       </p>

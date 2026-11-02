@@ -25,6 +25,7 @@ class AppLogService:
         date_to: date | None = None,
         offset: int = 0,
         limit: int = 50,
+        sort: str = "when_desc",
     ) -> tuple[list[AppLog], int]:
         if message and message.strip():
             es_result = await elasticsearch_app_logs.search_app_logs(
@@ -35,6 +36,7 @@ class AppLogService:
                 date_to=date_to,
                 offset=offset,
                 limit=limit,
+                sort=sort,
             )
             if es_result is not None:
                 return es_result
@@ -47,4 +49,5 @@ class AppLogService:
             date_to=date_to,
             offset=offset,
             limit=limit,
+            sort=sort,
         )

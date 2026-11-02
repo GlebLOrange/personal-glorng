@@ -11,10 +11,12 @@ from aiogram.types import CallbackQuery, Chat, Message, User
 
 from app.db.documents.task import SyncStatus, TaskStatus
 from app.db.registry import DatabaseRegistry
-from app.todobot.handlers.reminder import handle_postpone_datetime, handle_reminder_action
+from app.todobot.handlers.reminder import (
+    handle_postpone_datetime,
+    handle_reminder_action,
+)
 from app.todobot.handlers.task_create import confirm_task
 from app.todobot.handlers.task_manage import cmd_tasks, handle_status_update
-from app.todobot.keyboards.task import completion_options
 from tests.factories import create_task
 
 
@@ -50,7 +52,9 @@ def _callback(
     return callback
 
 
-def _message(*, user_id: int = 123456, chat_id: int = 123456, text: str = "") -> Message:
+def _message(
+    *, user_id: int = 123456, chat_id: int = 123456, text: str = ""
+) -> Message:
     message = MagicMock(spec=Message)
     message.from_user = _user(user_id=user_id)
     message.chat = _chat(chat_id=chat_id)
@@ -168,19 +172,20 @@ async def test_reminder_postpone_reschedules_task(
 
 
 @pytest.mark.asyncio
-async def test_cmd_tasks_sends_completion_options(
+async def test_cmd_tasks_sends_closest_list(
     registry: DatabaseRegistry,
 ) -> None:
-    """/tasks lists each pending task with status buttons."""
+    """/tasks sends one screen with up to 7 closest pending tasks."""
     task = await create_task(registry, telegram_user_id=123456, title="Button me")
     message = _message()
+    state = _fsm_context()
 
-    await cmd_tasks(message, registry)
+    await cmd_tasks(message, registry, state)
 
-    assert message.answer.await_count >= 2
-    task_call = message.answer.await_args_list[-1]
-    assert "Button me" in task_call.args[0]
-    markup: Any = task_call.kwargs.get("reply_markup")
+    assert message.answer.await_count == 1
+    list_call = message.answer.await_args_list[0]
+    assert "closest tasks" in list_call.args[0].lower()
+    markup: Any = list_call.kwargs.get("reply_markup")
     assert markup is not None
-    expected = completion_options(task.id)
-    assert markup.inline_keyboard == expected.inline_keyboard
+    # Label uses format_scheduled_at; compare callback data only.
+    assert markup.inline_keyboard[0][0].callback_data == f"mt:o:{task.id}"

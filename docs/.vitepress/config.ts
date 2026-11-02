@@ -7,13 +7,39 @@ export default defineConfig({
   title: "Gleb.Y",
   description: "Developer portfolio and personal platform documentation",
   base,
-  ignoreDeadLinks: true,
+  // Local Gortex export dumps + ownership README — not handbook pages.
+  srcExclude: ["architecture/**"],
+
+  // Enforce handbook routes; allow localhost how-tos and repo-relative source links
+  // (../../server/…, ../../AGENTS.md) which are outside the VitePress root.
+  ignoreDeadLinks: [
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/,
+    (url: string) => /(^|\/)\.\.(\/|$)/.test(url),
+  ],
+  head: [
+    ["link", { rel: "icon", href: `${base}favicon.svg`, type: "image/svg+xml" }],
+    ["link", { rel: "icon", type: "image/x-icon", href: `${base}favicon.ico` }],
+    [
+      "link",
+      { rel: "icon", type: "image/png", sizes: "32x32", href: `${base}favicon-32x32.png` },
+    ],
+    [
+      "link",
+      { rel: "icon", type: "image/png", sizes: "16x16", href: `${base}favicon-16x16.png` },
+    ],
+    [
+      "link",
+      { rel: "apple-touch-icon", sizes: "180x180", href: `${base}apple-touch-icon.png` },
+    ],
+  ],
   themeConfig: {
+    logo: { src: `${base}brand/gy-mark-simple.svg`, alt: "Gleb.Y" },
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Operations", link: "/operations/deployment" },
       { text: "Reference", link: "/reference/platform" },
       { text: "ADRs", link: "/adr/" },
+      { text: "Specs", link: "/specs/handbook-structure" },
     ],
     sidebar: {
       "/guide/": [
@@ -22,8 +48,16 @@ export default defineConfig({
           items: [
             { text: "Getting started", link: "/guide/getting-started" },
             { text: "Architecture", link: "/guide/architecture" },
+            {
+              text: "Telegram + tasks + calendar",
+              link: "/guide/telegram-tasks-calendar",
+            },
             { text: "Development", link: "/guide/development" },
             { text: "Frontend", link: "/guide/frontend" },
+            {
+              text: "Frontend CSS audit",
+              link: "/guide/frontend-css-audit",
+            },
             { text: "Contributing", link: "/guide/contributing" },
           ],
         },
@@ -37,7 +71,12 @@ export default defineConfig({
             { text: "Logging", link: "/operations/logging" },
             { text: "Backup & restore", link: "/operations/backup-restore" },
             { text: "Cloudflare", link: "/operations/cloudflare" },
+            { text: "Cloud VM", link: "/operations/cloud-vm" },
             { text: "DevOps checklist", link: "/operations/devops-checklist" },
+            {
+              text: "Agent token baseline",
+              link: "/operations/agent-token-baseline",
+            },
           ],
         },
       ],
@@ -55,7 +94,6 @@ export default defineConfig({
               text: "Architecture inventory (generated)",
               link: "/generated/architecture-inventory",
             },
-            { text: "Postman", link: "/reference/postman" },
             { text: "Configuration", link: "/reference/configuration" },
             {
               text: "Integration automation",
@@ -87,10 +125,23 @@ export default defineConfig({
         {
           text: "Specs",
           items: [
+            {
+              text: "Handbook structure",
+              link: "/specs/handbook-structure",
+            },
             { text: "News", link: "/specs/news" },
+            {
+              text: "agy-ai-tool (proposed)",
+              link: "/specs/agy-ai-tool",
+            },
             {
               text: "Platform hardening",
               link: "/specs/platform-hardening",
+            },
+            { text: "P3 roadmap", link: "/specs/p3-roadmap" },
+            {
+              text: "Manager maintenance themes",
+              link: "/specs/manager-maintenance-themes",
             },
           ],
         },

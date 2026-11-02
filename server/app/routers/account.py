@@ -161,7 +161,7 @@ async def post_change_password(
 async def get_me_preferences(user: CurrentUser) -> UserPreferencesResponse:
     prefs = get_preferences(user)
     return UserPreferencesResponse(
-        display_currency=prefs.get("display_currency"),  # type: ignore[arg-type]
+        display_currency=prefs.get("display_currency"),
     )
 
 
@@ -178,7 +178,7 @@ async def patch_me_preferences(
     updates = data.model_dump(exclude_unset=True)
     prefs = await update_preferences(registry, user, updates)
     return UserPreferencesResponse(
-        display_currency=prefs.get("display_currency"),  # type: ignore[arg-type]
+        display_currency=prefs.get("display_currency"),
     )
 
 

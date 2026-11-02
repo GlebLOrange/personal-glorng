@@ -17,6 +17,8 @@ from app.db.seed.builders.expense import (
     EXPENSE_CURRENCIES,
     EXPENSE_PRODUCTS,
     EXPENSE_VENDORS,
+    SEED_CATEGORY_BUDGETS,
+    budgets_for_empty_categories,
     build_random_expenses,
 )
 from app.db.seed.builders.task import TASK_TITLES, build_tasks_for_today
@@ -28,8 +30,10 @@ __all__ = [
     "EXPENSE_CURRENCIES",
     "EXPENSE_PRODUCTS",
     "EXPENSE_VENDORS",
+    "SEED_CATEGORY_BUDGETS",
     "TASK_TITLES",
     "ShortUrlSeed",
+    "budgets_for_empty_categories",
     "build_random_expenses",
     "build_random_feedback",
     "build_random_recipes",

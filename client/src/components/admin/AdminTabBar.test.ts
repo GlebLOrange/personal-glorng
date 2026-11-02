@@ -4,8 +4,9 @@ import { describe, expect, it } from "vitest";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 
 const tabs = [
-  { id: "queue", label: "queue" },
-  { id: "intakes", label: "intakes" },
+  { id: "queue", label: "queue", icon: "queue" as const },
+  { id: "calendar", label: "calendar", icon: "calendar" as const },
+  { id: "intakes", label: "intakes", icon: "intakes" as const },
   { id: "sync", label: "sync", icon: "sync" as const },
 ];
 
@@ -24,12 +25,22 @@ describe("AdminTabBar", () => {
     const wrapper = mountTabBar();
 
     expect(wrapper.get('[role="tablist"]').attributes("aria-label")).toBe("admin sections");
-    expect(wrapper.findAll('[role="tab"]')).toHaveLength(3);
+    expect(wrapper.findAll('[role="tab"]')).toHaveLength(4);
     expect(wrapper.get('[role="tab"]').attributes("aria-selected")).toBe("true");
     expect(wrapper.get('[role="tab"]').attributes("tabindex")).toBe("0");
     expect(wrapper.get('[role="tab"]').attributes("aria-controls")).toBe("admin-tab-panel-queue");
     expect(wrapper.get('[role="tab"]').attributes("id")).toBe("admin-tab-tab-queue");
 
+    wrapper.unmount();
+  });
+
+  it("renders monoline svg icons for queue, calendar, intakes, and sync", () => {
+    const wrapper = mountTabBar();
+    const tabButtons = wrapper.findAll('[role="tab"]');
+    expect(tabButtons).toHaveLength(4);
+    for (const tab of tabButtons) {
+      expect(tab.find("svg").exists()).toBe(true);
+    }
     wrapper.unmount();
   });
 
@@ -46,14 +57,14 @@ describe("AdminTabBar", () => {
     });
 
     const syncTab = wrapper.get("#admin-tab-tab-sync");
-    expect(syncTab.classes()).toContain("text-accent-blue");
-    expect(syncTab.classes()).toContain("bg-accent-blue/15");
-    expect(syncTab.classes()).toContain("border-accent-blue/40");
+    expect(syncTab.classes()).toContain("text-accent-coral/88");
+    expect(syncTab.classes()).toContain("bg-accent-coral/12");
+    expect(syncTab.classes()).toContain("border-accent-coral/22");
     expect(syncTab.classes()).not.toContain("text-accent-violet");
 
     const refreshTab = wrapper.get("#admin-tab-tab-refresh");
-    expect(refreshTab.classes()).toContain("text-accent-blue");
-    expect(refreshTab.classes()).toContain("bg-accent-blue/3");
+    expect(refreshTab.classes()).toContain("text-accent-coral/88");
+    expect(refreshTab.classes()).toContain("bg-accent-coral/10");
     expect(refreshTab.classes()).not.toContain("text-accent-violet");
   });
 
@@ -66,9 +77,9 @@ describe("AdminTabBar", () => {
     });
 
     const syncTab = wrapper.get("#admin-tab-tab-sync");
-    expect(syncTab.classes()).toContain("text-status-critical");
-    expect(syncTab.classes()).toContain("bg-status-critical/15");
-    expect(syncTab.classes()).toContain("border-status-critical/40");
+    expect(syncTab.classes()).toContain("text-status-critical/88");
+    expect(syncTab.classes()).toContain("bg-status-critical/12");
+    expect(syncTab.classes()).toContain("border-status-critical/22");
   });
 
   it("supports arrow and boundary key navigation", async () => {
@@ -76,12 +87,12 @@ describe("AdminTabBar", () => {
     const firstTab = wrapper.findAll<HTMLButtonElement>('[role="tab"]')[0];
 
     await firstTab.trigger("keydown", { key: "ArrowRight" });
-    expect(wrapper.emitted("update:modelValue")?.at(-1)).toEqual(["intakes"]);
+    expect(wrapper.emitted("update:modelValue")?.at(-1)).toEqual(["calendar"]);
 
     await wrapper.findAll<HTMLButtonElement>('[role="tab"]')[1].trigger("keydown", { key: "End" });
     expect(wrapper.emitted("update:modelValue")?.at(-1)).toEqual(["sync"]);
 
-    await wrapper.findAll<HTMLButtonElement>('[role="tab"]')[2].trigger("keydown", { key: "Home" });
+    await wrapper.findAll<HTMLButtonElement>('[role="tab"]')[3].trigger("keydown", { key: "Home" });
     expect(wrapper.emitted("update:modelValue")?.at(-1)).toEqual(["queue"]);
 
     wrapper.unmount();

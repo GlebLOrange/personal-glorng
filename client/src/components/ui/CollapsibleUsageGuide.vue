@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, useSlots } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useSlots } from "vue";
 
 import QuestionIcon from "@/components/icons/QuestionIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -11,79 +11,95 @@ const props = defineProps<{
 }>();
 
 const slots = useSlots();
-const open = ref(false);
-const hintOpen = ref(false);
-let hintCloseTimer: ReturnType<typeof setTimeout> | null = null;
+/** Pinned via click; hover opens a transient preview. Both render as an overlay (no reflow). */
+const pinned = ref(false);
+const hovered = ref(false);
+const open = computed(() => pinned.value || hovered.value);
+let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
-function clearHintTimer(): void {
-  if (hintCloseTimer !== null) {
-    clearTimeout(hintCloseTimer);
-    hintCloseTimer = null;
+function clearCloseTimer(): void {
+  if (closeTimer !== null) {
+    clearTimeout(closeTimer);
+    closeTimer = null;
   }
 }
 
-function showHint(): void {
-  clearHintTimer();
-  if (!open.value) hintOpen.value = true;
+function showPreview(): void {
+  clearCloseTimer();
+  hovered.value = true;
 }
 
-function scheduleHideHint(): void {
-  clearHintTimer();
-  hintCloseTimer = setTimeout(() => {
-    hintOpen.value = false;
-    hintCloseTimer = null;
-  }, 120);
+function scheduleHidePreview(): void {
+  clearCloseTimer();
+  closeTimer = setTimeout(() => {
+    hovered.value = false;
+    closeTimer = null;
+  }, 150);
 }
 
 function toggle(): void {
-  clearHintTimer();
-  hintOpen.value = false;
-  open.value = !open.value;
+  clearCloseTimer();
+  pinned.value = !pinned.value;
+  if (!pinned.value) hovered.value = false;
 }
 
+function onKeydown(event: KeyboardEvent): void {
+  if (event.key === "Escape" && open.value) {
+    pinned.value = false;
+    hovered.value = false;
+  }
+}
+
+onMounted(() => document.addEventListener("keydown", onKeydown));
 onBeforeUnmount(() => {
-  clearHintTimer();
+  clearCloseTimer();
+  document.removeEventListener("keydown", onKeydown);
 });
 </script>
 
 <template>
-  <div>
-    <div class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-2">
-      <slot name="start" />
-      <div
-        class="flex min-w-0 flex-wrap items-center gap-2"
-        :class="slots.start ? 'ml-auto' : undefined"
-      >
+  <div class="relative w-full min-w-0 max-w-full">
+    <div class="mb-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
+      <div v-if="slots.start" class="min-w-0 flex-1 overflow-hidden">
+        <slot name="start" />
+      </div>
+      <div class="flex shrink-0 items-center gap-2" :class="slots.start ? 'ml-auto' : undefined">
         <slot name="actions" />
         <span
           class="relative inline-flex shrink-0"
-          @mouseenter="showHint"
-          @mouseleave="scheduleHideHint"
+          @mouseenter="showPreview"
+          @mouseleave="scheduleHidePreview"
         >
           <ToolbarPillButton
             action="create"
+            :icon="false"
             class="!w-10 !min-w-10 !px-0"
             :aria-label="props.title"
+            :title="props.title"
             :aria-expanded="open"
             @click="toggle"
-            @focus="showHint"
-            @blur="scheduleHideHint"
+            @focus="showPreview"
+            @blur="scheduleHidePreview"
           >
             <QuestionIcon class-name="size-3.5" />
           </ToolbarPillButton>
-          <span
-            role="tooltip"
-            class="absolute top-full z-20 mt-1 w-max max-w-[min(100vw-2rem,18rem)] rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
-            :class="[slots.start ? 'right-0' : 'left-0', hintOpen && !open ? undefined : 'sr-only']"
-          >
-            {{ props.title }}
-          </span>
         </span>
+        <slot name="trailing" />
       </div>
     </div>
 
-    <Card v-if="open">
-      <slot />
+    <!-- Overlay: absolutely positioned so opening never pushes content below. -->
+    <Card
+      v-if="open"
+      role="dialog"
+      :aria-label="props.title"
+      class="absolute left-0 right-0 top-full z-40 -mt-2 max-h-[70vh] w-full min-w-0 max-w-full overflow-auto break-words shadow-lg [overflow-wrap:anywhere]"
+      @mouseenter="showPreview"
+      @mouseleave="scheduleHidePreview"
+    >
+      <div class="min-w-0 max-w-full">
+        <slot />
+      </div>
     </Card>
   </div>
 </template>

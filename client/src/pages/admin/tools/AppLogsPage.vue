@@ -1,17 +1,25 @@
 <script setup lang="ts">
+import AdminSortableTh from "@/components/admin/AdminSortableTh.vue";
 import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
 
+import AdminDataRow from "@/components/admin/AdminDataRow.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
-import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import {
+  ADMIN_TD_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TH_CLASS,
+} from "@/constants/adminDataTable";
 import { logLevelClass } from "@/constants/filterColors";
 import { httpStatusClass } from "@/constants/httpStatusColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -19,7 +27,7 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useExpandableIds } from "@/composables/useExpandableIds";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
-import { yesterdayIsoDate } from "@/utils/dates";
+import { daysAgoIsoDate, isoDateLocal, yesterdayIsoDate } from "@/utils/dates";
 import { formatDate } from "@/utils/format";
 
 interface AppLogEntry {
@@ -35,7 +43,12 @@ interface AppLogEntry {
   request_id: string | null;
 }
 
-const DEFAULT_LEVEL = "error";
+type PeriodFilter = "yesterday" | "today" | "7d" | "all";
+
+const DEFAULT_LEVEL = "";
+const DEFAULT_PERIOD: PeriodFilter = "all";
+
+type WhenSort = "when_desc" | "when_asc";
 
 const items = ref<AppLogEntry[]>([]);
 const total = ref(0);
@@ -43,7 +56,10 @@ const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: t
 const level = ref(DEFAULT_LEVEL);
 const requestId = ref("");
 const page = ref(1);
-const dateFrom = ref(yesterdayIsoDate());
+const period = ref<PeriodFilter>(DEFAULT_PERIOD);
+const sort = ref<WhenSort>("when_desc");
+
+const whenAriaSort = computed(() => (sort.value === "when_asc" ? "ascending" : "descending"));
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -54,8 +70,29 @@ const LEVEL_FILTERS = [
   { label: "error", value: "error" },
 ] as const;
 
+const PERIOD_FILTERS: { label: string; value: PeriodFilter }[] = [
+  { label: "since yesterday", value: "yesterday" },
+  { label: "today", value: "today" },
+  { label: "last 7 days", value: "7d" },
+  { label: "all", value: "all" },
+];
+
 /** Don't hit the API for partial request-id typing. */
 const MIN_REQUEST_ID_LENGTH = 3;
+
+const PERIOD_CHIP_CLASS = "bg-surface-mid/15 text-surface-mid border-surface-border";
+
+function dateFromForPeriod(value: PeriodFilter): string | undefined {
+  if (value === "all") return undefined;
+  if (value === "today") return isoDateLocal();
+  if (value === "7d") return daysAgoIsoDate(7);
+  return yesterdayIsoDate();
+}
+
+const periodLabel = computed(
+  () => PERIOD_FILTERS.find((chip) => chip.value === period.value)?.label ?? "since yesterday",
+);
+const dateFrom = computed(() => dateFromForPeriod(period.value));
 
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
@@ -67,19 +104,24 @@ const appliedRequestId = computed(() => {
 const hasActiveFilters = computed(
   () =>
     level.value !== DEFAULT_LEVEL ||
-    dateFrom.value !== yesterdayIsoDate() ||
+    period.value !== DEFAULT_PERIOD ||
     Boolean(appliedRequestId.value),
 );
 const activeFilterLabel = computed(() => {
   const parts: string[] = [];
   if (level.value) parts.push(level.value);
+  parts.push(periodLabel.value);
   if (appliedRequestId.value) parts.push(appliedRequestId.value);
-  return parts.length ? parts.join(", ") : undefined;
+  return parts.join(" · ");
 });
+const emptyDescription = computed(
+  () =>
+    `no ${level.value ? `${level.value} ` : ""}logs${period.value === "all" ? "" : ` ${periodLabel.value}`}`,
+);
 
 useScrollListFingerprint(
   () =>
-    `${page.value}:${total.value}:${level.value}:${appliedRequestId.value}:${dateFrom.value}:${items.value[0]?.id ?? ""}`,
+    `${page.value}:${total.value}:${level.value}:${appliedRequestId.value}:${period.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
@@ -88,6 +130,7 @@ async function load(): Promise<void> {
       const params: Record<string, string | number> = {
         page: page.value,
         per_page: ADMIN_LIST_PAGE_SIZE,
+        sort: sort.value,
       };
       if (level.value) params.level = level.value;
       if (appliedRequestId.value) params.request_id = appliedRequestId.value;
@@ -113,6 +156,13 @@ function setLevelFilter(next: string): void {
   void load();
 }
 
+function setPeriodFilter(next: PeriodFilter): void {
+  period.value = next;
+  page.value = 1;
+  filterDropdownRef.value?.close();
+  void load();
+}
+
 let requestIdTimer: ReturnType<typeof setTimeout> | undefined;
 let lastAppliedRequestId = "";
 
@@ -133,10 +183,14 @@ function clearFilters(): void {
   clearTimeout(requestIdTimer);
   level.value = DEFAULT_LEVEL;
   requestId.value = "";
-  dateFrom.value = yesterdayIsoDate();
+  period.value = DEFAULT_PERIOD;
   lastAppliedRequestId = "";
   page.value = 1;
   void load();
+}
+
+function loggerLabel(entry: AppLogEntry): string {
+  return entry.error_type ? `${entry.logger} · ${entry.error_type}` : entry.logger;
 }
 
 onUnmounted(() => {
@@ -146,6 +200,12 @@ onUnmounted(() => {
 function goToPage(nextPage: number): void {
   if (nextPage < 1 || (totalPages.value > 0 && nextPage > totalPages.value)) return;
   page.value = nextPage;
+  void load();
+}
+
+function toggleWhenSort(): void {
+  sort.value = sort.value === "when_desc" ? "when_asc" : "when_desc";
+  page.value = 1;
   void load();
 }
 
@@ -166,92 +226,125 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout title="app logs">
+  <PageShell
+    title="app logs"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'app logs' }]"
+    back-to="/tools"
+    body-width="column"
+  >
     <AdminListSkeleton
       v-if="loading && items.length === 0 && !listError"
       label="Loading app logs"
     />
 
     <template v-else>
-      <AdminListToolbar>
-        <template #start>
-          <AdminFilterDropdown
-            ref="filterDropdown"
-            :has-active-filters="hasActiveFilters"
-            :active-label="activeFilterLabel"
-            :option-labels="LEVEL_FILTERS.map((chip) => chip.label)"
-            @clear="clearFilters"
-          >
-            <template #chips>
-              <AdminFilterChip
-                v-for="chip in LEVEL_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :active="level === chip.value"
-                :color-class="logLevelClass(chip.value)"
-                @click="setLevelFilter(chip.value)"
+      <div class="page-tool-actions">
+        <AdminListToolbar>
+          <template #start>
+            <AdminFilterDropdown
+              ref="filterDropdown"
+              :has-active-filters="hasActiveFilters"
+              :active-label="activeFilterLabel"
+              :option-labels="[
+                ...LEVEL_FILTERS.map((chip) => chip.label),
+                ...PERIOD_FILTERS.map((chip) => chip.label),
+              ]"
+              @clear="clearFilters"
+            >
+              <template #chips>
+                <AdminFilterChip
+                  v-for="chip in LEVEL_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="level === chip.value"
+                  :color-class="logLevelClass(chip.value)"
+                  @click="setLevelFilter(chip.value)"
+                />
+                <AdminFilterChip
+                  v-for="chip in PERIOD_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="period === chip.value"
+                  :color-class="PERIOD_CHIP_CLASS"
+                  @click="setPeriodFilter(chip.value)"
+                />
+              </template>
+              <BaseInput
+                :model-value="requestId"
+                compact
+                auto-width
+                label="request id"
+                tip="3+ chars"
+                @update:model-value="onRequestIdChange"
               />
-            </template>
-            <BaseInput
-              :model-value="requestId"
-              compact
-              placeholder="request id (3+ chars)"
-              aria-label="request id"
-              @update:model-value="onRequestIdChange"
-            />
-          </AdminFilterDropdown>
-        </template>
-      </AdminListToolbar>
+            </AdminFilterDropdown>
+          </template>
+        </AdminListToolbar>
+      </div>
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
-      <EmptyState v-else-if="items.length === 0" class="mt-4" description="no log entries found" />
+      <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
 
-      <div v-else class="mt-1 min-w-0">
-        <AdminListRow
-          v-for="entry in items"
-          :key="entry.id"
-          :interactive="hasDetails(entry)"
-          :expandable="hasDetails(entry)"
-          :expanded="isExpanded(entry.id)"
-          :hoverable="hasDetails(entry)"
-          :status-class="logLevelClass(entry.level)"
-          @click="onRowClick(entry)"
-        >
-          <template #badge>
-            <div class="flex items-center gap-1">
-              <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
-              <StatusBadge
-                v-if="contextStatus(entry) !== null"
-                :label="String(contextStatus(entry))"
-                :class-name="httpStatusClass(contextStatus(entry)!)"
-              />
-            </div>
+      <div v-else class="mt-1 w-full min-w-0 self-stretch">
+        <AdminDataTable table-label="app log entries">
+          <template #header>
+            <AdminSortableTh label="when" :direction="whenAriaSort" @sort="toggleWhenSort" />
+            <th :class="ADMIN_TH_CLASS" scope="col">type</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">logger</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">info</th>
           </template>
-          <template #primary>
-            <span class="lowercase" :title="entry.message.toLowerCase()">{{ entry.message }}</span>
-          </template>
-          <template #meta>
-            <span class="font-data">{{ entry.logger }}</span>
-          </template>
-          <template #time>{{ formatDate(entry.occurred_at) }}</template>
-          <template #detail>
-            <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
-            <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
-            <pre
-              v-if="entry.context"
-              class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
-              >{{ JSON.stringify(entry.context, null, 2) }}</pre>
-            <pre
-              v-if="entry.traceback"
-              class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-status-error/80"
-              >{{ entry.traceback }}</pre>
-          </template>
-        </AdminListRow>
+
+          <AdminDataRow
+            v-for="entry in items"
+            :key="entry.id"
+            :interactive="hasDetails(entry)"
+            :expandable="hasDetails(entry)"
+            :expanded="isExpanded(entry.id)"
+            :col-span="4"
+            @click="onRowClick(entry)"
+          >
+            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(entry.occurred_at) }}</td>
+            <td :class="ADMIN_TD_CLASS">
+              <div class="flex items-center gap-1">
+                <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
+                <StatusBadge
+                  v-if="contextStatus(entry) !== null"
+                  :label="String(contextStatus(entry))"
+                  :class-name="httpStatusClass(contextStatus(entry)!)"
+                />
+              </div>
+            </td>
+            <td :class="[ADMIN_TD_MUTED_CLASS, 'font-data']" :title="loggerLabel(entry)">
+              {{ loggerLabel(entry) }}
+            </td>
+            <td :class="ADMIN_TD_TITLE_CLASS">
+              <p
+                class="truncate text-sm lowercase text-surface-light"
+                :title="entry.message.toLowerCase()"
+              >
+                {{ entry.message }}
+              </p>
+            </td>
+            <template v-if="hasDetails(entry)" #detail>
+              <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
+              <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
+              <pre
+                v-if="entry.context"
+                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
+                >{{ JSON.stringify(entry.context, null, 2) }}</pre>
+              <pre
+                v-if="entry.traceback"
+                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-status-error/80"
+                >{{ entry.traceback }}</pre>
+            </template>
+          </AdminDataRow>
+        </AdminDataTable>
       </div>
-
+    </template>
+    <template #footer>
       <AdminListFooter
-        v-if="!listError"
+        v-if="!listError && !(loading && items.length === 0)"
         :total="total"
         :page="page"
         :total-pages="totalPages"
@@ -266,5 +359,5 @@ onMounted(load);
         @last="goToPage(totalPages)"
       />
     </template>
-  </AdminPageLayout>
+  </PageShell>
 </template>

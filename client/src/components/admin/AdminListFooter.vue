@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useSlots } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 
 const props = withDefaults(
@@ -30,7 +31,8 @@ const showPagination = computed(() => props.totalPages > 1);
 const hasLeading = computed(() =>
   props.showLeading !== undefined ? props.showLeading : Boolean(slots.leading),
 );
-const showBar = computed(() => showPagination.value || hasLeading.value);
+/** Hide empty-list chrome when the page already shows EmptyState. */
+const showBar = computed(() => showPagination.value || hasLeading.value || props.total > 0);
 
 const totalLabel = computed(() => {
   if (props.countLabel) return props.countLabel;
@@ -48,9 +50,9 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
 
 const navClass = computed(() => {
   if (showPagination.value) {
-    return "mt-4 grid grid-cols-[auto_1fr_auto] items-center gap-3";
+    return "page-body-footer pt-4 grid grid-cols-[auto_1fr_auto] items-center gap-3";
   }
-  return "mt-4 flex flex-wrap items-center justify-center gap-3";
+  return "page-body-footer pt-4 flex flex-wrap items-center justify-center gap-3";
 });
 </script>
 
@@ -65,7 +67,10 @@ const navClass = computed(() => {
           aria-label="to start"
           @click="emit('first')"
         >
-          &lt;&lt;
+          <span class="inline-flex items-center" aria-hidden="true">
+            <ChevronIcon direction="left" class-name="size-3.5" />
+            <ChevronIcon direction="left" class-name="-ml-2 size-3.5" />
+          </span>
         </IconActionButton>
         <IconActionButton
           action="create"
@@ -74,7 +79,7 @@ const navClass = computed(() => {
           aria-label="previous"
           @click="emit('prev')"
         >
-          &lt;
+          <ChevronIcon direction="left" class-name="size-3.5" />
         </IconActionButton>
       </div>
       <div
@@ -100,7 +105,7 @@ const navClass = computed(() => {
           aria-label="next"
           @click="emit('next')"
         >
-          &gt;
+          <ChevronIcon direction="right" class-name="size-3.5" />
         </IconActionButton>
         <IconActionButton
           action="create"
@@ -109,12 +114,20 @@ const navClass = computed(() => {
           aria-label="to end"
           @click="emit('last')"
         >
-          &gt;&gt;
+          <span class="inline-flex items-center" aria-hidden="true">
+            <ChevronIcon direction="right" class-name="size-3.5" />
+            <ChevronIcon direction="right" class-name="-ml-2 size-3.5" />
+          </span>
         </IconActionButton>
       </div>
     </template>
-    <div v-else-if="hasLeading" class="min-w-0">
-      <slot name="leading" />
-    </div>
+    <template v-else>
+      <div v-if="hasLeading" class="min-w-0">
+        <slot name="leading" />
+      </div>
+      <span v-else class="font-data text-label tracking-wide text-surface-light">{{
+        totalLabel
+      }}</span>
+    </template>
   </nav>
 </template>

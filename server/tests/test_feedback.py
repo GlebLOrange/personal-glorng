@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -103,7 +104,7 @@ class TestListFeedback:
         assert resp.status_code == 200
         data = resp.json()
         assert data["items"] == []
-        assert data["per_page"] == 9
+        assert data["per_page"] == 25
 
     async def test_list_pagination_and_status_filter(
         self, auth_client: AsyncClient, registry: DatabaseRegistry
@@ -119,6 +120,35 @@ class TestListFeedback:
         assert data["total"] == 1
         assert len(data["items"]) == 1
         assert data["items"][0]["theme"] == "Unread"
+
+    async def test_list_sorts_by_created_at(
+        self, auth_client: AsyncClient, registry: DatabaseRegistry
+    ):
+        """Default is newest created_at first; created_asc reverses."""
+        # mongomock does not order tz-aware datetimes, so pass explicit naive
+        # timestamps to make the sort assertion deterministic.
+        first = await create_feedback(
+            registry,
+            theme="Older",
+            created_at=datetime(2026, 1, 1),
+        )
+        second = await create_feedback(
+            registry,
+            theme="Newer",
+            created_at=datetime(2026, 1, 2),
+        )
+        desc = await auth_client.get("/api/feedback")
+        assert desc.status_code == 200
+        desc_ids = [item["id"] for item in desc.json()["items"]]
+        assert desc_ids.index(second.id) < desc_ids.index(first.id)
+
+        asc = await auth_client.get(
+            "/api/feedback",
+            params={"sort": "created_asc"},
+        )
+        assert asc.status_code == 200
+        asc_ids = [item["id"] for item in asc.json()["items"]]
+        assert asc_ids.index(first.id) < asc_ids.index(second.id)
 
 
 class TestUpdateFeedbackStatus:

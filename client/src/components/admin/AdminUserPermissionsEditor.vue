@@ -76,7 +76,7 @@ function servicePermissionSummary(service: PlatformService): string {
       >
         <input
           type="checkbox"
-          class="mt-1 accent-accent-blue"
+          class="mt-1 accent-accent-coral"
           :checked="isSuperuser"
           :disabled="disabled || lockSuperuser"
           @change="toggleSuperuser(($event.target as HTMLInputElement).checked)"
@@ -136,12 +136,12 @@ function servicePermissionSummary(service: PlatformService): string {
             <label
               v-for="capability in service.capabilities"
               :key="permissionKey(service.slug, capability)"
-              class="inline-flex items-center gap-2 rounded border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs text-surface-light cursor-pointer transition-colors hover:border-accent-blue"
+              class="inline-flex items-center gap-2 rounded border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs text-surface-light cursor-pointer transition-colors hover:border-accent-coral"
               :class="{ 'opacity-50 cursor-not-allowed': disabled || isSuperuser }"
             >
               <input
                 type="checkbox"
-                class="accent-accent-blue"
+                class="accent-accent-coral"
                 :checked="hasPermission(permissionKey(service.slug, capability))"
                 :disabled="disabled || isSuperuser"
                 @change="

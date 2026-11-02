@@ -1,9 +1,6 @@
 import { familyBadgeClass } from "@/constants/httpStatusColors";
 import { statusBadgeClass } from "@/constants/taskStatus";
 
-/** Neutral styling for unfiltered / "all" chips and tiles. */
-export const FILTER_CHIP_NEUTRAL = "text-surface-light bg-surface-dark";
-
 /** Pale 1xx–5xx + muted/neutral (3xx = pale yellow warning). */
 const SEMANTIC = {
   info: familyBadgeClass("1xx"),

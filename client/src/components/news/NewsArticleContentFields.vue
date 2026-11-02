@@ -65,7 +65,7 @@ function onTagsToggle(event: Event): void {
   <Card>
     <h2 class="card-title mb-4">article</h2>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <BaseInput v-model="form.slug" placeholder="slug" aria-label="slug" :disabled="!canWrite" />
+      <BaseInput v-model="form.slug" label="slug" :disabled="!canWrite" />
       <div
         class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-3"
         role="group"
@@ -83,24 +83,9 @@ function onTagsToggle(event: Event): void {
           @click="setStatus(status)"
         />
       </div>
-      <BaseInput
-        v-model="form.title"
-        placeholder="title"
-        aria-label="title"
-        :disabled="!canWrite"
-      />
-      <BaseInput
-        v-model="form.original_title"
-        placeholder="original title"
-        aria-label="original title"
-        :disabled="!canWrite"
-      />
-      <BaseInput
-        v-model="form.language"
-        placeholder="language (en)"
-        aria-label="language"
-        :disabled="!canWrite"
-      />
+      <BaseInput v-model="form.title" label="title" :disabled="!canWrite" />
+      <BaseInput v-model="form.original_title" label="original title" :disabled="!canWrite" />
+      <BaseInput v-model="form.language" label="language" tip="en" :disabled="!canWrite" />
     </div>
     <details class="mt-4 rounded border border-surface-border px-3 py-2" @toggle="onTagsToggle">
       <summary
@@ -117,7 +102,7 @@ function onTagsToggle(event: Event): void {
           :for="`news-edit-tag-${tag}`"
           class="inline-flex cursor-pointer items-center rounded px-2.5 py-1 text-xs lowercase transition-colors"
           :class="{
-            'bg-accent-blue/10 text-accent-blue': tagIsSelected(tag),
+            'bg-accent-coral/10 text-accent-coral': tagIsSelected(tag),
             'text-surface-mid hover:bg-surface-mid/10': !tagIsSelected(tag),
             'opacity-50': !tagIsSelected(tag) && parsedTags().length >= NEWS_TAG_LIMIT,
           }"
@@ -135,13 +120,7 @@ function onTagsToggle(event: Event): void {
       </div>
     </details>
     <div class="mt-4">
-      <BaseTextarea
-        v-model="form.summary"
-        :rows="4"
-        placeholder="summary"
-        aria-label="summary"
-        :disabled="!canWrite"
-      />
+      <BaseTextarea v-model="form.summary" :rows="4" label="summary" :disabled="!canWrite" />
     </div>
   </Card>
 </template>

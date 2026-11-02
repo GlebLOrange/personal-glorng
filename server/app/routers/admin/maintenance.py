@@ -1,4 +1,4 @@
-"""Superuser-only DB maintenance trigger with Turnstile gate."""
+"""Superuser-only multi-job maintenance trigger with Turnstile gate."""
 
 from fastapi import APIRouter, Depends, Request, status
 
@@ -21,18 +21,21 @@ router = APIRouter(dependencies=[Depends(rate_limit_admin)])
 @router.get(
     "",
     response_model=MaintenanceStatusResponse,
-    summary="Get DB maintenance status",
+    summary="Get maintenance status",
 )
 async def get_maintenance_status(
     _admin: AdminUser,
     settings: AppSettings,
 ) -> MaintenanceStatusResponse:
-    status_value, detail = get_maintenance_snapshot()
+    snap = get_maintenance_snapshot()
     return MaintenanceStatusResponse(
         site_key=settings.TURNSTILE_SITE_KEY.strip(),
-        enabled=settings.db_maintenance_ready(),
-        status=status_value,
-        detail=detail,
+        enabled=settings.turnstile_configured(),
+        host_jobs_ready=settings.db_maintenance_ready(),
+        status=snap.status,
+        detail=snap.detail,
+        job=snap.job,
+        report=snap.report,
     )
 
 
@@ -40,7 +43,7 @@ async def get_maintenance_status(
     "/run",
     response_model=MaintenanceRunResponse,
     status_code=status.HTTP_202_ACCEPTED,
-    summary="Start DB maintenance",
+    summary="Start a maintenance job",
 )
 async def run_maintenance(
     body: MaintenanceRunRequest,
@@ -54,5 +57,10 @@ async def run_maintenance(
         body.turnstile_token,
         remote_ip=client_ip,
     )
-    status_value, detail = await start_maintenance(settings)
-    return MaintenanceRunResponse(status=status_value, detail=detail)
+    snap = await start_maintenance(settings, body.job)
+    return MaintenanceRunResponse(
+        status=snap.status,
+        detail=snap.detail,
+        job=snap.job,
+        report=snap.report,
+    )

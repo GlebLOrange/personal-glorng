@@ -29,9 +29,10 @@ Public internet deploys should keep `UNTRUSTED_URL_TOOLS_ENABLED=false` so yt-dl
 |---------|-------|------|
 | Public web | `/` | Resume, donations, feedback, public tools |
 | Admin panel | `/admin` | Ops hub via `/api/tools/*` and `/api/admin/*` |
-| Telegram bot | `app.todobot.main` | Tasks, reminders, expense logging |
+| Tools | `/tools`, `/tasks`, `/news`, … | Public + capability-gated tools |
+| Telegram bot | `app.todobot.main` | Tasks, reminders, expense logging, Calendar OAuth |
 | Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
-| Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks |
+| Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks (incl. sync queue every 2m) |
 
 ## Data stores
 
@@ -135,8 +136,11 @@ Health: `/api/health` (liveness), `/api/ready` (Mongo + Redis; optional Postgres
 
 ## Related
 
+- [Telegram + tasks + calendar sync](/guide/telegram-tasks-calendar)
 - [Platform overview](/reference/platform)
 - [Security](/reference/security)
 - [Logging](/operations/logging)
 - [API & tools](/reference/api-tools)
 - [Architecture inventory (generated)](/generated/architecture-inventory)
+
+Local Gortex Mermaid dumps under `docs/architecture/` (gitignored) are agent/export artifacts, not part of this handbook — see that folder’s README.

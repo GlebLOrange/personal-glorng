@@ -7,9 +7,10 @@
 | Section | Topics |
 |---------|--------|
 | [Guide](/guide/getting-started) | Setup, architecture, dev workflow, frontend, contributing |
-| [Operations](/operations/deployment) | Prod container workflow, database, [logging](/operations/logging), backups, Cloudflare, [DevOps / CI gates](/operations/devops-checklist) |
-| [Reference](/reference/platform) | API catalog, Postman, env vars, security, testing, automation |
+| [Operations](/operations/deployment) | Prod container workflow, database, [logging](/operations/logging), backups, Cloudflare, [Cloud VM](/operations/cloud-vm), [DevOps / CI gates](/operations/devops-checklist), [Agent token baseline](/operations/agent-token-baseline) |
+| [Reference](/reference/platform) | API catalog, env vars, security, testing, automation |
 | [ADRs](/adr/) | Architecture decision records |
+| [Specs](/specs/handbook-structure) | Handbook structure, news, agy-ai-tool (proposed), platform hardening, P3 roadmap, manager maintenance themes |
 | [API endpoints](/generated/api-endpoints) | Generated OpenAPI path table |
 | [Architecture inventory](/generated/architecture-inventory) | Generated platform + Compose inventory |
 
@@ -32,4 +33,4 @@ nginx/     Reverse proxy (:80)
 docs/      This handbook (VitePress)
 ```
 
-For Cursor agents and cloud VM bootstrap, see [AGENTS.md](https://github.com/GlebLOrange/personal-glorng/blob/main/AGENTS.md) in the repo root.
+For Cursor agents: [AGENTS.md](https://github.com/GlebLOrange/personal-glorng/blob/main/AGENTS.md) (entry map), [CODING_STANDARDS.md](https://github.com/GlebLOrange/personal-glorng/blob/main/CODING_STANDARDS.md) (skill index), [Cloud VM](/operations/cloud-vm).

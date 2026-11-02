@@ -5,7 +5,7 @@ from segno import DataOverflowError
 
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.pagination import build_paginated
-from app.core.utils import DEFAULT_PER_PAGE, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, assert_owner_or_superuser, paginate_params
 from app.db.documents.qr_code import QrCode, QrErrorLevel
 from app.db.registry import DatabaseRegistry
 from app.db.repositories.qr_code import QrCodeRepository
@@ -61,7 +61,9 @@ class QrLibraryService:
             updated_at=doc.updated_at,
         )
 
-    def _to_response(self, doc: QrCode, *, svg: str | None = None) -> QrCodeStoredResponse:
+    def _to_response(
+        self, doc: QrCode, *, svg: str | None = None
+    ) -> QrCodeStoredResponse:
         return QrCodeStoredResponse(
             id=doc.id,
             content=doc.content,
@@ -103,10 +105,15 @@ class QrLibraryService:
             raise NotFoundError(f"QR code with id {qr_id} not found")
         return row
 
-    def _assert_can_access(self, doc: QrCode, actor_id: int, *, is_superuser: bool) -> None:
-        if is_superuser or doc.created_by == actor_id:
-            return
-        raise ApiError(403, "You do not have permission to access this QR code")
+    def _assert_can_access(
+        self, doc: QrCode, actor_id: int, *, is_superuser: bool
+    ) -> None:
+        assert_owner_or_superuser(
+            doc.created_by,
+            actor_id,
+            is_superuser=is_superuser,
+            detail="You do not have permission to access this QR code",
+        )
 
     async def get_stored(
         self,
@@ -142,6 +149,7 @@ class QrLibraryService:
             total=total,
             page=page,
             per_page=limit,
+            response_cls=QrCodeListResponse,
         )
 
     async def update_saved(

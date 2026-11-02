@@ -188,19 +188,6 @@ export function formatLiveLocalFromIana(
   return formatLiveLocalTimeFromIana(timezone, at);
 }
 
-/** Static local time string from wttr observation timestamp. */
-export function weatherObservedTime(data: WeatherData): string | null {
-  const obs = data.current_condition?.[0]?.localObsDateTime;
-  if (!obs) {
-    return null;
-  }
-  const parts = obs.split(" ");
-  if (parts.length >= 3) {
-    return `${parts[1]} ${parts[2]}`;
-  }
-  return obs;
-}
-
 export interface LocalTimeParts {
   hours24: number;
   minutes: number;

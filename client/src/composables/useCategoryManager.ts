@@ -123,19 +123,29 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
     await Promise.all([loadCategories(), onCategoriesChanged()]);
   }
 
-  async function removeCategory(category: ExpenseCategory): Promise<void> {
+  async function removeCategory(
+    category: ExpenseCategory,
+    replacementCategoryId?: number | null,
+  ): Promise<boolean> {
     const ok = await runApi(
       async () => {
-        await api.delete(`/tools/expenses/categories/${category.id}`);
+        if (replacementCategoryId === undefined) {
+          await api.delete(`/tools/expenses/categories/${category.id}`);
+        } else {
+          await api.delete(`/tools/expenses/categories/${category.id}`, {
+            data: { replacement_category_id: replacementCategoryId },
+          });
+        }
         return true;
       },
       {
         successMessage: "Category deleted",
-        errorMessage: "Cannot delete a category that is used by expenses",
+        errorMessage: "Cannot delete category",
       },
     );
-    if (!ok) return;
-    await loadCategories();
+    if (!ok) return false;
+    await Promise.all([loadCategories(), onCategoriesChanged()]);
+    return true;
   }
 
   return {

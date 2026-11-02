@@ -11,10 +11,6 @@ const mocks = vi.hoisted(() => ({
   toast: vi.fn(),
 }));
 
-vi.mock("@/constants/firebase", () => ({
-  isFirebaseEnabled: true,
-}));
-
 vi.mock("vue-router", () => ({
   useRoute: () => ({ query: mocks.routeQuery }),
   useRouter: () => ({ push: mocks.push }),
@@ -40,17 +36,18 @@ describe("LoginPage", () => {
     });
   }
 
-  it("shows email password login and Google sign-in", () => {
+  it("shows email password login", () => {
     const wrapper = mountPage();
 
     expect(wrapper.get('input[type="email"]').exists()).toBe(true);
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
-    // trailing labels stay visible; distinct email tip shows; matching password tip omitted
-    expect(wrapper.text()).toContain("email");
+    // tips show while empty; accessible names come from aria-label (no trailing labels)
+    expect(wrapper.get('input[type="email"]').attributes("aria-label")).toBe("email");
+    expect(wrapper.get('input[type="password"]').attributes("aria-label")).toBe("password");
+    expect(wrapper.text()).toContain("email@example.com");
     expect(wrapper.text()).toContain("password");
-    expect(wrapper.text()).toContain("you@example.com");
     expect(wrapper.text()).toContain("login");
-    expect(wrapper.text()).toContain("continue with Google");
+    expect(wrapper.text()).not.toContain("continue with Google");
     expect(wrapper.text()).not.toContain("create account");
     expect(wrapper.text()).toContain("forgot password?");
   });

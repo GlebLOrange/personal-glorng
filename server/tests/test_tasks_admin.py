@@ -1,9 +1,12 @@
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
 
+from app.core.exceptions import ValidationError
 from app.core.security import create_access_token
+from app.core.telegram import TodobotPingResult
 from app.db.documents.task import TaskStatus
 from app.db.registry import DatabaseRegistry
 from app.services.task import complete_past_due_tasks
@@ -110,6 +113,37 @@ async def test_list_tasks_rejects_invalid_status(auth_client: AsyncClient) -> No
 
 
 @pytest.mark.asyncio
+async def test_list_tasks_filters_by_start_end(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    """Optional start/end limit scheduled_at to [start, end)."""
+    in_range = await create_task(
+        registry,
+        title="In range",
+        scheduled_at=datetime(2026, 6, 15, 10, 0, tzinfo=UTC),
+    )
+    await create_task(
+        registry,
+        title="Out of range",
+        scheduled_at=datetime(2026, 7, 15, 10, 0, tzinfo=UTC),
+    )
+
+    resp = await auth_client.get(
+        "/api/tools/tasks",
+        params={
+            "start": "2026-06-01T00:00:00Z",
+            "end": "2026-07-01T00:00:00Z",
+            "sort": "when_asc",
+        },
+    )
+    assert resp.status_code == 200
+    ids = [item["id"] for item in resp.json()["items"]]
+    assert in_range.id in ids
+    assert all("2026-06" in item["scheduled_at"] for item in resp.json()["items"])
+
+
+@pytest.mark.asyncio
 async def test_list_tasks_filters_by_title_query(auth_client: AsyncClient) -> None:
     """Title search matches substring case-insensitively."""
     await auth_client.post(
@@ -125,6 +159,74 @@ async def test_list_tasks_filters_by_title_query(auth_client: AsyncClient) -> No
     assert resp.status_code == 200
     titles = [item["title"] for item in resp.json()["items"]]
     assert titles == ["Buy milk"]
+
+
+@pytest.mark.asyncio
+async def test_list_tasks_sorts_by_scheduled_at(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    """when_* sorts by scheduled_at; omit sort keeps created_at desc."""
+    earlier_schedule = await create_task(
+        registry,
+        title="Earlier schedule",
+        scheduled_at=datetime(2026, 6, 1, 10, 0, tzinfo=UTC),
+    )
+    later_schedule = await create_task(
+        registry,
+        title="Later schedule",
+        scheduled_at=datetime(2026, 6, 2, 10, 0, tzinfo=UTC),
+    )
+    await registry.mongo_db.tasks.update_one(
+        {"id": earlier_schedule.id},
+        {"$set": {"created_at": datetime(2026, 1, 2, tzinfo=UTC)}},
+    )
+    await registry.mongo_db.tasks.update_one(
+        {"id": later_schedule.id},
+        {"$set": {"created_at": datetime(2026, 1, 1, tzinfo=UTC)}},
+    )
+
+    default = await auth_client.get(
+        "/api/tools/tasks",
+        params={"status": "pending", "per_page": 100},
+    )
+    assert default.status_code == 200
+    default_titles = [
+        item["title"]
+        for item in default.json()["items"]
+        if item["title"] in {"Earlier schedule", "Later schedule"}
+    ]
+    assert default_titles == ["Earlier schedule", "Later schedule"]
+
+    asc = await auth_client.get(
+        "/api/tools/tasks",
+        params={"status": "pending", "per_page": 100, "sort": "when_asc"},
+    )
+    assert asc.status_code == 200
+    asc_titles = [
+        item["title"]
+        for item in asc.json()["items"]
+        if item["title"] in {"Earlier schedule", "Later schedule"}
+    ]
+    assert asc_titles == ["Earlier schedule", "Later schedule"]
+
+    desc = await auth_client.get(
+        "/api/tools/tasks",
+        params={"status": "pending", "per_page": 100, "sort": "when_desc"},
+    )
+    assert desc.status_code == 200
+    desc_titles = [
+        item["title"]
+        for item in desc.json()["items"]
+        if item["title"] in {"Earlier schedule", "Later schedule"}
+    ]
+    assert desc_titles == ["Later schedule", "Earlier schedule"]
+
+    invalid = await auth_client.get(
+        "/api/tools/tasks",
+        params={"sort": "created_desc"},
+    )
+    assert invalid.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -168,6 +270,53 @@ async def test_process_sync_queue_now_endpoint(
 
 
 @pytest.mark.asyncio
+async def test_bot_ping_requires_admin(tasks_reader_client: AsyncClient) -> None:
+    """Tasks readers cannot ping the todobot."""
+    resp = await tasks_reader_client.post("/api/tools/tasks/bot-ping")
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+@patch("app.core.telegram.ping_todobot", new_callable=AsyncMock)
+async def test_bot_ping_endpoint(
+    mock_ping: AsyncMock,
+    auth_client: AsyncClient,
+) -> None:
+    """Superuser ping returns structured Telegram healthcheck payload."""
+    mock_ping.return_value = TodobotPingResult(
+        ok=True,
+        bot_username="test_todobot",
+        bot_id=42,
+        message_sent=True,
+        detail="TodoBot ping OK · @test_todobot",
+    )
+    resp = await auth_client.post("/api/tools/tasks/bot-ping")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["ok"] is True
+    assert body["bot_username"] == "test_todobot"
+    assert body["bot_id"] == 42
+    assert body["message_sent"] is True
+    assert "ping OK" in body["detail"]
+    mock_ping.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch("app.core.telegram.ping_todobot", new_callable=AsyncMock)
+async def test_bot_ping_missing_token(
+    mock_ping: AsyncMock,
+    auth_client: AsyncClient,
+) -> None:
+    """Missing todobot token surfaces a clean validation error."""
+    mock_ping.side_effect = ValidationError(
+        "TELEGRAM_BOT_TO_DO_TOKEN is not configured",
+    )
+    resp = await auth_client.post("/api/tools/tasks/bot-ping")
+    assert resp.status_code == 422
+    assert "TELEGRAM_BOT_TO_DO_TOKEN" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
 async def test_update_task_status(auth_client: AsyncClient) -> None:
     create = await auth_client.post(
         "/api/tools/tasks",
@@ -204,7 +353,7 @@ async def tasks_reader_client(client: AsyncClient, registry: DatabaseRegistry):
     user = await create_user(
         registry,
         email="reader@example.com",
-        permissions=["tasks:read", "tasks:write"],
+        permissions=["tasks:read"],
     )
     token = create_access_token(str(user.public_id))
     client.headers["Authorization"] = f"Bearer {token}"

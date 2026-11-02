@@ -1,0 +1,14 @@
+# Session index for keyword retrieval (newest first).
+# Retrieval: match words from the current task against `task`, `files`, `symbols`;
+# load Active task from workspace_context.md + at most 3 hits (5–20 lines total).
+# `path` (optional) points at a gitignored archive under sessions/.
+#
+# Entry schema:
+# - date: YYYY-MM-DD
+#   task: short task title
+#   files: [path/a, path/b]
+#   symbols: [funcName, ClassName]
+#   todos: [next step]
+#   summary: one line
+#   path: sessions/YYYY-MM-DD-slug.md
+sessions: []

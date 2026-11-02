@@ -6,38 +6,28 @@ How to change Gleb.Y and open a pull request.
 
 1. Branch from `main`: `cursor/<short-kebab-description>` (agents) or your own feature branch name.
 2. Make focused changes; avoid unrelated files.
-3. Run targeted checks before pushing (see below).
+3. Run targeted checks before pushing (see [Quality checks](/guide/development#quality-checks) and [Testing](/reference/testing)).
 4. Open a PR with a short title and **Summary** + **Test plan** sections.
 
-Do not push directly to `main`. Never commit `.env` or credentials.
+Do not commit or push to `main` unless asked. Never commit `.env` or credentials.
 
-## Backend checks
+- **2026-10-30:** Prefer only `main` + the current checkout locally. When cleaning, remove unused worktrees first, then delete other local `cursor/*` (merged, gone-upstream, or abandoned locals even if `origin/cursor/…` still exists). Leave remotes unless asked. Never delete a branch checked out in a live worktree. `git fetch --prune` / `git worktree prune` as supporting steps.
+- **2026-10-26:** Local cleanup deletes only branches merged into `main` and branches whose upstream is gone. Keep `main` and any branch checked out in a live worktree; `git fetch --prune` drops stale remote-tracking refs. Leave unmerged branches that still have a remote. Superseded 2026-10-30.
 
-```bash
-cd server
-uv sync --frozen
-uv run ruff check .
-uv run pytest -m "not integration" -v
-```
+## Where facts live
 
-In Docker (when stack is up): `make lint-check` and `make test`.
+| Topic | Page |
+|-------|------|
+| First-run setup and secrets | [Getting started](/guide/getting-started) |
+| Dev modes, ports, quality commands | [Development](/guide/development) |
+| Channels, stores, request pipeline | [Architecture](/guide/architecture) |
+| Service catalog and terminology | [Platform overview](/reference/platform) |
+| Test tiers and markers | [Testing](/reference/testing) |
+| Handbook information architecture | [Handbook structure](/specs/handbook-structure) |
 
-## Frontend checks
+## Checks
 
-```bash
-cd client
-npm ci
-npm run lint
-npm run test
-npm run build:check
-```
-
-## Local full gate
-
-```bash
-make check                 # lint + pytest + client lint/test/build
-cd client && npm run e2e   # optional; needs running API
-```
+Backend, frontend, and local full-gate commands: [Development → Quality checks](/guide/development#quality-checks).
 
 `make check` is a local convenience gate — CI also runs coverage, `not integration`, postgres, e2e, and docs freshness. Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Testing tiers: [Testing](/reference/testing).
 
@@ -49,18 +39,22 @@ Merge gates (`ci-ok`, `gitleaks`) are **disabled during development**; turn them
 pip install pre-commit && pre-commit install
 ```
 
-Runs ruff, client eslint/prettier/typecheck, and gitleaks.
+Runs ruff, client eslint/prettier/typecheck, gitleaks, and a **staged file token limit** (rejects staged text files over 5,000 tokens; `1 token = 4 bytes`). Skip patterns live in [`scripts/staged-token-limit.ignore`](../../scripts/staged-token-limit.ignore) (lockfiles, minified/generated paths, common binaries). Manual pass/fail check:
+
+```bash
+sh scripts/test_check_staged_token_limit.sh
+```
 
 ## Code conventions
 
 - **Python:** Ruff, type annotations on functions, pytest for tests under `server/tests/`
 - **Vue/TS:** ESLint + Prettier; match existing component and composable patterns
 - **Dependencies:** check `server/pyproject.toml` and `client/package.json` before adding packages
-- **Agents:** see [AGENTS.md](../../AGENTS.md), [`.cursor/rules/`](../../.cursor/rules/) (thin triggers), and [`.cursor/skills/`](../../.cursor/skills/) (full guidance). Ecosystem skills: `npx skills add <pkg>@<skill> -g -y`; do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
+- **Agents:** [AGENTS.md](../../AGENTS.md) (entry map), [CODING_STANDARDS.md](../../CODING_STANDARDS.md) (skill index), [`.cursor/agents/README.md`](../../.cursor/agents/README.md). Keep skill and rule bodies in [`.cursor/skills/`](../../.cursor/skills/) and [`.cursor/rules/`](../../.cursor/rules/). Tracked [`.agents/`](../../.agents/) and [`.claude/`](../../.claude/) symlinks activate the same config for Antigravity and Claude; do not commit `skills-lock.json` or other local skill mirrors.
 
 ## Documentation
 
-When changing behavior, update the relevant page under `docs/` and run:
+When changing behavior, update the relevant page under `docs/` (see the ownership table above) and run:
 
 ```bash
 make docs-build

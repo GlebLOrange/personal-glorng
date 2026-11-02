@@ -1,21 +1,60 @@
 ---
 name: saving-workspace-context
-description: Persist durable workspace knowledge (decisions, research, conventions) into the right project homes so it survives across chats.
-user-invocable: false
+description: >-
+  Local workspace context manager: saves a short structured Active-task slice to
+  .cursor/workspace-context/workspace_context.md, loads only that slice (+ matching
+  index hits) next session, and routes durable decisions to AGENTS.md/docs/rules.
+  Use when asked to save or resume workspace context or carry decisions across chats.
+user-invocable: true
 ---
 
 # Saving Workspace Context
 
-Build institutional memory. Prefer the project's existing homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
+Context should be a query result, not a dump. Session state lives in [`.cursor/workspace-context/workspace_context.md`](../../workspace-context/workspace_context.md) (**Active task** block, 5–20 lines); a keyword index lives in [`index.yaml`](../../workspace-context/index.yaml). Institutional knowledge still goes to existing homes (router below).
+
+## Load (session start / resume)
+
+1. Read only the `## Active task` block of `workspace_context.md`.
+2. If the task differs, keyword-match it against `index.yaml` (`task`, `files`, `symbols`); load at most 3 hits (and their `path` archive only if needed): `python3 scripts/workspace_context_search.py <keywords>`.
+3. Read `## Durable project facts` only when the task touches architecture/conventions/pitfalls.
+4. Never load full transcripts, the whole memory tree, or whole repo files for context.
+
+## Save
+
+- **Session state** → rewrite the Active task fields (short values; overwrite stale ones). Optionally prepend an `index.yaml` entry; long archives go to gitignored `sessions/`.
+- **Durable project facts** → append/update sparingly (non-obvious, still true next month).
+- **Institutional homes** → use the Memory Router for conventions, workflows, ADRs.
 
 ## Modes
 
 | Mode | When | What to do |
 |------|------|------------|
-| **Micro-save** | Skill in context / auto-attached mid-task | One short append to the correct home; mention the path |
-| **Full pass** | User invokes this skill or asks to persist session memory | Discover homes → selective load → save → end checklist |
+| **Micro-save** | Gated stop hook (see below), or skill in context mid-task | Update Active task in `workspace_context.md` (short fields); route anything institutional via the router; mention the path. If nothing durable, edit nothing and reply exactly: `No workspace context to save.` |
+| **Full pass** | User asks to persist session memory (slash / attach this skill) | Discover homes → selective load → save → end checklist |
 
 Do **not** load the whole memory tree at the start of unrelated coding tasks.
+
+## Stop hook (auto micro-save)
+
+Cursor’s `stop` payload is only `{ status, loop_count }` — no transcript or file list. Blind every-turn follow-ups are mostly noise.
+
+This repo gates micro-save:
+
+1. [`session-start.sh`](../../hooks/session-start.sh) exports `PORTFOLIO_CTX_SESSION` from `session_id`.
+2. [`after-file-edit-mark.sh`](../../hooks/after-file-edit-mark.sh) marks the session dirty after any agent file edit (temp state under `$TMPDIR/personal-glorng-ctx/`).
+3. [`save-workspace-context.sh`](../../hooks/save-workspace-context.sh) emits a follow-up only when `status == completed`, `loop_count == 0`, the session is dirty, and it has not already been prompted. Then it marks `prompted` so later stops stay silent. The follow-up asks the agent to update the Active task block (not to paste the session).
+
+Wired in [`.cursor/hooks.json`](../../hooks.json) (`afterFileEdit` + `stop` with `loop_limit: 1`). Empty `{}` from the stop script means no chat follow-up.
+
+Ask / Plan turns with no edits never trigger micro-save. When a follow-up does fire and nothing is durable, **`No workspace context to save.`** is still the correct reply.
+
+Prefer this project skill over a global `~/.agents/skills/Saving-Workspace-Context/SKILL.md` copy (different router). `user-invocable: true` so slash / attach uses this file.
+
+## How to update this later
+
+- Policy (what to save, router, full-pass steps): this `SKILL.md`
+- Gate / empty reply / follow-up text: [`.cursor/hooks/save-workspace-context.sh`](../../hooks/save-workspace-context.sh), [`.cursor/hooks/after-file-edit-mark.sh`](../../hooks/after-file-edit-mark.sh), [`.cursor/hooks/session-start.sh`](../../hooks/session-start.sh), [`.cursor/hooks.json`](../../hooks.json)
+- Worktree checkouts only see hook edits after that commit lands on their branch
 
 ## Memory Router (Before Any Write)
 
@@ -23,15 +62,19 @@ Route knowledge to the first matching home:
 
 1. **Always-on constraints & conventions** → `.cursor/rules/` (**ask permission** first)
 2. **Repeatable workflows** → new skill in `.cursor/skills/` or `~/.agents/skills/` (**ask permission** first)
-3. **Bootstrap, environment, & agent setup** → `AGENTS.md`
-4. **Architecture decisions** → `docs/adr/` (when ADR structure exists)
-5. **Product & handbook docs** → existing `docs/` guides/specs
+3. **Agent entry map (dispatch only)** → `AGENTS.md`
+4. **Which skill to open / coding standards index** → `CODING_STANDARDS.md`
+5. **Setup, ports, seed** → `docs/guide/getting-started.md`, `README.md`
+6. **Cloud VM Docker** → `docs/operations/cloud-vm.md`
+7. **Persona / requirement bar** → `.cursor/agents/README.md`
+8. **Architecture decisions** → `docs/adr/` (when ADR structure exists)
+9. **Product & handbook docs** → existing `docs/` guides/specs
 
-If the project already documents truth in `AGENTS.md`, `docs/`, or `.cursor/rules/`, update or extend those — do not invent a parallel dump tree.
+If the project already documents truth in those homes, update or extend them — do not invent a parallel dump tree.
 
 ## Full Pass: Selective Load
 
-1. List known homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
+1. List known homes (`AGENTS.md`, `CODING_STANDARDS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`, `.cursor/agents/`).
 2. Open at most a few files whose names/topics match the current task.
 3. Never dump the whole tree into the conversation context.
 
@@ -64,7 +107,7 @@ Before finishing a full pass:
 
 ## Project Stub (Only if no better home exists)
 
-Prefer `AGENTS.md` / `docs/` when they exist. Otherwise a thin stub in docs:
+Prefer `AGENTS.md` / `CODING_STANDARDS.md` / `docs/` when they exist. Otherwise a thin stub in docs:
 
 ```markdown
 # {Project Name} — Context

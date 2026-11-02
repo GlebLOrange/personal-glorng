@@ -27,7 +27,7 @@ const props = withDefaults(
     ariaLabel?: string;
     /** Opt-in native tooltip — omitted by default (aria-label covers a11y). */
     title?: string;
-    /** field = in-shell clear (same h-10 square); default matches CONTROL_SIZE (h-10). */
+    /** field = in-shell clear (same h-11 square); default matches CONTROL_SIZE (h-11). */
     size?: "md" | "field";
   }>(),
   {

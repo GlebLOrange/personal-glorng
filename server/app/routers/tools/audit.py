@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AuditServiceDep, AuthorizedUser, require_capability
 from app.core.pagination import (
@@ -38,6 +38,7 @@ async def list_audit_events(
     actor_id: int | None = None,
     resource_type: str | None = None,
     resource_id: int | None = None,
+    sort: Annotated[str, Query(pattern=r"^(when_desc|when_asc)$")] = "when_desc",
 ) -> AuditEventListResponse:
     items, total = await svc.list_events(
         category=category,
@@ -50,10 +51,12 @@ async def list_audit_events(
         date_to=filters.date_to,
         offset=pagination.offset,
         limit=pagination.limit,
+        sort=sort,
     )
     return build_paginated(
         [AuditEventResponse.model_validate(i) for i in items],
         total=total,
         page=pagination.page,
         per_page=pagination.per_page,
+        response_cls=AuditEventListResponse,
     )

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useId } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -7,11 +7,9 @@ import BaseModal from "@/components/ui/BaseModal.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { isValidEmail } from "@/constants/contactMeta";
+import { EMAIL_FORMAT_HINT, isValidEmail } from "@/constants/contactMeta";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
-
-const EMAIL_HELP = "use a full address like name@example.com";
 
 const props = withDefaults(
   defineProps<{
@@ -31,12 +29,15 @@ const theme = ref(isInquiry.value ? "work inquiry" : "");
 const message = ref("");
 const { run: runSubmit, loading } = useApiAction();
 
+const descriptionId = useId();
+const statusId = useId();
+
 const emailTone = computed<"error" | "success" | undefined>(() => {
   if (!email.value.trim()) return undefined;
   return isValidEmail(email.value) ? "success" : "error";
 });
 
-const emailError = computed(() => (emailTone.value === "error" ? EMAIL_HELP : undefined));
+const emailError = computed(() => (emailTone.value === "error" ? EMAIL_FORMAT_HINT : undefined));
 
 const canSubmit = computed(
   () =>
@@ -47,6 +48,7 @@ const copy = computed(() =>
   isInquiry.value
     ? {
         title: "get in touch",
+        description: "Send a work inquiry with your email, subject, and message.",
         emailLabel: "email",
         subjectLabel: "subject",
         messageLabel: "message",
@@ -58,6 +60,7 @@ const copy = computed(() =>
       }
     : {
         title: "send feedback",
+        description: "Send product feedback with your email, subject, and message.",
         emailLabel: "email",
         subjectLabel: "subject",
         messageLabel: "message",
@@ -69,8 +72,12 @@ const copy = computed(() =>
       },
 );
 
+const liveStatus = computed(() => (loading.value ? "sending…" : ""));
+const describedByIds = computed(() => `${descriptionId} ${statusId}`);
+
 async function submit(): Promise<void> {
-  if (!canSubmit.value) return;
+  // In-flight guard: button disable alone can race on double Enter.
+  if (loading.value || !canSubmit.value) return;
   const ok = await runSubmit(
     async () => {
       await api.post("/feedback", {
@@ -87,7 +94,18 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <BaseModal :open="open" :title="copy.title" max-width="md" @close="$emit('close')">
+  <BaseModal
+    :open="open"
+    :title="copy.title"
+    :described-by="describedByIds"
+    fill-viewport
+    max-width="md"
+    @close="$emit('close')"
+  >
+    <p :id="descriptionId" class="sr-only">{{ copy.description }}</p>
+    <p :id="statusId" role="status" aria-live="polite" class="sr-only">
+      {{ liveStatus }}
+    </p>
     <form id="feedback-modal-form" class="space-y-3" @submit.prevent="submit">
       <BaseInput
         v-model="email"
@@ -114,9 +132,7 @@ async function submit(): Promise<void> {
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton variant="cancel" type="button" @click="$emit('close')">
-            cancel
-          </BaseButton>
+          <BaseButton variant="cancel" type="button" @click="$emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton

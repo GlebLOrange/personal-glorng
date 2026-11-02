@@ -53,12 +53,7 @@ class HealthCheckResultRepository(MongoRepository[HealthCheckResult]):
             checked["$lte"] = until
         if checked:
             query["checked_at"] = checked
-        cursor = (
-            self._col()
-            .find(query)
-            .sort([("checked_at", -1)])
-            .limit(limit)
-        )
+        cursor = self._col().find(query).sort([("checked_at", -1)]).limit(limit)
         rows = [_parse_doc(HealthCheckResult, row) async for row in cursor]
         rows.reverse()
         return rows

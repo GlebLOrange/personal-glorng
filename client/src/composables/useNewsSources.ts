@@ -125,8 +125,18 @@ export function useNewsSources() {
   }
 
   function sourceMeta(source: NewsSource): string {
-    if (!source.last_fetched_at) return "";
-    return `fetched ${formatDate(source.last_fetched_at)}`;
+    const parts: string[] = [];
+    try {
+      const host = new URL(source.feed_url).hostname;
+      if (host) parts.push(host);
+    } catch {
+      if (source.feed_url.trim()) parts.push(source.feed_url.trim());
+    }
+    if (source.last_fetched_at) {
+      parts.push(`fetched ${formatDate(source.last_fetched_at)}`);
+    }
+    // last_error stays on the warning icon title — keep the subtitle short
+    return parts.join(" · ");
   }
 
   function syncRouteSource(): void {

@@ -38,7 +38,6 @@ docs/.vitepress/.temp/
 !.vscode/tasks.json
 .idea/
 .gortex/
-.postman/
 *.swp
 *.swo
 *.cursorrules
@@ -50,6 +49,10 @@ docs/.vitepress/.temp/
 .cursor/worktrees.json
 .cursor/setup-worktree-unix.sh
 latestcommit.mdc
+
+# Ephemeral agent review dumps (screenshots, Lighthouse JSON)
+.cursor-review-artifacts/
+.review-artifacts/
 
 # Celery beat (dev/runtime schedule db)
 celerybeat-schedule*
@@ -76,8 +79,34 @@ Thumbs.db
 # Local git worktrees (created under repo root)
 .worktrees/
 
-# npx skills — personal/global installs; mirrors are local-only
-.agents/
-.claude/
+# Gortex Mermaid dumps (post-commit hook); see docs/architecture/README.md
+docs/architecture/*.mermaid
+
+
+# npx skills lockfile stays local-only
 skills-lock.json
 
+# Shared agent activation for Cursor / Antigravity / Claude (tracked).
+# Ignore other local mirrors under .agents/ and .claude/ (e.g. npx skills dumps).
+.agents/*
+!.agents/skills
+!.agents/agents/
+!.agents/agents/**
+!.agents/rules/
+!.agents/rules/**
+!.agents/mcp_config.json
+!.agents/hooks.json
+!.agents/workflows/
+!.agents/workflows/**
+
+.claude/*
+!.claude/skills
+!.claude/agents/
+!.claude/agents/**
+!.claude/commands/
+!.claude/commands/**
+!.claude/settings.json
+
+
+# Workspace context archives (template + index.yaml are tracked)
+.cursor/workspace-context/sessions/

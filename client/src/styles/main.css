@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Critical face preloaded from /fonts/ (see index.html). 600/700 idle-load in main.ts. */
+/* Critical faces preloaded from /fonts/ (see index.html). */
 @font-face {
   font-family: "IBM Plex Sans";
   font-style: normal;
@@ -7,33 +7,66 @@
   font-weight: 400;
   src: url("/fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2");
 }
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("/fonts/ibm-plex-sans-latin-700-normal.woff2") format("woff2");
+}
 
 /*
-  Pale dual-theme palette. Token *names* stay stable for Tailwind classes;
+  Material You dual-theme palette. Token *names* stay stable for Tailwind classes;
   values switch on html[data-theme]. surface-dark = page bg, surface-light = primary text.
+  Roles: primary (chrome), tertiary (pills), error, custom=status-cyan.
+  accent-coral / accent-lavender alias primary so existing utilities follow.
+  Secondary fills match primary on the sheet — secondary *controls* stay surface+outline.
+  Success/warning kept as status hues (badges/toasts), not product button paint.
 */
 :root,
 html[data-theme="dark"] {
   color-scheme: dark;
-  /* GitHub Dark greys + pale orange/red — HTTP families (1xx–5xx) drive actions, badges, icon chrome */
-  --palette-accent-blue: #e8b07a;
-  --palette-status-success: #8dcea8;
-  --palette-status-cyan: #7ec8c4;
-  --palette-status-error: #f0a8a4;
-  --palette-status-critical: #e7a0b4;
-  --palette-status-warning: #e4c98a;
-  --palette-surface-light: #e6edf3;
-  --palette-surface-sage: #b1bac4;
-  --palette-surface-mid: #9198a1;
-  --palette-surface-muted: #7d8590;
-  --palette-surface-dark: #0d1117;
-  --palette-surface-card: #161b22;
-  --palette-surface-border: #30363d;
-  --palette-surface-grid: #21262d;
-  --palette-accent-violet: #f0a8a4;
-  --palette-accent-golden: #e4c98a;
-  --palette-on-accent: #0d1117;
-  --palette-theme-color: #0d1117;
+  --palette-primary: #cfbdfe;
+  --palette-on-primary: #1e1545;
+  --palette-primary-container: #4b4073;
+  --palette-on-primary-container: #e8dffd;
+  /* Legacy aliases → primary */
+  --palette-accent-coral: var(--palette-primary);
+  --palette-accent-lavender: var(--palette-primary);
+  --palette-status-success: #a8d08d;
+  --palette-status-cyan: #8dceed;
+  --palette-status-error: #ffb4ab;
+  --palette-error-container: #93000a;
+  --palette-on-error: #1e1545;
+  --palette-status-critical: #ffdad7;
+  --palette-status-warning: #e8c468;
+  --palette-surface-light: #e6e1e5;
+  --palette-surface-sage: #cac4d0;
+  --palette-surface-mid: #938f99;
+  --palette-surface-muted: #9a96a0; /* ≥4.5:1 on page, card, grid */
+  --palette-surface-dark: #141218;
+  --palette-surface-card: #1d1b20;
+  --palette-surface-border: #49454e;
+  --palette-surface-grid: #2b2930;
+  --palette-tertiary: #ffb1c8;
+  --palette-on-tertiary: #1e1545;
+  --palette-tertiary-container: #5d1133;
+  --palette-on-tertiary-container: #ffdae3;
+  --palette-accent-violet: var(--palette-tertiary);
+  --palette-accent-golden: #cbc2db;
+  --palette-custom: var(--palette-status-cyan);
+  --palette-on-custom: #00344f;
+  /* Section pills: light fills → dark ink */
+  --palette-label-ink: #1d1b20;
+  --palette-on-accent: var(--palette-on-primary);
+  --palette-theme-color: #141218;
   --site-bg-image: none;
   --site-bg-scrim: linear-gradient(
     180deg,
@@ -44,24 +77,40 @@ html[data-theme="dark"] {
 
 html[data-theme="light"] {
   color-scheme: light;
-  --palette-accent-blue: #c2410c;
-  --palette-status-success: #1a7f37;
-  --palette-status-cyan: #0f766e;
-  --palette-status-error: #b42318;
-  --palette-status-critical: #9f1239;
-  --palette-status-warning: #a16207;
-  --palette-surface-light: #111827;
-  --palette-surface-sage: #2e3640;
-  --palette-surface-mid: #3e4854;
-  --palette-surface-muted: #515b67;
-  --palette-surface-dark: #e5e7eb;
-  --palette-surface-card: #f7f8fa;
-  --palette-surface-border: #c3cad3;
-  --palette-surface-grid: #dde1e6;
-  --palette-accent-violet: #b42318;
-  --palette-accent-golden: #a16207;
-  --palette-on-accent: #ffffff;
-  --palette-theme-color: #e5e7eb;
+  --palette-primary: #63588d;
+  --palette-on-primary: #ffffff;
+  --palette-primary-container: #cfc6e7;
+  --palette-on-primary-container: #4b4073;
+  /* Legacy aliases → primary */
+  --palette-accent-coral: var(--palette-primary);
+  --palette-accent-lavender: var(--palette-primary);
+  --palette-status-success: #3b6d11;
+  --palette-status-cyan: #23648a;
+  --palette-status-error: #bf1c1e;
+  --palette-error-container: #ffdad7;
+  --palette-on-error: #ffffff;
+  --palette-status-critical: #94000c;
+  --palette-status-warning: #8b6914;
+  --palette-surface-light: #1d1b20;
+  --palette-surface-sage: #49454e;
+  --palette-surface-mid: #605c66; /* ≥4.5:1 on card #f2ecf4 */
+  --palette-surface-muted: #605c66; /* ≥4.5:1 on page, card, grid */
+  --palette-surface-dark: #fef7ff;
+  --palette-surface-card: #f2ecf4;
+  --palette-surface-border: #848086;
+  --palette-surface-grid: #e8dffd;
+  --palette-tertiary: #8d4b60;
+  --palette-on-tertiary: #ffffff;
+  --palette-tertiary-container: #ffdae3;
+  --palette-on-tertiary-container: #713448;
+  --palette-accent-violet: var(--palette-tertiary);
+  --palette-accent-golden: #625b71;
+  --palette-custom: var(--palette-status-cyan);
+  --palette-on-custom: #ffffff;
+  /* Section pills: mid-tone fills → white ink */
+  --palette-label-ink: #ffffff;
+  --palette-on-accent: var(--palette-on-primary);
+  --palette-theme-color: #fef7ff;
   --site-bg-scrim: linear-gradient(
     180deg,
     color-mix(in srgb, var(--palette-surface-dark) 94%, transparent) 0%,
@@ -72,8 +121,10 @@ html[data-theme="light"] {
 
 @theme {
   --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  /* Product UI is sans-only; keep alias for Tailwind font-mono / legacy refs. */
-  --font-mono: var(--font-sans);
+  /* Real mono face (system stack, no extra dep) for public portfolio signature. */
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  /* Map medium → 600 (loaded face); default Tailwind medium is 500 (no file). */
+  --font-weight-medium: 600;
   --text-xs: 0.875rem;
   --text-xs--line-height: 1.5;
   --text-sm: 1rem;
@@ -88,13 +139,22 @@ html[data-theme="light"] {
   --text-2xl--line-height: 1.35;
   --text-3xl: 2.125rem;
   --text-3xl--line-height: 1.25;
-  /* Product action families — pale, statuscode-aligned (1xx–5xx) */
-  --color-accent-blue: var(--palette-accent-blue);
+  /* Sheet roles + legacy class stems (accent-coral aliases primary) */
+  --color-primary: var(--palette-primary);
+  --color-on-primary: var(--palette-on-primary);
+  --color-primary-container: var(--palette-primary-container);
+  --color-on-primary-container: var(--palette-on-primary-container);
+  --color-accent-coral: var(--palette-primary);
+  --color-accent-lavender: var(--palette-primary);
   --color-status-success: var(--palette-status-success);
   --color-status-cyan: var(--palette-status-cyan);
+  --color-custom: var(--palette-custom);
+  --color-on-custom: var(--palette-on-custom);
   --color-status-error: var(--palette-status-error);
+  --color-error: var(--palette-status-error);
+  --color-on-error: var(--palette-on-error);
+  --color-error-container: var(--palette-error-container);
   --color-status-critical: var(--palette-status-critical);
-  /* Warning / 3xx update-edit — pale yellow */
   --color-status-warning: var(--palette-status-warning);
   /* Surfaces: dark=page bg, light=primary text, card=elevated, mid=secondary text */
   --color-surface-light: var(--palette-surface-light);
@@ -105,23 +165,67 @@ html[data-theme="light"] {
   --color-surface-card: var(--palette-surface-card);
   --color-surface-border: var(--palette-surface-border);
   --color-surface-grid: var(--palette-surface-grid);
-  /* Ink on solid pale accent fills (CTA) — always dark for contrast */
-  --color-on-accent: var(--palette-on-accent);
-  /* Marketing / portfolio brand only */
-  --color-accent-violet: var(--palette-accent-violet);
+  /* Semantic aliases (prefer in new code; legacy surface-* names stay). */
+  --color-page: var(--palette-surface-dark);
+  --color-card: var(--palette-surface-card);
+  --color-text: var(--palette-surface-light);
+  --color-text-muted: var(--palette-surface-muted);
+  --color-on-accent: var(--palette-on-primary);
+  --color-tertiary: var(--palette-tertiary);
+  --color-on-tertiary: var(--palette-on-tertiary);
+  --color-tertiary-container: var(--palette-tertiary-container);
+  --color-on-tertiary-container: var(--palette-on-tertiary-container);
+  --color-accent-violet: var(--palette-tertiary);
   --color-accent-golden: var(--palette-accent-golden);
-  /* Legacy aliases → families (prefer status-* / accent-blue in new code) */
+  --color-label-ink: var(--palette-label-ink);
+  /* Legacy aliases → families */
   --color-accent-red: var(--palette-status-error);
   --color-accent-amber: var(--palette-status-warning);
   --radius-interactive: 0.5rem;
   --spacing-grid-gap: 0.5rem;
+  /* Default spacing tokens — buttons & navigation menus. */
+  --spacing-btn-x: 1rem;
+  --spacing-btn-x-sm: 0.75rem;
+  --spacing-btn-gap: 0.5rem;
+  --spacing-nav-x: 0.75rem;
+  --spacing-nav-y: 0.5rem;
+  --spacing-nav-gap: 0.25rem;
+}
+
+/** Nav menu item (desktop + mobile): shared 44px hit target and padding. */
+@utility nav-item {
+  @apply inline-flex min-h-11 items-center rounded-lg;
+  gap: var(--spacing-btn-gap);
+  padding: var(--spacing-nav-y) var(--spacing-nav-x);
+}
+
+/** Nav menu list: shared gap between items. */
+@utility nav-menu {
+  gap: var(--spacing-nav-gap);
 }
 
 @utility page-shell {
   @apply mx-auto w-full px-6;
-  --tile: calc((100% - 2rem) / 3);
-  --content: calc(var(--tile) * 2 + 1rem);
+  /* Shell width: 1024px. */
+  max-width: 1024px;
+  /* Min width: 768px on phones/tablets (scroll horizontally), 1024px from lg (64rem). */
+  min-width: 768px;
+  @variant lg {
+    min-width: 1024px;
+  }
+  /* Reserve an end lane for fixed scroll controls when the outside gutter is too narrow. */
+  @media (width < 1180px) {
+    padding-right: calc(3.5rem + env(safe-area-inset-right));
+  }
+  /* Compact tile unit: 3 cards/row at ≥420px each (+ 1rem gaps). */
+  --tile-min: 768px;
+  --tile-gap: 1rem;
+  --tile: calc((100% - 2 * var(--tile-gap)) / 3);
+  --content: calc(var(--tile) * 2 + var(--tile-gap));
   --page-chrome-offset: 4rem;
+  /* Fallback only: PageChrome publishes its measured height on <html> (usePageChromeHeight).
+     border-b 1px + my-[15px]×2 + h-10 ≈ 71px. */
+  --page-chrome-h-fallback: calc(2.5rem + 30px + 1px);
 }
 
 /** Icon chrome parked in the gutter just past the content shell’s right edge. */
@@ -129,9 +233,78 @@ html[data-theme="light"] {
   @apply absolute right-0 z-10 translate-x-[calc(100%+15px)] mr-[env(safe-area-inset-right)];
 }
 
+/** Scroll controls: outside gutter at ≥1180px; pinned to the viewport edge below (page-shell pads for them). */
+@utility scroll-rail-end {
+  @apply fixed right-[calc(0.5rem+env(safe-area-inset-right))] z-10;
+  @media (width >= 1180px) {
+    @apply absolute right-0 translate-x-[calc(100%+15px)] mr-[env(safe-area-inset-right)];
+  }
+}
+
+/** Chrome icons (Back) on the same vertical rail as ScrollControls (scroll-rail-end).
+ * ≥1180px: outside gutter past the shell edge. Below: viewport edge − 0.5rem, matching the fixed
+ * scroll buttons. Can't use `fixed` (chrome backdrop-blur is a containing block), so offset from
+ * the chrome's content edge: shell end padding (3.5rem) − 0.5rem + any centering gutter. */
+@utility chrome-rail-end {
+  @apply absolute z-10;
+  right: calc(-3rem - max(0px, (100vw - 1024px) / 2));
+  @media (width >= 1180px) {
+    @apply -right-6 translate-x-[calc(100%+15px)] mr-[env(safe-area-inset-right)];
+  }
+}
+
 @utility page-body {
-  @apply w-full min-w-0;
+  @apply flex w-full flex-col;
+  min-width: 1024px;
   margin-top: var(--page-chrome-offset);
+  /* Fill the viewport below chrome so a page-body-footer (mt-auto) pins on short pages.
+     --page-chrome-h = measured chrome box; 2.5rem ≈ shell pb-10. */
+  min-height: calc(100dvh - var(--page-chrome-offset) - var(--page-chrome-h, var(--page-chrome-h-fallback)) - 2.5rem);
+}
+
+/** Content column (2-of-3 tiles) — formerly page-body-narrow. */
+@utility page-body-content {
+  @apply w-full min-w-0;
+}
+
+/** List footer / pagination slot: last child of page-body(-content) or any flex column; mt-auto pins it to the bottom. */
+@utility page-body-footer {
+  @apply mt-auto w-full;
+}
+
+/** Tool slot inside page-body (PageShell tool prop). Centers action panels; full-bleed siblings use w-full self-stretch. */
+@utility page-tool-body {
+  @apply flex min-h-0 w-full flex-1 flex-col items-center;
+}
+
+/** Shared tool actions — spans 100% of parent; one horizontal lane, wraps only when narrow.
+ * A lone child fills the lane. Use `page-tool-actions-stack` for vertical stacks (forms + sections). */
+@utility page-tool-actions {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--spacing) * 3);
+  margin-bottom: calc(var(--spacing) * 4);
+}
+
+@utility page-tool-actions-stack {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.page-tool-actions > * {
+  @apply min-w-0 max-w-full;
+}
+
+.page-tool-actions > :only-child,
+.page-tool-actions.page-tool-actions-stack > * {
+  @apply w-full;
 }
 
 @media (min-width: 768px) {
@@ -149,12 +322,18 @@ html[data-theme="light"] {
 }
 
 @utility page-tile-scope {
-  --tile: calc((100% - 2rem) / 3);
-  --content: calc(var(--tile) * 2 + 1rem);
+  --tile-min: 420px;
+  --tile-gap: 1rem;
+  --tile: calc((100% - 2 * var(--tile-gap)) / 3);
+  --content: calc(var(--tile) * 2 + var(--tile-gap));
 }
 
 @utility page-tool-grid {
   @apply grid min-w-0 grid-cols-1 gap-4;
+}
+
+@utility page-launcher-grid {
+  @apply grid min-w-0 grid-cols-1 gap-3;
 }
 
 @utility page-tile {
@@ -168,14 +347,31 @@ html[data-theme="light"] {
   }
   /* Keyboard focus on the link drives the inner card (hover uses Card hoverable). */
   &:focus-visible .page-tile-card {
-    border-color: var(--color-accent-blue);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent-blue) 50%, transparent);
+    border-color: var(--color-accent-coral);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent-coral) 50%, transparent);
+  }
+  /* Fallback ring when the tile has no inner .page-tile-card. */
+  &:focus-visible:not(:has(.page-tile-card)) {
+    outline: 2px solid var(--color-accent-coral);
+    outline-offset: 2px;
   }
 }
 
 @utility page-tile-card {
   /* !p beats Card default p-6 (no twMerge on Card class merge). */
-  @apply flex h-full min-h-36 min-w-0 flex-col items-start justify-center gap-2 !p-5 text-left sm:min-h-40 sm:!p-6;
+  @apply flex h-full min-h-16 min-w-0 w-full items-center gap-3 !p-4 text-left;
+}
+
+.page-launcher-grid[data-density="compact"] .page-tile-card,
+.page-tool-grid .page-tile-card {
+  min-height: 3.5rem;
+  gap: 0.625rem;
+  padding: 0.75rem !important;
+}
+
+/* Guest Tools catalog — 88px min tile / 44px icon well (icon size set in ToolTileGrid). */
+.page-launcher-grid[data-presentation="public"] .page-tile-card {
+  min-height: 5.5rem;
 }
 
 @keyframes page-tile-enter {
@@ -190,34 +386,44 @@ html[data-theme="light"] {
 }
 
 /* Stagger capped at ~9 tiles so long admin grids stay snappy. */
-.page-tool-grid > .page-tile {
+.page-tool-grid > .page-tile,
+.page-launcher-grid > .page-tile {
   animation: page-tile-enter 0.22s ease-out both;
 }
-.page-tool-grid > .page-tile:nth-child(1) {
+.page-tool-grid > .page-tile:nth-child(1),
+.page-launcher-grid > .page-tile:nth-child(1) {
   animation-delay: 0ms;
 }
-.page-tool-grid > .page-tile:nth-child(2) {
+.page-tool-grid > .page-tile:nth-child(2),
+.page-launcher-grid > .page-tile:nth-child(2) {
   animation-delay: 30ms;
 }
-.page-tool-grid > .page-tile:nth-child(3) {
+.page-tool-grid > .page-tile:nth-child(3),
+.page-launcher-grid > .page-tile:nth-child(3) {
   animation-delay: 60ms;
 }
-.page-tool-grid > .page-tile:nth-child(4) {
+.page-tool-grid > .page-tile:nth-child(4),
+.page-launcher-grid > .page-tile:nth-child(4) {
   animation-delay: 90ms;
 }
-.page-tool-grid > .page-tile:nth-child(5) {
+.page-tool-grid > .page-tile:nth-child(5),
+.page-launcher-grid > .page-tile:nth-child(5) {
   animation-delay: 120ms;
 }
-.page-tool-grid > .page-tile:nth-child(6) {
+.page-tool-grid > .page-tile:nth-child(6),
+.page-launcher-grid > .page-tile:nth-child(6) {
   animation-delay: 150ms;
 }
-.page-tool-grid > .page-tile:nth-child(7) {
+.page-tool-grid > .page-tile:nth-child(7),
+.page-launcher-grid > .page-tile:nth-child(7) {
   animation-delay: 180ms;
 }
-.page-tool-grid > .page-tile:nth-child(8) {
+.page-tool-grid > .page-tile:nth-child(8),
+.page-launcher-grid > .page-tile:nth-child(8) {
   animation-delay: 210ms;
 }
-.page-tool-grid > .page-tile:nth-child(n + 9) {
+.page-tool-grid > .page-tile:nth-child(n + 9),
+.page-launcher-grid > .page-tile:nth-child(n + 9) {
   animation-delay: 240ms;
 }
 
@@ -227,13 +433,78 @@ html[data-theme="light"] {
 
 @media (min-width: 768px) {
   .page-shell > .page-body-narrow,
-  .page-tile-scope > .page-body-narrow {
+  .page-tile-scope > .page-body-narrow,
+  .page-shell .page-body-content,
+  .page-tile-scope .page-body-content {
     max-width: var(--content);
   }
 
   .page-shell .page-tool-grid,
   .page-tile-scope .page-tool-grid {
-    grid-template-columns: repeat(3, var(--tile));
+    /* Three compact tiles per row (each resolves toward --tile-min when shell is wide). */
+    grid-template-columns: repeat(3, minmax(0, var(--tile)));
+  }
+
+  .page-shell .page-launcher-grid,
+  .page-tile-scope .page-launcher-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .page-shell .page-launcher-grid:has(> :only-child),
+  .page-tile-scope .page-launcher-grid:has(> :only-child) {
+    /* Match a two-up tile width; leave the rest of the row empty. */
+    grid-template-columns: minmax(0, 1fr);
+    max-width: calc((100% - 0.75rem) / 2);
+  }
+
+  .page-shell .page-launcher-grid:has(> :nth-child(2):last-child),
+  .page-tile-scope .page-launcher-grid:has(> :nth-child(2):last-child),
+  .page-shell .page-launcher-grid:has(> :nth-child(4):last-child),
+  .page-tile-scope .page-launcher-grid:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Admin hub launcher: 1 col, 2 from sm (40rem), 3 from lg (64rem).
+   Overrides .page-shell / .page-tile-scope grids, including their :has() spans. */
+.page-shell .page-launcher-grid[data-presentation="admin"],
+.page-tile-scope .page-launcher-grid[data-presentation="admin"] {
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: none;
+}
+
+.page-launcher-grid[data-presentation="admin"] > .page-tile {
+  grid-column: auto;
+  height: 100%;
+  max-width: none;
+}
+
+@media (min-width: 40rem) {
+  .page-shell .page-launcher-grid[data-presentation="admin"],
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"],
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :only-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :only-child),
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(2):last-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(2):last-child),
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(4):last-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .page-shell .page-launcher-grid[data-presentation="admin"],
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"],
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :only-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :only-child),
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(2):last-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(2):last-child),
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(4):last-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: none;
   }
 }
 
@@ -251,32 +522,43 @@ html[data-theme="light"] {
 @utility nav-link {
   @apply text-surface-mid transition-colors;
   &:hover {
-    @apply text-accent-blue;
+    @apply text-accent-coral;
   }
   &:focus-visible {
-    @apply outline-none ring-2 ring-accent-blue/50 rounded;
+    @apply outline-none ring-2 ring-accent-coral/50 rounded;
   }
 }
 
 @utility nav-link-accent {
-  @apply nav-link;
+  @apply nav-link text-surface-light;
+}
+
+/** Secondary chrome — news / tools / login sit quieter than the CV entry. */
+@utility nav-link-quiet {
+  @apply text-sm text-surface-muted transition-colors;
+  &:hover {
+    @apply text-accent-coral;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-accent-coral/50 rounded;
+  }
 }
 
 @utility interactive-surface {
   @apply bg-surface-card border border-surface-border rounded-lg;
   &:hover {
-    @apply border-accent-blue;
+    @apply border-accent-coral;
   }
   &:active {
-    @apply border-accent-blue opacity-90;
+    @apply border-accent-coral opacity-90;
   }
   &:focus-visible {
-    @apply outline-none ring-2 ring-accent-blue/50;
+    @apply outline-none ring-2 ring-accent-coral/50;
   }
 }
 
 @utility skip-link {
-  @apply sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface-card focus:text-surface-light focus:border focus:border-accent-blue focus:rounded-lg;
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface-card focus:text-surface-light focus:border focus:border-accent-coral focus:rounded-lg;
 }
 
 @utility text-body {
@@ -303,6 +585,30 @@ html[data-theme="light"] {
   @apply text-3xl font-semibold tracking-tight text-surface-light;
 }
 
+/** Overlapping M3-role name block on portfolio section frames (opt-in via SectionWrapper). */
+@utility section-label-pill {
+  @apply inline-flex max-w-full items-center rounded-full border-2 border-label-ink px-4 py-1.5 text-sm font-semibold uppercase tracking-wider text-label-ink;
+}
+
+.section-label-pill--primary {
+  background-color: var(--color-primary);
+}
+/* Secondary fill matches primary on the sheet — use surface-container + on-surface ink. */
+.section-label-pill--secondary {
+  background-color: var(--color-surface-grid);
+  color: var(--color-surface-light);
+  border-color: var(--color-surface-border);
+}
+.section-label-pill--tertiary {
+  background-color: var(--color-tertiary);
+}
+.section-label-pill--error {
+  background-color: var(--color-status-error);
+}
+.section-label-pill--custom {
+  background-color: var(--color-custom);
+}
+
 @utility card-title {
   @apply text-lg font-semibold text-surface-light;
 }
@@ -313,36 +619,93 @@ html[data-theme="light"] {
 
 @utility cta-primary {
   /* Pale 1xx wash — matches BaseButton primary / ACTION_BUTTON_PAINT */
-  @apply h-10 px-4 rounded-lg border border-transparent bg-accent-blue/10 text-accent-blue/88 text-sm font-medium transition-colors inline-flex items-center justify-center;
+  @apply h-10 px-4 rounded-lg border border-transparent bg-accent-coral/10 text-accent-coral text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
-    @apply border-accent-blue/22 bg-accent-blue/12;
+    @apply border-accent-coral/22 bg-accent-coral/12;
   }
   &:active:not(:disabled) {
-    @apply border-accent-blue/22 bg-accent-blue/14;
+    @apply border-accent-coral/22 bg-accent-coral/14;
   }
   &:disabled {
     @apply opacity-50 cursor-not-allowed;
   }
   &:focus-visible {
-    @apply outline-none ring-2 ring-accent-blue/50;
+    @apply outline-none ring-2 ring-accent-coral/50;
+  }
+}
+
+@utility cta-hero {
+  /* Solid hire CTA — hero only; do not reuse on 404 / in-app washes */
+  /* Match cta-secondary control size (h-10 px-4) so hero CTAs align. */
+  @apply h-10 px-4 rounded-lg border border-accent-coral bg-accent-coral text-on-accent text-sm font-semibold transition-colors inline-flex items-center justify-center;
+  &:hover:not(:disabled) {
+    @apply brightness-95;
+  }
+  &:active:not(:disabled) {
+    @apply brightness-95;
+  }
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-accent-coral/50 ring-offset-2 ring-offset-surface-dark;
   }
 }
 
 @utility cta-secondary {
-  /* 3xx family — portfolio secondary taps align with redirect/edit HTTP tone */
-  @apply h-10 px-4 rounded-lg border border-transparent bg-status-warning/10 text-status-warning/88 text-sm font-medium transition-colors inline-flex items-center justify-center;
+  /* Grayscale secondary — download / quiet actions (not warning yellow). */
+  @apply h-10 px-4 rounded-lg border border-surface-border bg-surface-card text-surface-sage text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
-    @apply border-status-warning/22 bg-status-warning/12;
+    @apply border-surface-mid text-surface-light;
   }
   &:active:not(:disabled) {
-    @apply border-status-warning/22 bg-status-warning/14;
+    @apply border-surface-mid text-surface-light opacity-90;
   }
   &:disabled {
     @apply opacity-50 cursor-not-allowed;
   }
   &:focus-visible {
-    @apply border-status-warning/40 outline-none ring-2 ring-status-warning/50;
+    @apply outline-none ring-2 ring-accent-coral/50;
   }
+}
+
+/* Support CTAs — solid vendor brand fills (Stripe / PayPal / Patreon site colors). */
+@utility donation-brand {
+  @apply h-10 px-4 rounded-lg border border-transparent text-sm font-medium text-white transition-[filter,colors] inline-flex items-center justify-center;
+  background-color: var(--donation-bg);
+  --donation-hover-brightness: 1.08;
+  &:hover:not(:disabled) {
+    filter: brightness(var(--donation-hover-brightness));
+  }
+  &:active:not(:disabled) {
+    filter: brightness(0.96);
+  }
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2;
+    --tw-ring-color: var(--donation-ring);
+  }
+}
+
+@utility donation-brand-stripe {
+  @apply donation-brand;
+  --donation-bg: #635bff;
+  --donation-ring: rgb(99 91 255 / 0.55);
+}
+
+@utility donation-brand-paypal {
+  @apply donation-brand;
+  --donation-bg: #003087;
+  --donation-ring: rgb(0 112 186 / 0.55);
+  --donation-hover-brightness: 1.12;
+}
+
+@utility donation-brand-patreon {
+  @apply donation-brand;
+  --donation-bg: #ff424d;
+  --donation-ring: rgb(255 66 77 / 0.55);
 }
 
 @utility alert-surface-error {
@@ -356,13 +719,13 @@ html[data-theme="light"] {
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 0.875rem 0.875rem;
-  /* dark theme (default): surface-mid #9198a1 */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%239198a1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* dark theme (default): surface-mid #938f99 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%23938f99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 html[data-theme="light"] .field-select-chevron {
-  /* light theme: surface-mid #3e4854 */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%233e4854' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* light theme: surface-mid #79747e */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%2379747e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 @utility alert-surface-warning {
@@ -422,6 +785,12 @@ a.cta-primary:hover,
 a.cta-primary:focus-visible,
 a.cta-secondary:hover,
 a.cta-secondary:focus-visible,
+a.donation-brand-stripe:hover,
+a.donation-brand-stripe:focus-visible,
+a.donation-brand-paypal:hover,
+a.donation-brand-paypal:focus-visible,
+a.donation-brand-patreon:hover,
+a.donation-brand-patreon:focus-visible,
 a.contact-link-chip:hover,
 a.contact-link-chip:focus-visible,
 a.card-as-link:hover,
@@ -432,10 +801,6 @@ a.card-as-link:hover *,
 a.card-as-link:focus-visible *,
 a.card-as-link[aria-current="page"] *,
 a.card-as-link[aria-selected="true"] *,
-.portfolio-link-rail a:hover,
-.portfolio-link-rail a:focus-visible,
-.portfolio-link-rail a[aria-current="page"],
-.portfolio-link-rail a[aria-selected="true"],
 #site-header a:hover,
 #site-header a:focus-visible,
 #site-header a[aria-current="page"],
@@ -457,7 +822,42 @@ textarea,
 summary,
 label {
   touch-action: manipulation;
-  -webkit-tap-highlight-color: color-mix(in srgb, var(--color-accent-blue) 25%, transparent);
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--color-accent-coral) 25%, transparent);
+}
+
+/* Portfolio CV follows theme surfaces (no GitHub-hex override). */
+.portfolio-cv {
+  background-color: var(--color-surface-dark);
+}
+
+/** Soft tile wash — surface-card over page so compact cards still lift. */
+@utility portfolio-cv-tile-wash {
+  background-color: var(--color-surface-card) !important;
+}
+
+/** Primary tech/skill chips — 28% fill + matching text. */
+@utility portfolio-cv-chip {
+  @apply inline-flex items-center rounded-lg px-2.5 py-1;
+  background-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+  color: var(--color-primary);
+}
+
+/** Primary news article tags — same 28% fill token; news pages are outside .portfolio-cv. */
+@utility news-tag-chip {
+  @apply rounded px-2.5 py-1 text-xs;
+  background-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+  color: var(--color-primary);
+}
+
+/** Text link affordance — primary ink; do not apply to tiles/nav chrome. */
+@utility text-link {
+  @apply text-primary underline-offset-2;
+  &:hover {
+    @apply underline;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-primary/50 rounded;
+  }
 }
 
 /* Portfolio CV: body prose reads as primary; meta stays supporting */
@@ -467,6 +867,14 @@ label {
 
 .portfolio-cv .text-meta {
   color: var(--color-surface-sage);
+}
+
+.portfolio-cv .experience-tech-details > summary {
+  list-style: none;
+}
+
+.portfolio-cv .experience-tech-details > summary::-webkit-details-marker {
+  display: none;
 }
 
 /* Block cards: underline title only on hover — never the whole body copy */
@@ -499,12 +907,12 @@ h6,
 }
 
 .accent-gradient {
-  background: linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-violet));
+  background: linear-gradient(135deg, var(--color-accent-coral), var(--color-accent-violet));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   /* Fallback when clip/fill is unsupported */
-  color: var(--color-accent-blue);
+  color: var(--color-accent-coral);
 }
 
 @media (forced-colors: active) {
@@ -578,6 +986,12 @@ h6,
     color: #111827 !important;
   }
 
+  .portfolio-cv .section-label-pill {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-color: #111827 !important;
+  }
+
   .portfolio-cv .text-body,
   .portfolio-cv .text-meta,
   .portfolio-cv .text-surface-sage,
@@ -607,85 +1021,15 @@ h6,
     background: #ffffff !important;
     box-shadow: none !important;
   }
-}
 
-#cc-main {
-  /* Mirrors @theme surfaces + 1xx accent (CookieConsent needs resolved colors) */
-  --cc-bg: var(--color-surface-card);
-  --cc-primary-color: var(--color-surface-light);
-  --cc-secondary-color: var(--color-surface-sage);
-  --cc-btn-primary-bg: var(--color-accent-blue);
-  --cc-btn-primary-color: var(--color-on-accent);
-  --cc-btn-primary-hover-bg: color-mix(in srgb, var(--color-accent-blue) 90%, white);
-  --cc-btn-primary-hover-color: var(--color-on-accent);
-  --cc-btn-secondary-bg: color-mix(
-    in srgb,
-    var(--color-surface-card) 70%,
-    var(--color-surface-border)
-  );
-  --cc-btn-secondary-color: var(--color-surface-light);
-  --cc-btn-secondary-hover-bg: color-mix(
-    in srgb,
-    var(--color-surface-card) 50%,
-    var(--color-surface-border)
-  );
-  --cc-btn-secondary-hover-color: var(--color-surface-light);
-  --cc-separator-border-color: color-mix(
-    in srgb,
-    var(--color-surface-card) 70%,
-    var(--color-surface-border)
-  );
-  --cc-cookie-category-block-bg: var(--color-surface-dark);
-  --cc-cookie-category-block-hover-bg: color-mix(
-    in srgb,
-    var(--color-surface-dark) 85%,
-    var(--color-surface-card)
-  );
-  --cc-overlay-bg: color-mix(in srgb, var(--color-surface-dark) 70%, transparent);
-  --cc-toggle-on-bg: var(--color-accent-blue);
-  --cc-toggle-off-bg: color-mix(
-    in srgb,
-    var(--color-surface-card) 70%,
-    var(--color-surface-border)
-  );
-  --cc-toggle-readonly-bg: color-mix(
-    in srgb,
-    var(--color-surface-card) 50%,
-    var(--color-surface-border)
-  );
-  --cc-section-border: color-mix(
-    in srgb,
-    var(--color-surface-card) 70%,
-    var(--color-surface-border)
-  );
-  --cc-footer-bg: var(--color-surface-dark);
-  --cc-footer-color: var(--color-surface-muted);
-  --cc-footer-border-color: color-mix(
-    in srgb,
-    var(--color-surface-card) 70%,
-    var(--color-surface-border)
-  );
+  /* Expand technical details for print; hide the disclosure chrome */
+  .portfolio-cv .experience-tech-details > summary {
+    display: none !important;
+  }
 
-  font-family: var(--font-sans);
-}
-
-/* Bottom hairline for AdminListRow — ::after so expand/hover rings (box-shadow) don't wipe it. */
-.admin-list-row-rule {
-  position: relative;
-}
-
-.admin-list-row-rule::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  height: 1px;
-  background: color-mix(in srgb, var(--color-surface-border) 70%, transparent);
-  pointer-events: none;
-}
-
-.admin-list-row-rule:last-child::after {
-  content: none;
+  .portfolio-cv .experience-tech-details > *:not(summary) {
+    display: block !important;
+  }
 }
 
 /* Thin themed scrollbar for compact overflow panels (e.g. AI chat ? help). */
@@ -721,4 +1065,12 @@ h6,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Subtle hover lift on portfolio case/repo cards (global reduced-motion guard applies). */
+.portfolio-cv-tile-wash {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+.portfolio-cv-tile-wash:hover {
+  transform: translateY(-2px);
 }

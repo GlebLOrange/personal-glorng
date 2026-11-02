@@ -222,21 +222,20 @@ watch(articleId, () => {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" :title="chromeTitle" max-width="5xl" back-to="/admin/news">
+  <AdminPageLayout hub="tools" :title="chromeTitle" back-to="/admin/news">
     <header v-if="canWrite && article" class="page-intro">
       <p v-if="form.slug.trim()" class="mb-3 text-sm text-surface-mid">
         Public URL:
-        <RouterLink
-          :to="`/news/${form.slug.trim()}`"
-          class="nav-link font-data"
-        >
+        <RouterLink :to="`/news/${form.slug.trim()}`" class="nav-link font-data">
           /news/{{ form.slug.trim() }}
         </RouterLink>
       </p>
-      <div class="flex flex-wrap gap-2">
-        <BaseButton variant="save" :disabled="actionLoading" @click="saveArticle">
-          {{ actionLoading ? "saving…" : "save article" }}
-        </BaseButton>
+      <div class="page-tool-actions mb-0">
+        <div class="flex w-full flex-wrap justify-between gap-2">
+          <BaseButton variant="save" class="w-auto" :disabled="actionLoading" @click="saveArticle">
+            {{ actionLoading ? "saving…" : "save article" }}
+          </BaseButton>
+        </div>
       </div>
     </header>
 
@@ -255,7 +254,13 @@ watch(articleId, () => {
       <Card v-else-if="detailError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm text-status-warning">{{ detailError }}</p>
-          <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="loadCurrentArticle">
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            :icon="false"
+            class="gap-1.5"
+            @click="loadCurrentArticle"
+          >
             <RefreshIcon class-name="size-3.5" />
             retry
           </BaseButton>

@@ -14,5 +14,5 @@ Mount `/api/docs`, `/api/redoc`, and `/api/openapi.json` **only when `APP_ENV=de
 ## Consequences
 
 - Production and staging do not serve Swagger.
-- Postman and CI use the committed/generated schema or a local dev API.
+- CI and local tooling use the committed/generated schema or a local dev API.
 - Capability and auth narrative stay in curated handbook pages alongside the generated endpoint table.

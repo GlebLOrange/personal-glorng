@@ -151,4 +151,60 @@ describe("BaseModal", () => {
 
     wrapper.unmount();
   });
+
+  it("wires aria-describedby and fill-viewport shell classes", async () => {
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    document.body.append(trigger);
+    trigger.focus();
+
+    const wrapper = mount(BaseModal, {
+      attachTo: document.body,
+      props: {
+        open: true,
+        title: "Feedback",
+        describedBy: "feedback-desc",
+        fillViewport: true,
+      },
+      slots: {
+        default: '<p id="feedback-desc">Describe the form.</p>',
+        footer: '<button type="button">send</button>',
+      },
+    });
+    await flushFocus();
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    expect(dialog?.getAttribute("aria-describedby")).toBe("feedback-desc");
+    expect(dialog?.className).toContain("h-[100dvh]");
+    expect(dialog?.className).toContain("max-h-[100dvh]");
+
+    wrapper.unmount();
+  });
+
+  it("keeps compact close at a ≥44px hit target", async () => {
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    document.body.append(trigger);
+    trigger.focus();
+
+    const wrapper = mount(BaseModal, {
+      attachTo: document.body,
+      props: { open: true, title: "Confirm", compact: true },
+      slots: {
+        default: "<p>Are you sure?</p>",
+      },
+    });
+    await flushFocus();
+
+    const close = document.body.querySelector(
+      'button[aria-label="close"]',
+    ) as HTMLButtonElement | null;
+    expect(close).not.toBeNull();
+    expect(close?.className).toContain("h-11");
+    expect(close?.className).toContain("min-h-11");
+    expect(close?.className).not.toMatch(/!h-8/);
+    expect(close?.className).not.toMatch(/!w-8/);
+
+    wrapper.unmount();
+  });
 });

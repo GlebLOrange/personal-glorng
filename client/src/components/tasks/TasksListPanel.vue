@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
 import type { TaskItem, TaskStats } from "@/types";
 
@@ -7,6 +8,7 @@ defineProps<{
   tasks: TaskItem[];
   loading: boolean;
   filterStatus: string;
+  whenAriaSort: "ascending" | "descending" | "none";
   total: number;
   page: number;
   totalPages: number;
@@ -17,6 +19,7 @@ defineProps<{
 
 const emit = defineEmits<{
   select: [id: number];
+  sortWhen: [];
   firstPage: [];
   prevPage: [];
   nextPage: [];
@@ -33,14 +36,9 @@ const emit = defineEmits<{
     tabindex="0"
     class="outline-none"
   >
-    <TaskList
-      :tasks="tasks"
-      :loading="loading"
-      :filter-status="filterStatus"
-      @select="emit('select', $event)"
-    />
     <AdminListFooter
       v-if="!loading"
+      class="mb-4"
       :total="total"
       :page="page"
       :total-pages="totalPages"
@@ -70,14 +68,23 @@ const emit = defineEmits<{
             <span class="text-surface-border">·</span>
             <button
               type="button"
-              class="text-status-critical underline-offset-2 hover:underline"
+              class="inline-flex items-center gap-1 text-status-critical underline-offset-2 hover:underline"
               @click="emit('failedSyncs')"
             >
+              <SyncIcon class-name="size-3.5 shrink-0" />
               {{ stats.failed_syncs }} failed syncs
             </button>
           </template>
         </div>
       </template>
     </AdminListFooter>
+    <TaskList
+      :tasks="tasks"
+      :loading="loading"
+      :filter-status="filterStatus"
+      :when-aria-sort="whenAriaSort"
+      @select="emit('select', $event)"
+      @sort-when="emit('sortWhen')"
+    />
   </section>
 </template>

@@ -1,6 +1,11 @@
-from app.core.exceptions import ApiError, NotFoundError
+from app.core.exceptions import ApiError, ConflictError, NotFoundError
 from app.core.pagination import build_paginated
-from app.core.utils import DEFAULT_PER_PAGE, generate_short_code, paginate_params
+from app.core.utils import (
+    DEFAULT_PER_PAGE,
+    assert_owner_or_superuser,
+    generate_short_code,
+    paginate_params,
+)
 from app.db.documents.url import ShortenedUrl
 from app.db.registry import DatabaseRegistry
 from app.schemas.url import UrlListResponse, UrlResponse
@@ -25,17 +30,11 @@ class UrlService:
         original_url: str,
         created_by: int | None,
         title: str | None = None,
+        code: str | None = None,
     ) -> ShortenedUrl:
-        for attempt in range(_MAX_CODE_RETRIES):
-            code = generate_short_code(8)
-            existing = await self._urls().get_by_code(code)
-            if existing is not None:
-                if attempt == _MAX_CODE_RETRIES - 1:
-                    raise ApiError(503, "Failed to generate unique short code")
-                continue
-
+        async def _insert(chosen: str) -> ShortenedUrl:
             url = ShortenedUrl(
-                code=code,
+                code=chosen,
                 original_url=original_url,
                 title=title,
                 created_by=created_by,
@@ -50,6 +49,21 @@ class UrlService:
                 metadata={"code": url.code},
             )
             return url
+
+        if code:
+            existing = await self._urls().get_by_code(code)
+            if existing is not None:
+                raise ConflictError("Short link code is already taken")
+            return await _insert(code)
+
+        for attempt in range(_MAX_CODE_RETRIES):
+            generated = generate_short_code(8)
+            existing = await self._urls().get_by_code(generated)
+            if existing is not None:
+                if attempt == _MAX_CODE_RETRIES - 1:
+                    raise ApiError(503, "Failed to generate unique short code")
+                continue
+            return await _insert(generated)
         raise ApiError(503, "Failed to generate unique short code")
 
     async def get_by_code(self, code: str) -> ShortenedUrl:
@@ -85,6 +99,7 @@ class UrlService:
             total=total,
             page=safe_page,
             per_page=limit,
+            response_cls=UrlListResponse,
         )
 
     async def update_url(
@@ -96,8 +111,12 @@ class UrlService:
         is_superuser: bool = False,
     ) -> ShortenedUrl:
         url = await self._urls().get(url_id)
-        if not is_superuser and (url.created_by is None or url.created_by != actor_id):
-            raise ApiError(403, "You do not have permission to update this URL")
+        assert_owner_or_superuser(
+            url.created_by,
+            actor_id,
+            is_superuser=is_superuser,
+            detail="You do not have permission to update this URL",
+        )
         url = await self._urls().update_fields(url_id, title=title)
         await index_url(self.registry, url)
         await AuditService(self.registry).record_domain(
@@ -117,8 +136,12 @@ class UrlService:
         is_superuser: bool = False,
     ) -> None:
         url = await self._urls().get(url_id)
-        if not is_superuser and (url.created_by is None or url.created_by != actor_id):
-            raise ApiError(403, "You do not have permission to delete this URL")
+        assert_owner_or_superuser(
+            url.created_by,
+            actor_id,
+            is_superuser=is_superuser,
+            detail="You do not have permission to delete this URL",
+        )
         await self._urls().delete(url_id)
         await remove_url(self.registry, url_id)
         await AuditService(self.registry).record_domain(

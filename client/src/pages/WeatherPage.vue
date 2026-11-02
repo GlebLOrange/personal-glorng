@@ -4,7 +4,6 @@ import LocationIcon from "@/components/icons/LocationIcon.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
 import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.vue";
 import { useActiveWeatherQuery } from "@/composables/useActiveWeatherQuery";
-import { WEATHER_TOOL_NAME } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
@@ -43,15 +42,15 @@ function handleSelect(query: string): void {
 
 <template>
   <PageShell
-    :title="WEATHER_TOOL_NAME"
+    title="weather"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
     back-to="/tools"
-    :narrow="false"
+    body-width="column"
   >
-    <p class="mb-4 text-sm text-surface-mid">
-      Guests can pin a few cities in this browser. Sign in to keep locations across devices.
+    <p v-if="guestLimitMessage" class="mb-4 w-full self-stretch text-xs text-surface-mid">
+      Pinned cities stay in this browser.
     </p>
-    <section class="mb-8 min-w-0">
+    <section class="page-tool-actions w-full self-stretch">
       <WeatherLocationForm
         :add-location="handleAdd"
         :disabled="!canAddLocation"
@@ -65,6 +64,7 @@ function handleSelect(query: string): void {
     </section>
 
     <WeatherPinnedCitiesRow
+      class="w-full self-stretch"
       :locations="locations"
       :active-query="activeQuery"
       :loading="loading"

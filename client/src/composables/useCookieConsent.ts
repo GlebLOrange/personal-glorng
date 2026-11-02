@@ -1,6 +1,7 @@
 import type { App } from "vue";
 import * as CookieConsent from "vanilla-cookieconsent";
 import "vanilla-cookieconsent/dist/cookieconsent.css";
+import "@/styles/cookieconsent-theme.css";
 
 import { isFirebaseAnalyticsEnabled } from "@/constants/firebase";
 import { isSentryEnabled } from "@/constants/sentry";

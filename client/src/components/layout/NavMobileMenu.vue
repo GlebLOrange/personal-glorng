@@ -2,8 +2,8 @@
 import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import CloseIcon from "@/components/icons/CloseIcon.vue";
 import { useAuthStore } from "@/stores/auth";
-import { usePermissions } from "@/composables/usePermissions";
 import { useScrollLock } from "@/composables/useScrollLock";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { resolveNavSection } from "@/utils/navCurrent";
@@ -15,7 +15,6 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; "go-home": [] }>();
 
 const auth = useAuthStore();
-const { canUseAdminHub } = usePermissions();
 const route = useRoute();
 const router = useRouter();
 const menuRoot = ref<HTMLElement | null>(null);
@@ -103,14 +102,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
     ref="menuRoot"
     class="md:hidden border-t border-surface-border bg-surface-dark/95 backdrop-blur-md"
   >
-    <div class="mx-auto flex max-w-5xl flex-col gap-1 px-6 py-4">
+    <div class="mx-auto flex max-w-5xl flex-col nav-menu px-6 py-4">
       <template v-if="isPortfolio">
         <p class="text-label text-surface-mid px-2 py-1 mb-1">On this page</p>
         <a
           v-for="link in sectionLinks"
           :key="link.href"
           :href="link.href"
-          class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+          class="nav-link nav-item text-base hover:bg-surface-card"
           @click="handleSectionClick"
         >
           {{ link.label }}
@@ -121,19 +120,19 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <RouterLink
         to="/"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'portfolio' }"
-        :aria-current-value="false"
+        class="nav-link-accent nav-item text-base font-medium hover:bg-surface-card"
+        :class="{ 'text-accent-coral': navSection === 'portfolio' }"
         :aria-current="navSection === 'portfolio' ? 'page' : undefined"
         @click.prevent="emit('go-home')"
       >
         portfolio
       </RouterLink>
+
+      <p class="text-label text-surface-muted px-2 py-1 mt-2 mb-1">more</p>
       <RouterLink
         to="/news"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'news' }"
-        :aria-current-value="false"
+        class="nav-link-quiet nav-item text-sm hover:bg-surface-card"
+        :class="{ 'text-accent-coral': navSection === 'news' }"
         :aria-current="navSection === 'news' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -142,32 +141,19 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <RouterLink
         to="/tools"
-        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'tools' }"
-        :aria-current-value="false"
+        class="nav-link-quiet nav-item text-sm hover:bg-surface-card"
+        :class="{ 'text-accent-coral': navSection === 'tools' }"
         :aria-current="navSection === 'tools' ? 'page' : undefined"
         @click="emit('close')"
       >
         tools
       </RouterLink>
-      <RouterLink
-        v-if="canUseAdminHub"
-        to="/admin"
-        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'admin' }"
-        :aria-current-value="false"
-        :aria-current="navSection === 'admin' ? 'page' : undefined"
-        @click="emit('close')"
-      >
-        admin
-      </RouterLink>
 
       <RouterLink
         v-if="auth.isAuthenticated"
         to="/settings"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'settings' }"
-        :aria-current-value="false"
+        class="nav-link-quiet nav-item text-sm hover:bg-surface-card"
+        :class="{ 'text-accent-coral': navSection === 'settings' }"
         :aria-current="navSection === 'settings' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -177,22 +163,12 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <button
         v-if="auth.isAuthenticated"
         type="button"
-        class="nav-link text-status-error text-base px-3 py-3 rounded-lg hover:bg-surface-card text-left"
+        class="nav-link-quiet text-status-error nav-item text-sm hover:bg-surface-card text-left"
         @click="handleLogout"
       >
+        <CloseIcon class-name="size-3.5 shrink-0" />
         logout
       </button>
-      <RouterLink
-        v-else
-        to="/login"
-        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'login' }"
-        :aria-current-value="false"
-        :aria-current="navSection === 'login' ? 'page' : undefined"
-        @click="emit('close')"
-      >
-        login
-      </RouterLink>
     </div>
   </div>
 </template>

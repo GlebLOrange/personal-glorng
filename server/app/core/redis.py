@@ -121,6 +121,7 @@ async def cache_get(key: str) -> str | None:
         return value.decode()
     return str(value)
 
+
 async def cache_set(key: str, value: str, ttl: int = 300) -> None:
     try:
         await get_redis_cache_client().set(key, value, ex=ttl)

@@ -1,20 +1,16 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, ref, useTemplateRef, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, useTemplateRef } from "vue";
 
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
-import ExpenseCategoryBreakdown from "@/components/expenses/ExpenseCategoryBreakdown.vue";
 import ExpenseDashboardPanel from "@/components/expenses/ExpenseDashboardPanel.vue";
 import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
 import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { Card } from "@/components/ui/card";
-import {
-  useExpensesTool,
-  type ExpenseQuickAddTarget,
-} from "@/composables/useExpensesTool";
+import { useExpensesTool, type ExpenseQuickAddTarget } from "@/composables/useExpensesTool";
 import { usePermissions } from "@/composables/usePermissions";
 
 const ExpenseCalculatorTab = defineAsyncComponent(
@@ -32,6 +28,7 @@ const dashboardPanelRef = useTemplateRef<ExpenseQuickAddTarget>("dashboardPanelR
 const {
   activeTab,
   expenseTabItems,
+  converterMounted,
   savingExpense,
   exporting,
   deletingExpense,
@@ -40,6 +37,7 @@ const {
   showForm,
   deleteTargetId,
   deleteCategoryTarget,
+  deleteCategoryReplacementId,
   expensePage,
   displayCurrency,
   expenses,
@@ -91,7 +89,6 @@ const {
   sortIndicator,
   sortAriaSort,
   handleDatePreset,
-  clearTransactionFilters,
   goToExpensePage,
   handleExpenseSort,
   openEdit,
@@ -111,32 +108,30 @@ const {
 const { can } = usePermissions();
 const canWriteExpenses = computed(() => can("expenses", "write"));
 
-/** Keep converter mounted after first visit so amount/pair survive tab switches. */
-const converterMounted = ref(false);
-watch(
-  activeTab,
-  (tab) => {
-    if (tab === "converter") converterMounted.value = true;
-  },
-  { immediate: true },
+const deleteCategoryOptions = computed(() =>
+  expenseCategories.value.filter((c) => c.id !== deleteCategoryTarget.value?.id),
 );
 
 function retrySummaryAndRates(): void {
   void Promise.all([loadSummary(), loadRates()]);
 }
 
-function focusAddFromAnalytics(): void {
-  switchTab("expenses");
+function focusAddFromInsights(): void {
+  switchTab("today");
   void nextTick(() => {
     dashboardPanelRef.value?.focusEntry();
   });
 }
-
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="expenses" max-width="5xl" back-to="/tools">
-    <div class="min-w-0">
+  <PageShell
+    title="expenses"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'expenses' }]"
+    back-to="/tools"
+    body-width="column"
+  >
+    <div class="w-full min-w-0 self-stretch">
       <div class="flex flex-col gap-3">
         <p
           v-if="!canWriteExpenses"
@@ -146,7 +141,7 @@ function focusAddFromAnalytics(): void {
           view only — you can browse expenses but not add or edit them
         </p>
 
-        <div class="border-b border-surface-border/50 pb-3">
+        <div class="page-tool-actions border-b border-surface-border/50 pb-3">
           <AdminTabBar
             flush
             panel-id-prefix="expenses-tab"
@@ -156,42 +151,21 @@ function focusAddFromAnalytics(): void {
             @update:model-value="switchTab"
           >
             <template #end>
-              <ToolbarPillButton action="save" :disabled="exporting" @click="exportCsv">
+              <ToolbarPillButton
+                action="save"
+                class="w-auto"
+                :disabled="exporting"
+                @click="exportCsv"
+              >
                 {{ exporting ? "exporting…" : "export csv" }}
               </ToolbarPillButton>
             </template>
           </AdminTabBar>
         </div>
 
-        <Card
-          v-if="activeTab === 'categories' && canWriteExpenses"
-          variant="compact"
-          class="flex min-w-0 flex-wrap items-end gap-2"
-        >
-          <form class="flex min-w-0 flex-1 flex-wrap items-end gap-2" @submit.prevent="addCategory">
-            <BaseInput
-              v-model="newCategoryName"
-              label="category"
-              placeholder="new category"
-              aria-label="new category"
-              class="min-w-0 flex-1"
-            />
-            <ToolbarPillButton type="submit" action="save" class="shrink-0">
-              + category
-            </ToolbarPillButton>
-          </form>
-        </Card>
-
         <ExpenseDashboardPanel
-          v-show="activeTab === 'expenses'"
-          :aria-hidden="activeTab !== 'expenses'"
+          v-show="activeTab === 'today'"
           ref="dashboardPanelRef"
-          v-model:month-preset="monthPreset"
-          v-model:date-filter-mode="dateFilterMode"
-          v-model:selected-month="selectedMonth"
-          v-model:date-from="dateFrom"
-          v-model:date-to="dateTo"
-          v-model:display-currency="displayCurrency"
           v-model:smart-text-open="smartTextOpen"
           v-model:quick-add-category="quickAdd.category"
           v-model:quick-add-product="quickAdd.product"
@@ -199,31 +173,37 @@ function focusAddFromAnalytics(): void {
           v-model:quick-add-expense-date="quickAdd.expense_date"
           v-model:quick-add-name-error="quickAddNameError"
           v-model:quick-add-amount-error="quickAddAmountError"
+          v-model:display-currency="displayCurrency"
+          :aria-hidden="activeTab !== 'today'"
           :can-write="canWriteExpenses"
           :saving-expense="savingExpense"
           :category-options="categoryOptions"
           :product-suggestions="productSuggestions"
           :month-label="monthLabel"
-          :has-active-filters="hasActiveFilters"
-          :range-error="rangeError"
           :summary="summary"
           :summary-error="summaryError"
           :rates-error="ratesError"
           :expense-total="expenseTotal"
-          @apply-preset="handleDatePreset"
-          @clear-filters="clearFilters"
+          :expenses="expenses"
+          :format-money="formatMoney"
+          :format-expense-date="formatExpenseDate"
           @retry-summary="retrySummaryAndRates"
           @submit-quick="quickSaveExpense"
           @smart-submit="saveSmartExpense"
-          @open-transactions="switchTab('transactions')"
+          @open-activity="switchTab('activity')"
         />
 
         <ExpenseTransactionsPanel
-          v-show="activeTab === 'transactions'"
-          :aria-hidden="activeTab !== 'transactions'"
+          v-show="activeTab === 'activity'"
           v-model:product-filter="productFilter"
           v-model:category-filter="categoryFilter"
           v-model:display-currency="displayCurrency"
+          v-model:month-preset="monthPreset"
+          v-model:date-filter-mode="dateFilterMode"
+          v-model:selected-month="selectedMonth"
+          v-model:date-from="dateFrom"
+          v-model:date-to="dateTo"
+          :aria-hidden="activeTab !== 'activity'"
           :category-options="categoryOptions"
           :list-error="listError"
           :expenses="expenses"
@@ -231,6 +211,8 @@ function focusAddFromAnalytics(): void {
           :sort-indicator="sortIndicator"
           :sort-aria-sort="sortAriaSort"
           :month-label="monthLabel"
+          :has-active-filters="hasActiveFilters"
+          :range-error="rangeError"
           :exchange-rates="exchangeRates"
           :format-money="formatMoney"
           :format-expense-date="formatExpenseDate"
@@ -240,7 +222,8 @@ function focusAddFromAnalytics(): void {
           :expense-pages="expensePages"
           :has-next-expense-page="hasNextExpensePage"
           :has-previous-expense-page="hasPreviousExpensePage"
-          @clear-transaction-filters="clearTransactionFilters"
+          @apply-preset="handleDatePreset"
+          @clear-filters="clearFilters"
           @retry-list="goToExpensePage(expensePage)"
           @edit="openEdit"
           @delete="requestDeleteExpense"
@@ -254,26 +237,11 @@ function focusAddFromAnalytics(): void {
         />
 
         <section
-          v-show="activeTab === 'breakdown'"
-          id="expenses-tab-panel-breakdown"
+          v-show="activeTab === 'insights'"
+          id="expenses-tab-panel-insights"
           role="tabpanel"
-          aria-labelledby="expenses-tab-tab-breakdown"
-          :aria-hidden="activeTab !== 'breakdown'"
-          tabindex="0"
-          class="outline-none"
-        >
-          <ExpenseCategoryBreakdown
-            :summary="summary"
-            :format-money="formatMoney"
-          />
-        </section>
-
-        <section
-          v-show="activeTab === 'analytics'"
-          id="expenses-tab-panel-analytics"
-          role="tabpanel"
-          aria-labelledby="expenses-tab-tab-analytics"
-          :aria-hidden="activeTab !== 'analytics'"
+          aria-labelledby="expenses-tab-tab-insights"
+          :aria-hidden="activeTab !== 'insights'"
           tabindex="0"
           class="outline-none"
         >
@@ -283,28 +251,37 @@ function focusAddFromAnalytics(): void {
             :bar-chart="barChart"
             :doughnut-chart="doughnutChart"
             :summary="summary"
-            :expense-categories="expenseCategories"
             :format-money="formatMoney"
-            @add-expense="focusAddFromAnalytics"
+            @add-expense="focusAddFromInsights"
           />
         </section>
 
-        <ExpenseCalculatorTab
-          v-if="converterMounted"
-          v-show="activeTab === 'converter'"
-          :aria-hidden="activeTab !== 'converter'"
-        />
-
         <section
-          v-if="activeTab === 'categories'"
+          v-show="activeTab === 'categories'"
           id="expenses-tab-panel-categories"
           role="tabpanel"
           aria-labelledby="expenses-tab-tab-categories"
+          :aria-hidden="activeTab !== 'categories'"
           tabindex="0"
           class="outline-none"
         >
-          <Card variant="compact">
-            <h3 class="mb-3 text-sm font-semibold text-surface-light">categories</h3>
+          <div class="flex flex-col gap-3">
+            <form
+              v-if="canWriteExpenses"
+              class="flex min-w-0 flex-wrap items-end justify-between gap-2"
+              @submit.prevent="addCategory"
+            >
+              <BaseInput
+                v-model="newCategoryName"
+                label="name"
+                tip="new category for expenses; rename or delete below"
+                class="min-w-0"
+                auto-width
+              />
+              <ToolbarPillButton type="submit" action="create" class="shrink-0">
+                category
+              </ToolbarPillButton>
+            </form>
             <ExpenseCategorySettings
               v-model:editing-category-name="editingCategoryName"
               :expense-categories="expenseCategories"
@@ -314,7 +291,19 @@ function focusAddFromAnalytics(): void {
               @save-category-rename="saveCategoryRename"
               @remove-category="requestDeleteCategory"
             />
-          </Card>
+          </div>
+        </section>
+
+        <section
+          v-show="activeTab === 'converter'"
+          id="expenses-tab-panel-converter"
+          role="tabpanel"
+          aria-labelledby="expenses-tab-tab-converter"
+          :aria-hidden="activeTab !== 'converter'"
+          tabindex="0"
+          class="flex justify-center outline-none"
+        >
+          <ExpenseCalculatorTab v-if="converterMounted" />
         </section>
       </div>
 
@@ -350,13 +339,36 @@ function focusAddFromAnalytics(): void {
         v-if="canWriteExpenses"
         :open="deleteCategoryTarget !== null"
         title="delete category"
-        :message="deleteCategoryTarget ? `delete category '${deleteCategoryTarget.name}'?` : ''"
         confirm-label="delete"
         :loading="deletingCategory"
         danger
         @confirm="confirmDeleteCategory"
         @cancel="deleteCategoryTarget = null"
-      />
+      >
+        <div class="flex flex-col gap-3">
+          <p>
+            delete category '{{ deleteCategoryTarget?.name }}'? Expenses in this category will move
+            to the destination below.
+          </p>
+          <BaseSelect
+            :model-value="
+              deleteCategoryReplacementId === null || deleteCategoryReplacementId === undefined
+                ? ''
+                : String(deleteCategoryReplacementId)
+            "
+            label="move expenses to"
+            aria-label="replacement category"
+            @update:model-value="
+              deleteCategoryReplacementId = $event === '' ? null : Number($event)
+            "
+          >
+            <option value="">Uncategorized</option>
+            <option v-for="cat in deleteCategoryOptions" :key="cat.id" :value="String(cat.id)">
+              {{ cat.name }}
+            </option>
+          </BaseSelect>
+        </div>
+      </ConfirmDialog>
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

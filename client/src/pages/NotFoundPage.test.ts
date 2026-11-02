@@ -37,5 +37,43 @@ describe("NotFoundPage", () => {
     expect(hrefs).toContain("/#experience");
     expect(hrefs).toContain("/tools");
     expect(hrefs).toContain("/news");
+    expect(wrapper.text()).toContain("experience");
+    expect(wrapper.text()).toContain("tools");
+    expect(wrapper.text()).toContain("news");
+    expect(wrapper.text()).not.toMatch(/\bExperience\b/);
+    expect(wrapper.text()).not.toMatch(/\bTools\b/);
+    expect(wrapper.text()).not.toMatch(/\bNews\b/);
+  });
+
+  it.each([
+    ["/pricing", "No public price list here.", "Compensation is role- and contract-specific"],
+    ["/rates", "No public price list here.", "Compensation is role- and contract-specific"],
+    ["/terms", "No public terms page.", "personal portfolio"],
+    ["/tos", "No public terms page.", "personal portfolio"],
+    ["/signup", "Signup isn't open.", "no public registration"],
+    ["/register", "Signup isn't open.", "no public registration"],
+  ] as const)("shows warm copy for %s", (path, title, bodySnippet) => {
+    mocks.fullPath = path;
+    const wrapper = mount(NotFoundPage, {
+      global: {
+        stubs: { RouterLink: routerLinkStub },
+      },
+    });
+
+    expect(wrapper.get("h1").text()).toBe(title);
+    expect(wrapper.text()).toContain(bodySnippet);
+    expect(wrapper.text()).toContain(path);
+  });
+
+  it("offers privacy recovery for terms paths", () => {
+    mocks.fullPath = "/terms";
+    const wrapper = mount(NotFoundPage, {
+      global: {
+        stubs: { RouterLink: routerLinkStub },
+      },
+    });
+
+    const hrefs = wrapper.findAll("a").map((link) => link.attributes("href"));
+    expect(hrefs).toContain("/privacy");
   });
 });

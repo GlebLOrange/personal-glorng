@@ -1,0 +1,32 @@
+/** Shared chrome for admin list tables (matches expenses activity). */
+
+export const ADMIN_TABLE_WRAP_CLASS =
+  "min-w-0 overflow-x-auto rounded-lg border border-surface-border";
+
+export const ADMIN_TABLE_CLASS = "w-full min-w-0 font-data text-sm";
+
+export const ADMIN_THEAD_ROW_CLASS =
+  "border-b border-surface-border bg-surface-card text-left text-surface-mid";
+
+export const ADMIN_TH_CLASS = "h-11 px-3 py-0 text-xs tracking-wider";
+
+/** Sortable When/column header control (audit, app logs, tasks, feedback). */
+export const ADMIN_SORT_HEADER_BUTTON_CLASS =
+  "inline-flex h-11 min-h-11 cursor-pointer items-center gap-1.5 text-left text-xs tracking-wider transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50";
+
+export const ADMIN_TR_CLASS =
+  "border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50";
+
+/** Rows meet the 44px control/touch-target plan (client-ui skill: h-11). */
+export const ADMIN_TD_CLASS = "h-11 px-3 py-1.5 align-middle";
+
+export const ADMIN_TD_MUTED_CLASS = `${ADMIN_TD_CLASS} whitespace-nowrap text-xs text-surface-mid`;
+
+export const ADMIN_TD_TITLE_CLASS = `${ADMIN_TD_CLASS} max-w-[16rem] font-sans`;
+
+/** Row identity cell (`th scope="row"`) — same weight as body cells. */
+export const ADMIN_TH_ROW_CLASS = `${ADMIN_TD_TITLE_CLASS} text-left font-normal`;
+
+export const ADMIN_TD_ACTIONS_CLASS = "h-11 whitespace-nowrap px-2 py-1.5 align-middle text-right";
+
+export const ADMIN_ACTIONS_CLASS = "inline-flex items-center justify-end gap-0.5";

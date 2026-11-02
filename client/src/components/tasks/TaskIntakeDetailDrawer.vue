@@ -2,6 +2,7 @@
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import TaskReminderScheduleInfo from "@/components/tasks/TaskReminderScheduleInfo.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
 import type { TaskIntakeItem } from "@/types";
@@ -19,7 +20,6 @@ interface DraftFields {
   scheduled_time?: string | null;
   description?: string | null;
   location?: string | null;
-  reminder_minutes?: number | null;
   assignee_hint?: string | null;
 }
 
@@ -34,7 +34,6 @@ const draftEntries = [
   { key: "scheduled_time", label: "Time" },
   { key: "location", label: "Location" },
   { key: "description", label: "Notes" },
-  { key: "reminder_minutes", label: "Reminder (min)" },
   { key: "assignee_hint", label: "Assignee" },
 ] as const;
 </script>
@@ -52,7 +51,7 @@ const draftEntries = [
           :label="statusLabel(intake.status)"
           :class-name="statusBadgeClass(intake.status)"
         />
-        <span v-if="intake.task_id" class="text-xs text-accent-blue"
+        <span v-if="intake.task_id" class="text-xs text-accent-coral"
           >→ Task #{{ intake.task_id }}</span
         >
         <span class="text-xs text-surface-muted">{{ formatDate(intake.created_at) }}</span>
@@ -66,7 +65,7 @@ const draftEntries = [
         <template v-for="entry in draftEntries" :key="entry.key">
           <template v-if="draftFields(intake.draft_json)[entry.key] != null">
             <dt
-              class="flex items-center gap-1 text-[10px] uppercase tracking-wide text-surface-mid"
+              class="flex items-center gap-1 text-xs uppercase tracking-wide text-surface-mid"
             >
               <LocationIcon v-if="entry.key === 'location'" class-name="size-3 shrink-0" />
               {{ entry.label }}
@@ -78,10 +77,14 @@ const draftEntries = [
         </template>
       </dl>
 
+      <div class="mt-3">
+        <TaskReminderScheduleInfo />
+      </div>
+
       <details v-if="intake.draft_json" class="mt-4 text-sm text-surface-mid">
         <summary class="cursor-pointer select-none hover:text-surface-light">raw draft</summary>
         <pre
-          class="mt-2 overflow-x-auto rounded bg-surface-dark/50 p-2 text-[10px] text-surface-mid"
+          class="mt-2 overflow-x-auto rounded bg-surface-dark/50 p-2 text-xs text-surface-mid"
           >{{ JSON.stringify(intake.draft_json, null, 2) }}</pre>
       </details>
     </template>

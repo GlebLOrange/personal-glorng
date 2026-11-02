@@ -1,16 +1,20 @@
 <script setup lang="ts">
+import AdminSortableTh from "@/components/admin/AdminSortableTh.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import type { TaskItem } from "@/types";
 
 defineProps<{
   tasks: TaskItem[];
   loading: boolean;
   filterStatus: string;
+  whenAriaSort: "ascending" | "descending" | "none";
 }>();
 
-const emit = defineEmits<{ select: [id: number] }>();
+const emit = defineEmits<{ select: [id: number]; sortWhen: [] }>();
 
 const emptyMessage = (filterStatus: string): string => {
   if (filterStatus === "pending") return "No pending tasks";
@@ -25,6 +29,19 @@ const emptyMessage = (filterStatus: string): string => {
   <EmptyState v-else-if="tasks.length === 0" :description="emptyMessage(filterStatus)" />
 
   <div v-else class="min-w-0">
-    <TaskCard v-for="task in tasks" :key="task.id" :task="task" @select="emit('select', $event)" />
+    <AdminDataTable table-label="tasks">
+      <template #header>
+        <AdminSortableTh label="when" :direction="whenAriaSort" @sort="emit('sortWhen')" />
+        <th :class="ADMIN_TH_CLASS" scope="col">status</th>
+        <th :class="ADMIN_TH_CLASS" scope="col">title</th>
+        <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
+      </template>
+      <TaskCard
+        v-for="task in tasks"
+        :key="task.id"
+        :task="task"
+        @select="emit('select', $event)"
+      />
+    </AdminDataTable>
   </div>
 </template>
