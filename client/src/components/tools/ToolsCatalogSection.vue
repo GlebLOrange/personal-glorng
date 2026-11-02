@@ -36,10 +36,11 @@ function onToggle(event: Event): void {
         aria-hidden="true"
         >▸</span
       >
-      <!-- No heading inside <summary> (AT drops/duplicates it); label once, count in the name. -->
-      <span class="text-sm font-semibold text-surface-light" data-section-label>{{ label }}</span>
+      <h2 class="text-sm font-semibold text-surface-light">
+        <span aria-hidden="true">{{ label }}</span>
+        <span class="sr-only">{{ label }}, {{ countLabel(count) }}</span>
+      </h2>
       <span class="ml-auto text-xs font-medium text-text-muted" aria-hidden="true">{{ count }}</span>
-      <span class="sr-only">, {{ countLabel(count) }}</span>
     </summary>
     <div class="border-t border-surface-border/70 px-3 pb-3 pt-3">
       <slot />

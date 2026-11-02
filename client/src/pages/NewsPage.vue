@@ -98,12 +98,6 @@ watch(page, () => {
             </time>
           </div>
 
-          <div
-            v-if="item.tags.length"
-            class="ml-auto flex shrink-0 flex-row-reverse flex-wrap items-center justify-end gap-2"
-          >
-            <span v-for="tag in item.tags" :key="tag" class="news-tag-chip"> #{{ tag }} </span>
-          </div>
         </div>
 
         <h2 :id="`news-card-title-${item.id}`" class="card-title mb-2 min-w-0 text-balance">
@@ -111,6 +105,10 @@ watch(page, () => {
         </h2>
 
         <p class="break-words text-sm text-surface-mid">{{ item.summary }}</p>
+
+        <div v-if="item.tags.length" class="mt-3 flex flex-wrap items-center justify-start gap-2">
+          <span v-for="tag in item.tags" :key="tag" class="news-tag-chip"> #{{ tag }} </span>
+        </div>
       </Card>
     </section>
 
