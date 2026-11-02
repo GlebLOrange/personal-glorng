@@ -46,20 +46,6 @@ const hasCustomOptions = computed(
     excludeAmbiguous.value,
 );
 
-/** Trigger width = longest single option ("exclude ambiguous"); longer joined labels truncate. */
-const OPTIONS_SIZING_LABELS = ["exclude ambiguous"];
-
-const optionsActiveLabel = computed(() => {
-  if (!hasCustomOptions.value) return undefined;
-  const parts: string[] = [];
-  if (uppercase.value) parts.push("uppercase");
-  if (lowercase.value) parts.push("lowercase");
-  if (digits.value) parts.push("numbers");
-  if (symbols.value) parts.push("symbols");
-  if (excludeAmbiguous.value) parts.push("exclude ambiguous");
-  return parts.length ? parts.join(" · ") : "none";
-});
-
 const clampedLength = computed(() =>
   Math.min(128, Math.max(PASSWORD_MIN_LENGTH, Number(length.value) || PASSWORD_MIN_LENGTH)),
 );
@@ -139,8 +125,6 @@ onMounted(() => {
               anchor="local"
               :match-trigger-width="false"
               :has-active-filters="hasCustomOptions"
-              :active-label="optionsActiveLabel"
-              :option-labels="OPTIONS_SIZING_LABELS"
               @clear="resetState"
             >
               <template #chips>
