@@ -8,6 +8,7 @@ from aiogram.filters import Command, CommandObject, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from app.core.logging import logger
 from app.core.utils import format_display_date, local_naive_to_utc, local_now
 from app.db.documents.task import IntakeStatus
 from app.db.registry import DatabaseRegistry
@@ -175,6 +176,10 @@ async def _process_intake_message(
     try:
         result = await svc.run_extraction(intake)
     except Exception:
+        logger.exception(
+            "task intake extraction failed",
+            context={"intake_id": intake.id, "telegram_user_id": message.from_user.id},
+        )
         with suppress(Exception):
             await working.edit_text(
                 "I couldn't parse that right now. Try /new guided for step-by-step.",
@@ -266,6 +271,10 @@ async def handle_clarification(
     try:
         result = await svc.apply_clarification(int(intake_id), message.text.strip())
     except Exception:
+        logger.exception(
+            "task intake clarification failed",
+            context={"intake_id": intake_id, "telegram_user_id": message.from_user.id},
+        )
         sent = await message.answer(
             "I couldn't update that. Please try again.",
             reply_markup=clarify_cancel(),
@@ -569,6 +578,13 @@ async def confirm_task(
                 telegram_user_id=callback.from_user.id,
             )
         except Exception:
+            logger.exception(
+                "task intake confirm failed",
+                context={
+                    "intake_id": intake_id,
+                    "telegram_user_id": callback.from_user.id,
+                },
+            )
             await callback.message.answer(
                 "Could not save the task. Try /new again.",
                 reply_markup=main_menu(),

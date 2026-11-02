@@ -137,6 +137,8 @@ How tasks, Telegram reminders, and Google Calendar sync connect: [Telegram + tas
 
 ## Quality checks
 
+`make check` runs backend `lint-check` / `type-check` / `test` (and `db-check` when `CHECK_DB=1`) through `docker compose … exec server`, so the **lite stack must already be up** (`make` / `make dev`). Client steps run on the host via npm. For host-only backend checks without Compose, use the same commands CI uses under `server/` (`uv run ruff`, `uv run mypy app`, `uv run pytest`).
+
 ```bash
 make lint-check type-check
 cd client && npm ci && npm run lint && npm run format:check
