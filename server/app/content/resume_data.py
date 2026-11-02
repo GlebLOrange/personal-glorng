@@ -166,7 +166,7 @@ _RESUME_RAW: dict[str, Any] = {
             ),
             "tech": ["FastAPI", "cookies", "CSRF", "RBAC", "Redis"],
             "url": (
-                "https://gleblorange.github.io/personal-glorng/"
+                "https://gleblorange.github.io/portfolio-glorng/"
                 "reference/security.html#csrf-and-cors"
             ),
         },

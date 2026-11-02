@@ -6,7 +6,7 @@
 
 Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + MongoDB + Redis, fully containerized with Docker. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
 
-**Live handbook:** [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/)  
+**Live handbook:** [gleblorange.github.io/portfolio-glorng](https://gleblorange.github.io/portfolio-glorng/)  
 **Source:** [github.com/GlebLOrange/portfolio-glorng](https://github.com/GlebLOrange/portfolio-glorng)
 
 > The published site above is the VitePress architecture handbook (GitHub Pages). The full Vue + FastAPI app runs via `make prod` on a VPS — set `BASE_URL` / `VITE_PUBLIC_ORIGIN` to that HTTPS origin (OG tags + sitemap). See [Deployment](docs/operations/deployment.md).
@@ -30,7 +30,7 @@ make docs-dev   # local handbook → http://localhost:5173
 | Resource | Link |
 |----------|------|
 | **First-time setup** | [Getting started](docs/guide/getting-started.md) |
-| **Handbook (published)** | [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/) |
+| **Handbook (published)** | [gleblorange.github.io/portfolio-glorng](https://gleblorange.github.io/portfolio-glorng/) |
 | **Handbook (local)** | `make docs-dev` → [http://localhost:5173](http://localhost:5173) |
 | **Handbook (source)** | [docs/index.md](docs/index.md) |
 | **Dev modes / make targets** | [Development](docs/guide/development.md) |

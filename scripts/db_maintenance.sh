@@ -165,7 +165,7 @@ backup_media() {
   mkdir -p "$out_dir"
 
   log "Backing up media volume to $out_path"
-  # Use compose so the project-prefixed volume (e.g. personal-glorng_server_media) is used.
+  # Use compose so the project-prefixed volume (e.g. portfolio-glorng_server_media) is used.
   compose run --rm --no-deps \
     -v server_media:/data:ro \
     -v "$out_dir:/out" \

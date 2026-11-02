@@ -65,7 +65,7 @@ Approach: HttpOnly cookie sessions with capability RBAC; CSRF origin checks on m
 
 Result: Documented security path with CSRF middleware tests; bad Origin rejected in production; Bearer automation unaffected.
 
-Docs: https://gleblorange.github.io/personal-glorng/reference/security.html#csrf-and-cors
+Docs: https://gleblorange.github.io/portfolio-glorng/reference/security.html#csrf-and-cors
 
 ### SSRF-safe outbound fetch
 **Python · httpx · asyncio · DNS**

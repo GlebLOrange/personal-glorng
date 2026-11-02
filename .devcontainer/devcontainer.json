@@ -7,7 +7,7 @@
   ],
   "service": "devcontainer",
   "runServices": ["mongodb", "redis", "migrate", "devcontainer"],
-  "workspaceFolder": "/workspaces/personal-glorng",
+  "workspaceFolder": "/workspaces/portfolio-glorng",
   "initializeCommand": "bash .devcontainer/scripts/initialize.sh",
   "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
   "forwardPorts": [8000, 3000],
