@@ -282,7 +282,7 @@ html[data-theme="light"] {
 @utility page-tool-actions {
   display: flex;
   min-width: 0;
-  width: 100%;
+  width: auto;
   max-width: 100%;
   flex-direction: row;
   flex-wrap: wrap;
