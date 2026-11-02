@@ -284,8 +284,6 @@ onMounted(() => {
         <div v-if="urls.length > 0" class="min-w-0">
           <AdminDataTable table-label="shortened URLs">
             <template #header>
-              <th :class="ADMIN_TH_CLASS" scope="col">title</th>
-              <th :class="ADMIN_TH_CLASS" scope="col">short link</th>
               <th :class="ADMIN_TH_CLASS" scope="col">original URL</th>
               <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
             </template>
