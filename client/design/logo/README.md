@@ -13,8 +13,8 @@ Working copies here are the live mark source. Trace from the square source art i
 
 ## Live use
 
-- App chrome: [`SiteLogo.vue`](../../src/components/brand/SiteLogo.vue) — `gy-mark-simple[-light].svg` / `gy-logo[-light].svg` (square mark)
-- Favicon / touch icons: [`client/public/favicon.svg`](../../public/favicon.svg) and PNG/ICO siblings
+- App chrome: [`SiteLogo.vue`](../../src/components/brand/SiteLogo.vue) uses `/favicon.svg` for the dark mark and `/brand/gy-mark-simple-light.svg` for light theme.
+- Browser favicon / touch icons: [`client/public/favicon.svg`](../../public/favicon.svg) and PNG/ICO siblings
 - Social card: [`client/public/social-preview.png`](../../public/social-preview.png) — mark + “Gleb.Y / Python Backend / FastAPI Engineer” on dark ground
 
 ## Palette
@@ -29,8 +29,8 @@ Working copies here are the live mark source. Trace from the square source art i
 
 | File | Use |
 | --- | --- |
-| `gy-logo.svg` / `gy-logo-light.svg` | Full variant (square mark) |
-| `gy-mark-simple.svg` / `gy-mark-simple-light.svg` | Nav / footer mark |
+| `/favicon.svg` | Canonical dark square mark, shared by app chrome and browser favicon |
+| `gy-mark-simple-light.svg` | Light-theme app mark |
 | `gy-logo-512.png` | Raster fallback (email, resume) |
 
 Also: `client/public/brand/`, `docs/public/`, `server/app/static/brand/gy-logo-512.png`.

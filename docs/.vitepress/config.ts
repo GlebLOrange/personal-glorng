@@ -33,7 +33,7 @@ export default defineConfig({
     ],
   ],
   themeConfig: {
-    logo: { src: `${base}brand/gy-mark-simple.svg`, alt: "Gleb.Y" },
+    logo: { src: `${base}favicon.svg`, alt: "Gleb.Y" },
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Operations", link: "/operations/deployment" },
