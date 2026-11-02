@@ -86,6 +86,7 @@ module = [
     "app.workers.queue",
     "app.services.github_portfolio",
     "app.services.task_intake",
+    "app.services.task_intake.*",
     "app.schemas.date_filters",
 ]
 ignore_errors = true
