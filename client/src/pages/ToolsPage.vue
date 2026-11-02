@@ -154,29 +154,23 @@ function resetOverrides(): void {
   for (const key of Object.keys(sectionOpenOverrides)) {
     delete sectionOpenOverrides[key];
   }
-  let stored = readStoredOpen();
-  if (isNarrow.value) {
-    // Respect mobile one-open even if storage was edited.
-    const firstOpen = Object.keys(stored).find((id) => stored[id]);
-    stored = Object.fromEntries(Object.entries(stored).map(([id, open]) => [id, open && id === firstOpen]));
-  }
-  Object.assign(sectionOpenOverrides, stored);
+  Object.assign(sectionOpenOverrides, readStoredOpen());
 }
 
 watch(isNarrow, resetOverrides);
 resetOverrides();
 
-function defaultSectionOpen(): boolean {
-  // Desktop: open. Mobile: collapsed.
-  return !isNarrow.value;
+function defaultSectionOpen(id: string): boolean {
+  // Desktop: all open. Mobile: utils open (quick pills), the rest collapsed.
+  return !isNarrow.value || id === "utils";
 }
 
 function isSectionOpen(id: string): boolean {
   if (id in sectionOpenOverrides) return sectionOpenOverrides[id]!;
-  return defaultSectionOpen();
+  return defaultSectionOpen(id);
 }
 
-/** All rendered section ids (utils first) — used for mobile one-open accordion. */
+/** All rendered section ids (utils first) — used to validate #hash jumps. */
 const sectionIds = computed((): string[] => [
   ...(showUtilsSection.value ? ["utils"] : []),
   ...tileSections.value.map((section) => section.category),
@@ -185,12 +179,6 @@ const sectionIds = computed((): string[] => [
 function onSectionToggle(id: string, open: boolean): void {
   if (open === isSectionOpen(id)) return; // native toggle echo of a controlled change
   sectionOpenOverrides[id] = open;
-  // Mobile accordion: one open at a time.
-  if (open && isNarrow.value) {
-    for (const other of sectionIds.value) {
-      if (other !== id) sectionOpenOverrides[other] = false;
-    }
-  }
   persistOpen();
   // Calm URL: toggling never rewrites the hash; only inbound #section links jump.
 }
@@ -240,7 +228,7 @@ function sectionCount(section: ToolsPageSection): number {
 }
 
 function tabPillClass(): string {
-  return actionFamilyClass("1xx", false);
+  return `${actionFamilyClass("1xx", false)} min-h-11`;
 }
 
 </script>
@@ -297,7 +285,6 @@ function tabPillClass(): string {
               <RouterLink
                 :to="tab.to"
                 :class="tabPillClass()"
-                :title="publicTileBlurbForSlug(tab.id)"
                 @mouseenter="onPillIntent(tab)"
                 @focus="onPillIntent(tab)"
               >

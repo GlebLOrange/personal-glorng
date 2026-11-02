@@ -241,16 +241,6 @@ html[data-theme="light"] {
   }
 }
 
-/** Chrome icons (Back) on the same vertical rail as ScrollControls (scroll-rail-end).
- * ≥1180px: outside gutter past the shell edge. Below: viewport edge − 0.5rem, matching the fixed
- * scroll buttons. Can't use `fixed` (chrome backdrop-blur is a containing block), so offset from
- * the chrome's content edge: shell end padding (3.5rem) − 0.5rem + any centering gutter. */
-@utility chrome-rail-end {
-  @apply absolute z-10;
-  right: calc(-3rem - max(0px, (100vw - 1024px) / 2));
-  @media (width >= 1180px) {
-    @apply -right-6 translate-x-[calc(100%+15px)] mr-[env(safe-area-inset-right)];
-  }
 }
 
 @utility page-body {
@@ -373,6 +363,13 @@ html[data-theme="light"] {
 /* Guest Tools catalog — 88px min tile / 44px icon well (icon size set in ToolTileGrid). */
 .page-launcher-grid[data-presentation="public"] .page-tile-card {
   min-height: 5.5rem;
+}
+
+/* Tools catalog: two tiles per row from sm — column body stays narrow, just less scroll. */
+@media (min-width: 640px) {
+  .page-launcher-grid[data-presentation="public"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @keyframes page-tile-enter {

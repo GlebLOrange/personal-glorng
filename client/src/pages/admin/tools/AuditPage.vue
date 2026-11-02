@@ -235,7 +235,7 @@ onMounted(load);
           <template #header>
             <AdminSortableTh label="when" :direction="whenAriaSort" @sort="toggleWhenSort" />
             <th :class="ADMIN_TH_CLASS" scope="col">type</th>
-            <th :class="ADMIN_TH_CLASS" scope="col">who</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">user</th>
             <th :class="ADMIN_TH_CLASS" scope="col">title</th>
             <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">expand</th>
           </template>

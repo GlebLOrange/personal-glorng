@@ -31,7 +31,7 @@ describe("PageChrome", () => {
     const back = wrapper.get("[data-testid=back]");
     expect(back.attributes("href")).toBe("/admin");
     expect(back.classes()).toEqual(
-      expect.arrayContaining(["chrome-rail-end", "top-1/2", "-translate-y-1/2"]),
+      expect.arrayContaining(["shell-outside-end", "!-right-6", "top-1/2", "-translate-y-1/2"]),
     );
     expect(back.element.parentElement?.querySelector("[data-testid=crumbs]")).not.toBeNull();
   });
