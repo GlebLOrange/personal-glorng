@@ -10,13 +10,13 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
 
 <template>
   <!-- Rail matches shell; buttons sit in the gutter past the right edge.
-       Hidden below 1180px where the gutter is too narrow, so they never cover content. -->
-  <div v-if="showToTop" class="pointer-events-none fixed inset-x-0 top-[14%] z-30 hidden min-[1180px]:block print:hidden">
+       Below 1180px they pin to the viewport edge; page-shell reserves end padding so content is never covered. -->
+  <div v-if="showToTop" class="pointer-events-none fixed inset-x-0 top-[14%] z-30 print:hidden">
     <div class="relative mx-auto w-full max-w-5xl px-6">
       <IconActionButton
         action="create"
         type="button"
-        class="shell-outside-end pointer-events-auto"
+        class="scroll-rail-end pointer-events-auto"
         aria-label="to the top"
         @click="scrollToTop"
       >
@@ -27,13 +27,13 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
 
   <div
     v-if="showArrowDown"
-    class="pointer-events-none fixed inset-x-0 bottom-[8%] z-30 hidden min-[1180px]:block print:hidden"
+    class="pointer-events-none fixed inset-x-0 bottom-[8%] z-30 print:hidden"
   >
     <div class="relative mx-auto w-full max-w-5xl px-6">
       <IconActionButton
         action="create"
         type="button"
-        class="shell-outside-end pointer-events-auto"
+        class="scroll-rail-end pointer-events-auto"
         aria-label="scroll to next section"
         @click="scrollToNextSection"
       >

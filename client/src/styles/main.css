@@ -187,6 +187,10 @@ html[data-theme="light"] {
 
 @utility page-shell {
   @apply mx-auto w-full px-6;
+  /* Reserve an end lane for fixed scroll controls when the outside gutter is too narrow. */
+  @media (width < 1180px) {
+    padding-right: calc(3.5rem + env(safe-area-inset-right));
+  }
   /* Compact tile unit: 3 cards/row at ≥420px each (+ 1rem gaps). */
   --tile-min: 420px;
   --tile-gap: 1rem;
@@ -201,6 +205,14 @@ html[data-theme="light"] {
 /** Icon chrome parked in the gutter just past the content shell’s right edge. */
 @utility shell-outside-end {
   @apply absolute right-0 z-10 translate-x-[calc(100%+15px)] mr-[env(safe-area-inset-right)];
+}
+
+/** Scroll controls: outside gutter at ≥1180px; pinned to the viewport edge below (page-shell pads for them). */
+@utility scroll-rail-end {
+  @apply fixed right-[calc(0.5rem+env(safe-area-inset-right))] z-10;
+  @media (width >= 1180px) {
+    @apply absolute right-0 translate-x-[calc(100%+15px)] mr-[env(safe-area-inset-right)];
+  }
 }
 
 @utility page-body {
