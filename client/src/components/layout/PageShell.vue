@@ -52,10 +52,8 @@ const resolvedBodyWidth = computed<PageBodyWidth>(() => {
   return "full";
 });
 
-// Sitewide shell: three 420px tiles + 1rem gaps + px-6 padding; min-width 768px lives in .page-shell.
-const shellClass = computed(() =>
-  ["page-shell", "max-w-[calc(3*420px+2*1rem+3rem)]", props.paddingY].filter(Boolean),
-);
+// Sitewide shell: width 1024px (max), min-width 768px / 1024px from lg — all in .page-shell.
+const shellClass = computed(() => ["page-shell", props.paddingY].filter(Boolean));
 
 const bodyClass = computed(() => [
   "page-body",

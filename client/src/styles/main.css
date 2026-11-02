@@ -206,6 +206,8 @@ html[data-theme="light"] {
 
 @utility page-shell {
   @apply mx-auto w-full px-6;
+  /* Shell width: 1024px. */
+  max-width: 1024px;
   /* Min width: 768px on phones/tablets (scroll horizontally), 1024px from lg (64rem). */
   min-width: 768px;
   @variant lg {
