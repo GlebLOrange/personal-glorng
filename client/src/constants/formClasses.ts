@@ -1,4 +1,4 @@
-/** Shared form control classes — 8px grid: default h-11 (44px), compact h-9 (36px). */
+/** Shared form control classes — inputs and BaseButton share CONTROL_SIZE (h-11 / 44px); compact only tightens padding. */
 
 /** Default interactive control height — inputs, buttons, icon actions (44px). */
 export const CONTROL_SIZE = "box-border h-11 min-h-11";
@@ -55,7 +55,7 @@ export const FIELD_INPUT_CLASS =
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/85`;
 
 export const FIELD_INPUT_CLASS_COMPACT =
-  "box-border h-9 bg-surface-dark border border-surface-border rounded-lg px-3 py-0 text-surface-light text-sm " +
+  `${CONTROL_SIZE} bg-surface-dark border border-surface-border rounded-lg px-3 py-0 text-surface-light text-sm ` +
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/85`;
 
 export const SELECT_CLASS =

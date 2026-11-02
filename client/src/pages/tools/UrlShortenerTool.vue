@@ -245,7 +245,7 @@ onMounted(() => {
         <ToolbarPillButton
           action="create"
           type="submit"
-          class="box-border !h-9 !min-h-9 w-full shrink-0 sm:w-auto"
+          class="w-full shrink-0 sm:w-auto"
           :disabled="!canShorten"
         >
           {{ loading ? "creating…" : "shorten" }}

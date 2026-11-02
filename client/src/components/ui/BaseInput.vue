@@ -165,7 +165,7 @@ const shellClass = computed(() => [
   "relative flex items-center rounded-lg bg-surface-dark transition-colors",
   props.autoWidth ? "w-auto max-w-full" : "w-full",
   showInlineEndLabel.value && props.hint ? "overflow-visible" : "overflow-hidden",
-  props.compact ? "box-border h-9" : CONTROL_SIZE,
+  CONTROL_SIZE, // compact only tightens padding — height always matches BaseButton
   toneShellRingClass.value,
 ]);
 const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top" : "bottom"));
