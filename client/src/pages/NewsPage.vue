@@ -97,7 +97,6 @@ watch(page, () => {
               {{ formatNewsDate(newsArticleDisplayDate(item)) }}
             </time>
           </div>
-
         </div>
 
         <h2 :id="`news-card-title-${item.id}`" class="card-title mb-2 min-w-0 text-balance">

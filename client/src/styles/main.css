@@ -247,7 +247,10 @@ html[data-theme="light"] {
   margin-top: var(--page-chrome-offset);
   /* Fill the viewport below chrome so a page-body-footer (mt-auto) pins on short pages.
      --page-chrome-h = measured chrome box; 2.5rem ≈ shell pb-10. */
-  min-height: calc(100dvh - var(--page-chrome-offset) - var(--page-chrome-h, var(--page-chrome-h-fallback)) - 2.5rem);
+  min-height: calc(
+    100dvh - var(--page-chrome-offset) - var(--page-chrome-h, var(--page-chrome-h-fallback)) -
+      2.5rem
+  );
 }
 
 /** Content column (2-of-3 tiles) — formerly page-body-narrow. */
@@ -1065,7 +1068,9 @@ h6,
 
 /* Subtle hover lift on portfolio case/repo cards (global reduced-motion guard applies). */
 .portfolio-cv-tile-wash {
-  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
 }
 .portfolio-cv-tile-wash:hover {
   transform: translateY(-2px);

@@ -60,35 +60,35 @@ const {
       <AdminListToolbar>
         <template #start>
           <div class="flex min-w-0 flex-wrap items-center gap-1">
-          <AdminFilterDropdown
-            ref="filterDropdown"
-            :has-active-filters="hasActiveFilters"
-            :active-label="activeFilterLabel"
-            :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
-            @clear="clearFilters"
-          >
-            <template #chips>
-              <AdminFilterChip
-                v-for="chip in STATUS_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :title="newsStatusDescription(chip.value)"
-                :active="statusFilter === chip.value"
-                :color-class="newsStatusClass(chip.value)"
-                @click="setStatusFilter(chip.value)"
-              />
-            </template>
-          </AdminFilterDropdown>
-          <template v-if="canWrite">
-            <ToolbarPillButton
-              action="edit"
-              class="w-auto"
-              :disabled="actionLoading"
-              @click="runIngest"
+            <AdminFilterDropdown
+              ref="filterDropdown"
+              :has-active-filters="hasActiveFilters"
+              :active-label="activeFilterLabel"
+              :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
+              @clear="clearFilters"
             >
-              run ingest
-            </ToolbarPillButton>
-          </template>
+              <template #chips>
+                <AdminFilterChip
+                  v-for="chip in STATUS_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :title="newsStatusDescription(chip.value)"
+                  :active="statusFilter === chip.value"
+                  :color-class="newsStatusClass(chip.value)"
+                  @click="setStatusFilter(chip.value)"
+                />
+              </template>
+            </AdminFilterDropdown>
+            <template v-if="canWrite">
+              <ToolbarPillButton
+                action="edit"
+                class="w-auto"
+                :disabled="actionLoading"
+                @click="runIngest"
+              >
+                run ingest
+              </ToolbarPillButton>
+            </template>
           </div>
         </template>
         <template v-if="canWrite" #actions>

@@ -14,7 +14,11 @@ export function prefetchRoute(router: Pick<Router, "resolve">, to: RouteLocation
   prefetched.add(resolved.path);
   for (const record of resolved.matched) {
     for (const component of Object.values(record.components ?? {})) {
-      if (typeof component === "function" && !("displayName" in component) && component.length === 0) {
+      if (
+        typeof component === "function" &&
+        !("displayName" in component) &&
+        component.length === 0
+      ) {
         void Promise.resolve()
           .then(() => (component as () => unknown)())
           .catch(() => prefetched.delete(resolved.path));

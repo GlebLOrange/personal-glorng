@@ -30,7 +30,6 @@ const emit = defineEmits<{
   sort: [key: ExpenseSortKey];
   smartText: [];
 }>();
-
 </script>
 
 <template>
@@ -39,10 +38,27 @@ const emit = defineEmits<{
   <template v-else>
     <AdminDataTable :table-label="`expenses for ${monthLabel}`">
       <template #header>
-        <AdminSortableTh label="date" :direction="sortAriaSort('date')" @sort="emit('sort', 'date')" />
-        <AdminSortableTh label="category" :direction="sortAriaSort('category')" @sort="emit('sort', 'category')" />
-        <AdminSortableTh label="name" :direction="sortAriaSort('product')" @sort="emit('sort', 'product')" />
-        <AdminSortableTh label="amount" align="right" :direction="sortAriaSort('amount')" @sort="emit('sort', 'amount')" />
+        <AdminSortableTh
+          label="date"
+          :direction="sortAriaSort('date')"
+          @sort="emit('sort', 'date')"
+        />
+        <AdminSortableTh
+          label="category"
+          :direction="sortAriaSort('category')"
+          @sort="emit('sort', 'category')"
+        />
+        <AdminSortableTh
+          label="name"
+          :direction="sortAriaSort('product')"
+          @sort="emit('sort', 'product')"
+        />
+        <AdminSortableTh
+          label="amount"
+          align="right"
+          :direction="sortAriaSort('amount')"
+          @sort="emit('sort', 'amount')"
+        />
         <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
       </template>
 
