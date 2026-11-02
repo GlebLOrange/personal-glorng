@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+import AdminSortableTh from "@/components/admin/AdminSortableTh.vue";
 import AdminDataRow from "@/components/admin/AdminDataRow.vue";
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
@@ -23,9 +24,10 @@ defineProps<{
   items: SyncQueueItem[];
   loading: boolean;
   canMutate?: boolean;
+  queuedAriaSort: "ascending" | "descending" | "none";
 }>();
 
-const emit = defineEmits<{ retry: [taskId: number] }>();
+const emit = defineEmits<{ retry: [taskId: number]; sortQueued: [] }>();
 
 const expandedIds = ref<Set<number>>(new Set());
 
@@ -52,6 +54,7 @@ function syncPrimary(item: SyncQueueItem): string {
   <div v-else class="min-w-0">
     <AdminDataTable table-label="sync queue">
       <template #header>
+        <AdminSortableTh label="queued" :direction="queuedAriaSort" @sort="emit('sortQueued')" />
         <th :class="ADMIN_TH_CLASS" scope="col">status</th>
         <th :class="ADMIN_TH_CLASS" scope="col">task</th>
         <th :class="ADMIN_TH_CLASS" scope="col">action</th>
@@ -66,8 +69,11 @@ function syncPrimary(item: SyncQueueItem): string {
         :expandable="Boolean(item.last_error)"
         :expanded="expandedIds.has(item.id)"
         nested-interactive
-        :col-span="6"
+        :col-span="7"
       >
+        <td :class="[ADMIN_TD_MUTED_CLASS, 'whitespace-nowrap']">
+          {{ formatDate(item.created_at) }}
+        </td>
         <td :class="ADMIN_TD_CLASS">
           <StatusBadge
             :label="statusLabel(item.status)"

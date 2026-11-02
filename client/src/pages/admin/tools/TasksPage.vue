@@ -81,6 +81,9 @@ const {
   calendarTasks,
   calendarTruncated,
   syncQueue,
+  syncProcessing,
+  syncAriaSort,
+  toggleSyncSort,
   intakes,
   selectedTask,
   stats,
@@ -277,7 +280,9 @@ onMounted(() => {
   >
     <div class="w-full min-w-0 self-stretch">
       <div class="page-tool-actions">
-        <div class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 md:flex-nowrap">
+        <div
+          class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 md:flex-nowrap"
+        >
           <AdminFilterDropdown
             v-show="activeTab === 'queue'"
             ref="filterDropdown"
@@ -329,6 +334,18 @@ onMounted(() => {
             :tabs="TASK_TABS"
             @update:model-value="switchTab"
           />
+
+          <ToolbarPillButton
+            v-if="isSuperuser && activeTab === 'sync'"
+            family="5xx"
+            class="w-auto shrink-0 gap-1.5"
+            :disabled="syncLoading || syncProcessing"
+            aria-label="process sync queue now"
+            @click="processSyncQueueNow"
+          >
+            <SyncIcon class-name="size-3.5 shrink-0" />
+            sync now
+          </ToolbarPillButton>
 
           <ToolbarPillButton
             v-if="isSuperuser"
@@ -424,13 +441,14 @@ onMounted(() => {
         :items="syncQueue"
         :loading="syncLoading"
         :can-mutate="isSuperuser"
+        :queued-aria-sort="syncAriaSort"
         :total="syncTotal"
         :page="syncPage"
         :total-pages="syncTotalPages"
         :has-next-page="hasNextSyncPage"
         :has-previous-page="hasPreviousSyncPage"
         @retry="retrySync"
-        @sync-now="processSyncQueueNow"
+        @sort-queued="toggleSyncSort"
         @first-page="goToSyncPage(1)"
         @prev-page="goToSyncPage(syncPage - 1)"
         @next-page="goToSyncPage(syncPage + 1)"
