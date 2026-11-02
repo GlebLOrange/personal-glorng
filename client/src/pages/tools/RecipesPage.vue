@@ -218,12 +218,7 @@ const showRecipesPager = computed(
         "
       >
         <template v-if="hasFilters" #action>
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            class="gap-1.5"
-            @click="clearFilters"
-          >
+          <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="clearFilters">
             <CloseIcon class-name="size-3.5 shrink-0" />
             clear filters
           </BaseButton>

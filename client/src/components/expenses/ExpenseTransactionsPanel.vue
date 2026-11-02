@@ -129,7 +129,6 @@ const emit = defineEmits<{
         @sort="emit('sort', $event)"
         @smart-text="emit('smartText')"
       />
-
     </Card>
   </section>
 </template>

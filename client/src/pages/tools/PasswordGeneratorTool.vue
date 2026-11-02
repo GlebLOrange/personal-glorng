@@ -205,6 +205,7 @@ onMounted(() => {
 
         <div class="w-full min-w-0 space-y-1">
           <BaseInput
+            v-if="generated"
             :model-value="displayPassword"
             readonly
             compact

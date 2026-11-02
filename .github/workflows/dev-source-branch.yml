@@ -1,0 +1,24 @@
+name: dev-source-branch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  source-branch:
+    name: dev-source-branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require dev as the pull request source
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if [ "$HEAD_BRANCH" != "dev" ]; then
+            echo "Pull requests into main must come from the dev branch (source was: $HEAD_BRANCH)."
+            exit 1
+          fi
+          echo "Pull request source branch is dev."
