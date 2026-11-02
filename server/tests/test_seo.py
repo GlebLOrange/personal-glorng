@@ -96,4 +96,6 @@ async def test_robots_txt(client: AsyncClient) -> None:
     assert "Disallow: /admin" in body
     assert "Disallow: /login" in body
     assert "Disallow: /settings" in body
+    assert "Disallow: /calculator" in body
+    assert "Disallow: /weather" in body
     assert "Sitemap: http://localhost/sitemap.xml" in body

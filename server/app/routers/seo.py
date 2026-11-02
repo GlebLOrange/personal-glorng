@@ -82,6 +82,13 @@ _ROBOTS_DISALLOW: tuple[str, ...] = (
     "/verify-email",
     "/forgot-password",
     "/reset-password",
+    # Public SPA tools already noindex in the client router — keep crawlers off them.
+    "/calculator",
+    "/password-generator",
+    "/qr-generator",
+    "/weather",
+    "/shortener",
+    "/recipes",
 )
 
 

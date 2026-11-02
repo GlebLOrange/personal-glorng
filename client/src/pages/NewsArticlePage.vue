@@ -8,7 +8,8 @@ import ErrorState from "@/components/ui/ErrorState.vue";
 import FieldHelp from "@/components/ui/FieldHelp.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
-import { applyPageSeo } from "@/utils/pageSeo";
+import { SITE_NAME } from "@/constants/seo";
+import { absoluteUrl, applyPageSeo } from "@/utils/pageSeo";
 import { formatEmbeddedDates, truncateBreadcrumbSlug } from "@/utils/format";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
@@ -45,10 +46,23 @@ watch(
   article,
   (value) => {
     if (!value) return;
+    const path = `/news/${value.slug}`;
+    const pageUrl = absoluteUrl(path);
     applyPageSeo({
       title: value.title,
       description: value.summary || undefined,
-      path: `/news/${value.slug}`,
+      path,
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: value.title,
+        ...(value.summary ? { description: value.summary } : {}),
+        datePublished: value.published_at ?? value.created_at,
+        dateModified: value.updated_at,
+        author: { "@type": "Person", name: SITE_NAME },
+        mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
+        url: pageUrl,
+      },
     });
   },
   { immediate: true },
