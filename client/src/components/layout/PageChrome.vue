@@ -32,7 +32,7 @@ const displaySegments = computed((): BreadcrumbSegment[] => {
 </script>
 
 <template>
-  <div class="relative border-b border-surface-border bg-surface-dark/80 backdrop-blur-md">
+  <div class="relative min-w-[768px] border-b border-surface-border bg-surface-dark/80 backdrop-blur-md">
     <!-- Back parks on this row so it shares the breadcrumb vertical band. -->
     <div class="relative my-[15px] flex min-h-10 min-w-0 items-center gap-3">
       <div class="flex min-w-0 flex-1 flex-col justify-center">
