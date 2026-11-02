@@ -218,21 +218,34 @@ html[data-theme="light"] {
   @apply flex w-full min-w-0 flex-col items-center;
 }
 
-/** Shared tool actions — spans 100% of parent. */
+/** Shared tool actions — spans 100% of parent; one horizontal lane, wraps only when narrow.
+ * A lone child fills the lane. Use `page-tool-actions-stack` for vertical stacks (forms + sections). */
 @utility page-tool-actions {
   display: flex;
   min-width: 0;
   width: 100%;
   max-width: 100%;
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: calc(var(--spacing) * 3);
   margin-bottom: calc(var(--spacing) * 4);
 }
 
+@utility page-tool-actions-stack {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
 .page-tool-actions > * {
-  @apply w-full min-w-0;
+  @apply min-w-0 max-w-full;
+}
+
+.page-tool-actions > :only-child,
+.page-tool-actions.page-tool-actions-stack > * {
+  @apply w-full;
 }
 
 @media (min-width: 768px) {

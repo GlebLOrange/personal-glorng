@@ -159,7 +159,7 @@ async function savePassword(): Promise<void> {
     max-width="5xl"
     body-width="column"
   >
-    <div class="page-tool-actions gap-8">
+    <div class="page-tool-actions page-tool-actions-stack gap-8">
       <div
         v-if="DevApiStatusBadge"
         class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-4"

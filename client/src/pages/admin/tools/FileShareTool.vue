@@ -135,7 +135,7 @@ onMounted(loadFiles);
       This tool is turned off on this server.
     </p>
     <template v-if="!toolDisabled">
-      <div class="page-tool-actions mb-10">
+      <div class="page-tool-actions page-tool-actions-stack mb-10">
         <div class="flex items-center justify-center gap-2">
           <ToolbarPillButton
             action="save"
