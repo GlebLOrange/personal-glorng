@@ -9,7 +9,8 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
 </script>
 
 <template>
-  <!-- Rail matches shell; buttons sit in the gutter past the right edge -->
+  <!-- Rail matches shell; buttons sit in the gutter past the right edge.
+       Hidden below 1180px where the gutter is too narrow, so they never cover content. -->
   <div v-if="showToTop" class="pointer-events-none fixed inset-x-0 top-[14%] z-30 print:hidden">
     <div class="relative mx-auto w-full max-w-5xl px-6">
       <IconActionButton
