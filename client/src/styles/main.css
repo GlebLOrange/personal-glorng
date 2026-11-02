@@ -206,8 +206,11 @@ html[data-theme="light"] {
 
 @utility page-shell {
   @apply mx-auto w-full px-6;
-  /* Layout body never narrower than 768px (phones scroll horizontally). */
+  /* Min width: 768px on phones/tablets (scroll horizontally), 1024px from lg (64rem). */
   min-width: 768px;
+  @variant lg {
+    min-width: 1024px;
+  }
   /* Reserve an end lane for fixed scroll controls when the outside gutter is too narrow. */
   @media (width < 1180px) {
     padding-right: calc(3.5rem + env(safe-area-inset-right));
