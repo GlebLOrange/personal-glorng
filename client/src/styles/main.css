@@ -238,6 +238,7 @@ html[data-theme="light"] {
 
 @utility page-body {
   @apply w-full;
+  min-width: 1024px;
   margin-top: var(--page-chrome-offset);
 }
 
