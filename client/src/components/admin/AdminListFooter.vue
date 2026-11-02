@@ -50,9 +50,9 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
 
 const navClass = computed(() => {
   if (showPagination.value) {
-    return "mt-4 grid grid-cols-[auto_1fr_auto] items-center gap-3";
+    return "page-body-footer pt-4 grid grid-cols-[auto_1fr_auto] items-center gap-3";
   }
-  return "mt-4 flex flex-wrap items-center justify-center gap-3";
+  return "page-body-footer pt-4 flex flex-wrap items-center justify-center gap-3";
 });
 </script>
 

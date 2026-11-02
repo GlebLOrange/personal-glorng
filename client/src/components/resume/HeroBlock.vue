@@ -26,7 +26,7 @@ const emit = defineEmits<{ inquire: [] }>();
 
 const isStatusRail = computed(() => props.layout === "status-rail");
 const showMeta = computed(() =>
-  Boolean(props.location || props.availability || (isStatusRail.value && props.sampleNote)),
+  Boolean(props.location || props.availability || false),
 );
 
 const isDownloadingCv = ref(false);
@@ -59,7 +59,7 @@ function printPage(): void {
     <h1
       class="mb-2 text-balance font-bold tracking-tight text-surface-light"
       :class="
-        isStatusRail ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-2xl sm:text-3xl md:text-4xl'
+        isStatusRail ? 'font-mono text-3xl sm:text-4xl md:text-5xl' : 'text-2xl sm:text-3xl md:text-4xl'
       "
     >
       {{ name }}
@@ -76,6 +76,12 @@ function printPage(): void {
       :class="isStatusRail ? 'text-base line-clamp-2' : 'text-lg'"
     >
       {{ tagline }}
+    </p>
+    <p
+      v-if="isStatusRail && sampleNote"
+      class="mx-auto mb-4 max-w-2xl font-mono text-sm text-pretty text-surface-light"
+    >
+      {{ sampleNote }}
     </p>
     <p
       v-if="showMeta && isStatusRail"
@@ -98,15 +104,6 @@ function printPage(): void {
         <LocationIcon class-name="size-3.5 shrink-0" />
         {{ location }}
       </span>
-      <template v-if="sampleNote">
-        <span
-          v-if="location || availability"
-          class="hidden sm:inline-flex min-h-11 items-center"
-          aria-hidden="true"
-          >·</span
-        >
-        <span class="inline-flex min-h-11 items-center text-surface-sage">{{ sampleNote }}</span>
-      </template>
     </p>
     <p
       v-else-if="showMeta"

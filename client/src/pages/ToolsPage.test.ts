@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { computed, ref } from "vue";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ToolsPage from "@/pages/ToolsPage.vue";
 import { publicToolsAsServices } from "@/platform/services";
@@ -40,21 +40,53 @@ vi.mock("@/utils/featureFlags", async (importOriginal) => {
 
 import { isAiChatEnabled } from "@/utils/featureFlags";
 
+function stubDesktopViewport(): void {
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn((query: string) => ({
+      matches: false, // not max-width:767px → desktop defaults open
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
+  );
+}
+
+function stubMobileViewport(): void {
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn((query: string) => ({
+      matches: query.includes("max-width"),
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
+  );
+}
+
 describe("ToolsPage spoiler catalog", () => {
   beforeEach(() => {
+    sessionStorage.clear();
+    replaceMock.mockClear();
     setActivePinia(createPinia());
     useRouteMock.mockReturnValue({ query: {} });
     canAccessMock.mockReturnValue(false);
     isSuperuserRef.value = false;
     vi.mocked(isAiChatEnabled).mockReturnValue(true);
+    stubDesktopViewport();
   });
 
-  function mountPage() {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function mountPage(options: { attachTo?: HTMLElement } = {}) {
     return mount(ToolsPage, {
+      ...options,
       global: {
         stubs: {
           PageShell: {
-            props: ["title", "breadcrumbs", "backTo", "narrow"],
+            props: ["title", "breadcrumbs", "backTo", "narrow", "bodyWidth"],
             template:
               '<div><div data-testid="crumbs"><span v-for="(c, i) in breadcrumbs" :key="i">{{ c.label }}</span></div><slot /></div>',
           },
@@ -218,6 +250,73 @@ describe("ToolsPage spoiler catalog", () => {
     expect(wrapper.text()).toContain("audit logs");
     expect(wrapper.text()).not.toContain("ai chat");
   });
+
+  it("collapses sections by default on mobile viewports", async () => {
+    stubMobileViewport();
+    const wrapper = mountPage();
+    await flushPromises();
+    const spoilers = wrapper.findAll("details");
+    expect(spoilers.length).toBeGreaterThanOrEqual(1);
+    expect(spoilers.every((el) => el.attributes("open") === undefined)).toBe(true);
+  });
+
+  it("keeps one section open at a time on mobile", async () => {
+    stubMobileViewport();
+    isSuperuserRef.value = true;
+    canAccessMock.mockImplementation(() => true);
+    const wrapper = mountPage();
+    await flushPromises();
+    const spoilers = wrapper.findAll("details");
+    expect(spoilers.length).toBeGreaterThanOrEqual(2);
+    const [first, second] = spoilers as [typeof spoilers[number], typeof spoilers[number]];
+    (first.element as HTMLDetailsElement).open = true;
+    await first.trigger("toggle");
+    (second.element as HTMLDetailsElement).open = true;
+    await second.trigger("toggle");
+    await flushPromises();
+    expect(first.attributes("open")).toBeUndefined();
+    expect(second.attributes("open")).toBeDefined();
+  });
+
+  it("remembers opened sections per viewport band in sessionStorage", async () => {
+    sessionStorage.clear();
+    stubMobileViewport();
+    isSuperuserRef.value = true;
+    canAccessMock.mockImplementation(() => true);
+    const first = mountPage();
+    await flushPromises();
+    const utils = first.get("#utils");
+    (utils.element as HTMLDetailsElement).open = true;
+    await utils.trigger("toggle");
+    expect(JSON.parse(sessionStorage.getItem("tools:open-sections:narrow") ?? "{}")).toMatchObject({ utils: true });
+    first.unmount();
+
+    const second = mountPage();
+    await flushPromises();
+    expect(second.get("#utils").attributes("open")).toBeDefined();
+    sessionStorage.clear();
+  });
+
+  it("does not rewrite the URL hash when sections open or close", async () => {
+    stubMobileViewport();
+    const wrapper = mountPage();
+    await flushPromises();
+    replaceMock.mockClear();
+    const utils = wrapper.get("#utils");
+    (utils.element as HTMLDetailsElement).open = true;
+    await utils.trigger("toggle");
+    (utils.element as HTMLDetailsElement).open = false;
+    await utils.trigger("toggle");
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("opens the section named by an inbound #hash", async () => {
+    stubMobileViewport();
+    useRouteMock.mockReturnValue({ query: {}, hash: "#utils" });
+    const wrapper = mountPage();
+    await flushPromises();
+    expect(wrapper.get("#utils").attributes("open")).toBeDefined();
+  });
 });
 
 describe("tools page group order", () => {
@@ -241,4 +340,5 @@ describe("tools page group order", () => {
     expect(slugs).not.toContain("expenses");
     expect(slugs).toContain("weather");
   });
+
 });

@@ -28,7 +28,6 @@ describe("PageChrome", () => {
       props: {
         title: "users",
         breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "users" }],
-        backTo: "/admin",
       },
       global: { stubs },
     });
@@ -41,19 +40,7 @@ describe("PageChrome", () => {
     expect(crumbs[1].attributes("data-elevated")).toBe("true");
     expect(wrapper.get("h1").classes()).toContain("sr-only");
     expect(wrapper.get("h1").text()).toBe("users");
-    const back = wrapper.get("[data-testid=back]");
-    expect(back.attributes("href")).toBe("/admin");
-    // Back sits in the breadcrumb row (same vertical band) and parks on the nav rail.
-    expect(back.element.parentElement?.className).toContain("my-[15px]");
-    expect(back.element.parentElement?.className).toContain("min-h-10");
-    expect(
-      wrapper
-        .findAll("div")
-        .some((node) => node.classes().includes("h-10") && node.classes().includes("items-center")),
-    ).toBe(true);
-    expect(back.classes()).toContain("shell-outside-end");
-    expect(back.classes()).toContain("!-right-6");
-    expect(back.classes()).toContain("top-1/2");
+    expect(wrapper.find("[data-testid=back]").exists()).toBe(false);
   });
 
   it("shows tools parent + tool crumb for tools trails", () => {
@@ -61,7 +48,6 @@ describe("PageChrome", () => {
       props: {
         title: "calculator",
         breadcrumbs: [{ label: "tools", to: "/tools" }, { label: "calculator" }],
-        backTo: "/tools",
       },
       global: { stubs },
     });
@@ -79,7 +65,6 @@ describe("PageChrome", () => {
       props: {
         title: "Some Article",
         breadcrumbs: [{ label: "news", to: "/news" }, { label: "demo-news-1" }],
-        backTo: "/news",
       },
       global: { stubs },
     });
@@ -97,7 +82,6 @@ describe("PageChrome", () => {
       props: {
         title: "Some Article",
         breadcrumbs: [{ label: "news", to: "/news" }, { label: "demo-news-1" }],
-        backTo: "/news",
         omitHeading: true,
       },
       global: { stubs },
@@ -111,7 +95,6 @@ describe("PageChrome", () => {
       props: {
         title: "db maintenance",
         breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "db maintenance" }],
-        backTo: "/admin",
         description: "backs up mongo, redis, and media.",
       },
       global: { stubs },
