@@ -4,13 +4,13 @@ services:
       context: .
       dockerfile: .devcontainer/Dockerfile
     volumes:
-      - .:/workspaces/portfolio-glorng:cached
-    working_dir: /workspaces/portfolio-glorng
+      - .:/workspaces/personal-glorng:cached
+    working_dir: /workspaces/personal-glorng
     command: sleep infinity
     environment:
-      GLORNG_ENV_FILE: /workspaces/portfolio-glorng/.env
+      GLORNG_ENV_FILE: /workspaces/personal-glorng/.env
       CELERY_TASK_ALWAYS_EAGER: "true"
-      MEDIA_DIR: /workspaces/portfolio-glorng/server/media
+      MEDIA_DIR: /workspaces/personal-glorng/server/media
       VITE_API_PROXY_TARGET: http://127.0.0.1:8000
     networks:
       - backend

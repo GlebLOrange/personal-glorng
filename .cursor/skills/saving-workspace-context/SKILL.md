@@ -41,7 +41,7 @@ Cursor’s `stop` payload is only `{ status, loop_count }` — no transcript or 
 This repo gates micro-save:
 
 1. [`session-start.sh`](../../hooks/session-start.sh) exports `PORTFOLIO_CTX_SESSION` from `session_id`.
-2. [`after-file-edit-mark.sh`](../../hooks/after-file-edit-mark.sh) marks the session dirty after any agent file edit (temp state under `$TMPDIR/portfolio-glorng-ctx/`).
+2. [`after-file-edit-mark.sh`](../../hooks/after-file-edit-mark.sh) marks the session dirty after any agent file edit (temp state under `$TMPDIR/personal-glorng-ctx/`).
 3. [`save-workspace-context.sh`](../../hooks/save-workspace-context.sh) emits a follow-up only when `status == completed`, `loop_count == 0`, the session is dirty, and it has not already been prompted. Then it marks `prompted` so later stops stay silent. The follow-up asks the agent to update the Active task block (not to paste the session).
 
 Wired in [`.cursor/hooks.json`](../../hooks.json) (`afterFileEdit` + `stop` with `loop_limit: 1`). Empty `{}` from the stop script means no chat follow-up.
