@@ -141,7 +141,7 @@ export const RESUME_FALLBACK: ResumeData = {
         " redirects, and off-loop DNS — used by outbound tool paths.",
       tech: ["Python", "httpx", "asyncio", "DNS"],
       url:
-        "https://github.com/GlebLOrange/personal-glorng/blob/main/" +
+        "https://github.com/GlebLOrange/portfolio-glorng/blob/main/" +
         "server/app/core/url_safety.py",
     },
   ],

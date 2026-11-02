@@ -2,7 +2,7 @@
 
 On-demand detail (moved out of always-on `gortex-workflow` for token efficiency).
 
-- **2026-10-30:** Always-on = existing `gortex-workflow` rule. For MCP tools to appear, Cursor workspace root must be this repo (`personal-glorng`); if Gortex only exposes `mcp_auth` / thinks CWD is another folder, re-root or reconnect MCP. Do not `gortex track` unless asked (repo already tracked). Do not alwaysApply offloaded `gortex-skills/`.
+- **2026-10-30:** Always-on = existing `gortex-workflow` rule. For MCP tools to appear, Cursor workspace root must be this repo (`portfolio-glorng`); if Gortex only exposes `mcp_auth` / thinks CWD is another folder, re-root or reconnect MCP. Do not `gortex track` unless asked (repo already tracked). Do not alwaysApply offloaded `gortex-skills/`.
 
 - The session/CWD selects the view. A session-discovered checkout (a linked worktree included) is an automatic overlay; do not `track` it. Only an explicit user request to track creates a dedicated logical graph.
 - **Overall** means the selected overlay plus exactly one designated primary in its Git family, never a union of incompatible branches. Unique overlay/base matches keep normal relevance order; for a duplicate identity the overlay wins, and deletion/tombstone masks hide the base copy.

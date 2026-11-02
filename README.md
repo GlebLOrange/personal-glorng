@@ -1,13 +1,13 @@
 # Gleb.Y — Developer Portfolio & Personal Platform
 
-[![CI](https://github.com/GlebLOrange/personal-glorng/actions/workflows/ci.yml/badge.svg)](https://github.com/GlebLOrange/personal-glorng/actions/workflows/ci.yml)
-[![Security](https://github.com/GlebLOrange/personal-glorng/actions/workflows/security.yml/badge.svg)](https://github.com/GlebLOrange/personal-glorng/actions/workflows/security.yml)
+[![CI](https://github.com/GlebLOrange/portfolio-glorng/actions/workflows/ci.yml/badge.svg)](https://github.com/GlebLOrange/portfolio-glorng/actions/workflows/ci.yml)
+[![Security](https://github.com/GlebLOrange/portfolio-glorng/actions/workflows/security.yml/badge.svg)](https://github.com/GlebLOrange/portfolio-glorng/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + MongoDB + Redis, fully containerized with Docker. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
 
 **Live handbook:** [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/)  
-**Source:** [github.com/GlebLOrange/personal-glorng](https://github.com/GlebLOrange/personal-glorng)
+**Source:** [github.com/GlebLOrange/portfolio-glorng](https://github.com/GlebLOrange/portfolio-glorng)
 
 > The published site above is the VitePress architecture handbook (GitHub Pages). The full Vue + FastAPI app runs via `make prod` on a VPS — set `BASE_URL` / `VITE_PUBLIC_ORIGIN` to that HTTPS origin (OG tags + sitemap). See [Deployment](docs/operations/deployment.md).
 

@@ -58,5 +58,5 @@ With the lite stack running, `make check` is the local backend+frontend gate (Co
 - [Development modes](/guide/development) — all `make dev-*` targets
 - [Architecture](/guide/architecture) — how requests and services fit together
 - [Deployment](/operations/deployment) — production checklist
-- [Handbook site](https://gleblorange.github.io/personal-glorng/) — published VitePress docs
+- [Handbook site](https://gleblorange.github.io/portfolio-glorng/) — published VitePress docs
 - Regenerate API/architecture fragments after backend changes: `make docs-generate`

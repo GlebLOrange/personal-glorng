@@ -116,9 +116,3 @@ skills-lock.json
 !.claude/commands/
 !.claude/commands/**
 !.claude/settings.json
-
-# MCP configs are machine-local; commit *.example with placeholders
-.cursor/mcp.json
-.mcp.json
-!.cursor/mcp.json.example
-!.mcp.json.example

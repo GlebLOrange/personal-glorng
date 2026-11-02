@@ -31,7 +31,7 @@ if status != "completed" or loop_count > 0:
 
 session = os.environ.get("PORTFOLIO_CTX_SESSION") or "unknown"
 safe = re.sub(r"[^A-Za-z0-9._-]+", "_", session)[:120] or "unknown"
-path = Path(os.environ.get("TMPDIR") or "/tmp") / "personal-glorng-ctx" / f"{safe}.state"
+path = Path(os.environ.get("TMPDIR") or "/tmp") / "portfolio-glorng-ctx" / f"{safe}.state"
 
 state = {"edited": False, "prompted": False}
 if path.is_file():
