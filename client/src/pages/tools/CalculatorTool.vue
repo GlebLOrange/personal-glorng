@@ -103,7 +103,7 @@ function buttonAriaLabel(val: string): string | undefined {
     back-to="/tools"
     body-width="column"
   >
-    <div class="page-tool-actions !w-auto !m-auto">
+    <div class="page-tool-actions">
       <Card class="w-auto max-w-full">
         <div
           class="mb-4 rounded-lg bg-surface-dark p-4 text-right"
