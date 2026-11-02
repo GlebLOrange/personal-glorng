@@ -93,7 +93,7 @@ html[data-theme="light"] {
   --palette-status-warning: #8b6914;
   --palette-surface-light: #1d1b20;
   --palette-surface-sage: #49454e;
-  --palette-surface-mid: #79747e;
+  --palette-surface-mid: #605c66; /* ≥4.5:1 on card #f2ecf4 */
   --palette-surface-muted: #605c66; /* ≥4.5:1 on page, card, grid */
   --palette-surface-dark: #fef7ff;
   --palette-surface-card: #f2ecf4;
@@ -121,8 +121,8 @@ html[data-theme="light"] {
 
 @theme {
   --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  /* Product UI is sans-only; keep alias for Tailwind font-mono / legacy refs. */
-  --font-mono: var(--font-sans);
+  /* Real mono face (system stack, no extra dep) for public portfolio signature. */
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   /* Map medium → 600 (loaded face); default Tailwind medium is 500 (no file). */
   --font-weight-medium: 600;
   --text-xs: 0.875rem;
@@ -223,6 +223,9 @@ html[data-theme="light"] {
   --tile: calc((100% - 2 * var(--tile-gap)) / 3);
   --content: calc(var(--tile) * 2 + var(--tile-gap));
   --page-chrome-offset: 4rem;
+  /* Fallback only: PageChrome publishes its measured height on <html> (usePageChromeHeight).
+     border-b 1px + my-[15px]×2 + h-10 ≈ 71px. */
+  --page-chrome-h-fallback: calc(2.5rem + 30px + 1px);
 }
 
 /** Icon chrome parked in the gutter just past the content shell’s right edge. */
@@ -239,9 +242,12 @@ html[data-theme="light"] {
 }
 
 @utility page-body {
-  @apply w-full;
+  @apply flex w-full flex-col;
   min-width: 1024px;
   margin-top: var(--page-chrome-offset);
+  /* Fill the viewport below chrome so a page-body-footer (mt-auto) pins on short pages.
+     --page-chrome-h = measured chrome box; 2.5rem ≈ shell pb-10. */
+  min-height: calc(100dvh - var(--page-chrome-offset) - var(--page-chrome-h, var(--page-chrome-h-fallback)) - 2.5rem);
 }
 
 /** Content column (2-of-3 tiles) — formerly page-body-narrow. */
@@ -249,9 +255,14 @@ html[data-theme="light"] {
   @apply w-full min-w-0;
 }
 
+/** List footer / pagination slot: last child of page-body(-content) or any flex column; mt-auto pins it to the bottom. */
+@utility page-body-footer {
+  @apply mt-auto w-full;
+}
+
 /** Tool slot inside page-body (PageShell tool prop). Centers action panels; full-bleed siblings use w-full self-stretch. */
 @utility page-tool-body {
-  @apply flex w-full flex-col items-center;
+  @apply flex min-h-0 w-full flex-1 flex-col items-center;
 }
 
 /** Shared tool actions — spans 100% of parent; one horizontal lane, wraps only when narrow.
@@ -326,6 +337,11 @@ html[data-theme="light"] {
   &:focus-visible .page-tile-card {
     border-color: var(--color-accent-coral);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent-coral) 50%, transparent);
+  }
+  /* Fallback ring when the tile has no inner .page-tile-card. */
+  &:focus-visible:not(:has(.page-tile-card)) {
+    outline: 2px solid var(--color-accent-coral);
+    outline-offset: 2px;
   }
 }
 
@@ -1037,4 +1053,12 @@ h6,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Subtle hover lift on portfolio case/repo cards (global reduced-motion guard applies). */
+.portfolio-cv-tile-wash {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+.portfolio-cv-tile-wash:hover {
+  transform: translateY(-2px);
 }

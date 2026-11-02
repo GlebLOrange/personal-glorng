@@ -12,15 +12,8 @@ export const TOOLS_PAGE_GROUP_LABELS: Record<ToolsPageGroupId, string> = {
   server: "server",
 };
 
-/** Six public demo tools — chip targets on the Tools catalog (tiles only). */
-export const TOOLS_PAGE_DEMO_SLUGS = new Set([
-  "weather",
-  "calculator",
-  "password-generator",
-  "qr-generator",
-  "url-shortener",
-  "recipes",
-]);
+/** Demo chip targets for catalog *tiles* only (utils pills never show chips). */
+export const TOOLS_PAGE_DEMO_SLUGS = new Set(["recipes"]);
 
 /** Capability extras that show a "yours" chip when listed as tiles. */
 const YOURS_CHIP_SLUGS = new Set([
@@ -90,6 +83,11 @@ export function toolsPageGroupForSlug(slug: string): ToolsPageGroupId | undefine
   return SLUG_TO_GROUP[slug];
 }
 
+/** Drop utils-tab peers so they never also appear as content/server tiles. */
+export function withoutUtilsTabPeers(services: PlatformService[]): PlatformService[] {
+  return services.filter((svc) => !SMALL_TOOL_TAB_SLUGS.has(svc.slug));
+}
+
 /** demo = public six; yours = capability extras (tasks, expenses, …). */
 export function toolsPageChipForSlug(slug: string): "demo" | "yours" | undefined {
   // Utils spoiler uses tab pills — chips only apply to tile sections.
@@ -111,6 +109,8 @@ export function groupServicesForToolsPage(services: PlatformService[]): ToolsPag
     seen.add(svc.slug);
     const group = SLUG_TO_GROUP[svc.slug];
     if (!group) continue;
+    // Utils-tab peers belong only in the utils group (pills), never content/server tiles.
+    if (group !== "utils" && SMALL_TOOL_TAB_SLUGS.has(svc.slug)) continue;
     const list = grouped.get(group) ?? [];
     list.push(svc);
     grouped.set(group, list);

@@ -27,7 +27,8 @@ const showPinnedRow = computed(() => {
 </script>
 
 <template>
-  <div v-if="showPinnedRow" class="page-tool-grid mb-8 min-w-0">
+  <!-- empty:hidden drops the mb-8 gap when ToastContainer has nothing to show -->
+  <div v-if="showPinnedRow" class="page-tool-grid mb-8 min-w-0 empty:hidden">
     <ToastContainer variant="tile" />
   </div>
 </template>

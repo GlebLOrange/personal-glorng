@@ -79,7 +79,7 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
     >
       <span
         v-if="showRoleLabels"
-        class="text-[10px] uppercase tracking-wider block mb-1"
+        class="text-xs uppercase tracking-wider block mb-1"
         :class="msg.role === 'user' ? roleUserClass : roleAssistantClass"
       >
         {{ msg.role }}
@@ -94,7 +94,7 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
         v-if="msg.role === 'assistant' && msg.sources?.length"
         class="mt-3 pt-2 border-t border-surface-border/60 space-y-2"
       >
-        <p class="text-[10px] uppercase tracking-wider text-surface-mid">
+        <p class="text-xs uppercase tracking-wider text-surface-mid">
           {{ sourcesLabel }}
         </p>
         <template v-for="(source, sourceIndex) in msg.sources" :key="source.id">
@@ -108,20 +108,20 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
             :class="sourceLinkClass"
           >
             <span :class="sourceTitleClass">{{ source.title }}</span>
-            <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-            <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+            <span class="text-xs text-surface-mid block">{{ source.source_type }}</span>
+            <span class="text-xs text-surface-mid line-clamp-2">{{ source.snippet }}</span>
           </a>
           <div v-else :class="sourceLinkClass">
             <span :class="sourceTitleClass">{{ source.title }}</span>
-            <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-            <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+            <span class="text-xs text-surface-mid block">{{ source.source_type }}</span>
+            <span class="text-xs text-surface-mid line-clamp-2">{{ source.snippet }}</span>
           </div>
         </template>
       </div>
 
       <p
         v-else-if="!loading && showEmptySourcesWarning(msg)"
-        class="mt-2 text-[11px] text-status-warning/90"
+        class="mt-2 text-xs text-status-warning/90"
       >
         No matching documents — answer may be limited.
       </p>

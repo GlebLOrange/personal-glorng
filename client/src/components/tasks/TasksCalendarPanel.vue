@@ -254,7 +254,7 @@ function onDayKeydown(event: KeyboardEvent, key: string): void {
         >
           <CalendarIcon class-name="size-3 shrink-0 opacity-70" />
           <span class="leading-none">{{ cell.day }}</span>
-          <span class="mt-0.5 text-[10px] leading-none text-surface-mid">
+          <span class="mt-0.5 text-xs leading-none text-surface-mid">
             <template v-if="cell.isToday">today · </template>
             {{ cell.count }}
           </span>

@@ -49,10 +49,10 @@ function artSrc(slug: string): string {
       as="article"
       :class="['min-w-0 overflow-hidden !p-0', PORTFOLIO_CV_TILE_CLASS]"
     >
-      <div class="overflow-hidden" aria-hidden="true">
+      <div class="overflow-hidden">
         <img
           :src="artSrc(proj.slug)"
-          alt=""
+          :alt="`${proj.name} screenshot`"
           class="h-28 w-full object-cover object-center sm:h-32"
           width="640"
           height="200"

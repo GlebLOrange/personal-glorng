@@ -88,7 +88,7 @@ const totalParts = computed((): { amount: string; unit: string | null } | null =
             >
               <span class="min-w-0 truncate text-surface-light">
                 {{ expense.tool_name }}
-                <span class="text-[10px] text-surface-mid">
+                <span class="text-xs text-surface-mid">
                   · {{ formatExpenseDate(expense.expense_date) }}
                 </span>
               </span>

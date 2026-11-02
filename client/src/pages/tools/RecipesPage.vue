@@ -121,6 +121,14 @@ function openRecipeEdit(recipe: Recipe): void {
 function editRecipeFromCard(recipe: Recipe): void {
   openEdit(recipe);
 }
+
+const showRecipesPager = computed(
+  () =>
+    isAuthenticated.value &&
+    !listLoading.value &&
+    !listError.value &&
+    (recipes.value.length > 0 || page.value > 1),
+);
 </script>
 
 <template>
@@ -182,21 +190,7 @@ function editRecipeFromCard(recipe: Recipe): void {
       <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
       <template v-else-if="recipes.length || page > 1">
-        <AdminListFooter
-          class="!mt-0 mb-1"
-          :count-label="recipeCountLabel"
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="page > 1"
-          aria-label="recipes pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
-        <div v-if="recipes.length" class="mt-1 w-full min-w-0 self-stretch">
+        <div v-if="recipes.length" class="w-full min-w-0 self-stretch">
           <AdminDataTable table-label="recipes">
             <template #header>
               <th :class="ADMIN_TH_CLASS" scope="col">title</th>
@@ -258,6 +252,23 @@ function editRecipeFromCard(recipe: Recipe): void {
       @delete="requestDelete"
       @cook="openCookMode"
     />
+
+    <template #footer>
+      <AdminListFooter
+        v-if="showRecipesPager"
+        :count-label="recipeCountLabel"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="page > 1"
+        aria-label="recipes pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </template>
 
     <RecipeCookMode :recipe="selectedRecipe" :open="showCookMode" @close="closeCookMode" />
 

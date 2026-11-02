@@ -9,6 +9,7 @@ import {
   groupServicesForToolsPage,
   toolsPageChipForSlug,
   toolsPageGroupForSlug,
+  withoutUtilsTabPeers,
 } from "@/utils/toolsPageGroups";
 
 describe("toolsPageGroups", () => {
@@ -62,6 +63,12 @@ describe("toolsPageGroups", () => {
     expect(PLATFORM_SERVICES.find((t) => t.slug === "weather")?.category).toBe("utilities");
   });
 
+
+  it("strips utils-tab peers from tile candidate lists", () => {
+    const weather = PLATFORM_SERVICES.find((t) => t.slug === "weather")!;
+    const recipes = PLATFORM_SERVICES.find((t) => t.slug === "recipes")!;
+    expect(withoutUtilsTabPeers([weather, recipes]).map((t) => t.slug)).toEqual(["recipes"]);
+  });
   it("dedupes by slug when the same tool appears twice", () => {
     const weather = PLATFORM_SERVICES.find((t) => t.slug === "weather")!;
     const sections = groupServicesForToolsPage([weather, weather]);
