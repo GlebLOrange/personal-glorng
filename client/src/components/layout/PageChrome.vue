@@ -13,14 +13,12 @@ const props = withDefaults(
   defineProps<{
     title: string;
     breadcrumbs: BreadcrumbSegment[];
-    backTo?: RouteLocationRaw;
     /** Skip sr-only h1 when the page renders its own visible heading. */
     omitHeading?: boolean;
     /** Optional page help; shown as ? in the chrome bottom-right. */
     description?: string;
   }>(),
   {
-    backTo: undefined,
     omitHeading: false,
     description: undefined,
   },
