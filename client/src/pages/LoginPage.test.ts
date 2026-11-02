@@ -41,7 +41,7 @@ describe("LoginPage", () => {
 
     expect(wrapper.get('input[type="email"]').exists()).toBe(true);
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
-    // tips show while empty; accessible names come from aria-label (no trailing labels)
+    // Inputs expose explicit accessible names for assistive technology.
     expect(wrapper.get('input[type="email"]').attributes("aria-label")).toBe("email");
     expect(wrapper.get('input[type="password"]').attributes("aria-label")).toBe("password");
     expect(wrapper.text()).toContain("email@example.com");

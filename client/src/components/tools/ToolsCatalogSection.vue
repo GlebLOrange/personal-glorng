@@ -38,7 +38,9 @@ function onToggle(event: Event): void {
       >
       <!-- No heading inside <summary> (AT drops/duplicates it); label once, count in the name. -->
       <span class="text-sm font-semibold text-surface-light" data-section-label>{{ label }}</span>
-      <span class="ml-auto text-xs font-medium text-text-muted" aria-hidden="true">{{ count }}</span>
+      <span class="ml-auto text-xs font-medium text-text-muted" aria-hidden="true">{{
+        count
+      }}</span>
       <span class="sr-only">, {{ countLabel(count) }}</span>
     </summary>
     <div class="border-t border-surface-border/70 px-3 pb-3 pt-3">

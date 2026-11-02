@@ -89,14 +89,18 @@ function clear(): void {
   </button>
   <div
     v-else
-    @focusout="onFocusOut"
     :class="[
       FIELD_WRAPPER_CLASS,
       CONTROL_SIZE,
       'flex items-center overflow-hidden rounded-lg bg-surface-dark transition-colors ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50',
-      props.collapsible ? 'w-full min-w-0 flex-1' : props.autoWidth ? 'w-auto max-w-full' : 'w-full',
+      props.collapsible
+        ? 'w-full min-w-0 flex-1'
+        : props.autoWidth
+          ? 'w-auto max-w-full'
+          : 'w-full',
       $attrs.class,
     ]"
+    @focusout="onFocusOut"
   >
     <span class="relative z-10 flex shrink-0 items-center pl-3 text-surface-mid" aria-hidden="true">
       <SearchIcon class-name="size-4" />

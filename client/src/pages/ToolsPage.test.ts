@@ -262,7 +262,9 @@ describe("ToolsPage spoiler catalog", () => {
     expect(spoilers.length).toBeGreaterThanOrEqual(1);
     expect(wrapper.get("#utils").attributes("open")).toBeDefined();
     expect(
-      spoilers.filter((el) => el.attributes("id") !== "utils").every((el) => el.attributes("open") === undefined),
+      spoilers
+        .filter((el) => el.attributes("id") !== "utils")
+        .every((el) => el.attributes("open") === undefined),
     ).toBe(true);
   });
 
@@ -274,7 +276,7 @@ describe("ToolsPage spoiler catalog", () => {
     await flushPromises();
     const spoilers = wrapper.findAll("details");
     expect(spoilers.length).toBeGreaterThanOrEqual(2);
-    const [first, second] = spoilers as [typeof spoilers[number], typeof spoilers[number]];
+    const [first, second] = spoilers as [(typeof spoilers)[number], (typeof spoilers)[number]];
     (first.element as HTMLDetailsElement).open = true;
     await first.trigger("toggle");
     (second.element as HTMLDetailsElement).open = true;
@@ -294,7 +296,9 @@ describe("ToolsPage spoiler catalog", () => {
     const utils = first.get("#utils");
     (utils.element as HTMLDetailsElement).open = false;
     await utils.trigger("toggle");
-    expect(JSON.parse(sessionStorage.getItem("tools:open-sections:narrow") ?? "{}")).toMatchObject({ utils: false });
+    expect(JSON.parse(sessionStorage.getItem("tools:open-sections:narrow") ?? "{}")).toMatchObject({
+      utils: false,
+    });
     first.unmount();
 
     const second = mountPage();
@@ -346,5 +350,4 @@ describe("tools page group order", () => {
     expect(slugs).not.toContain("expenses");
     expect(slugs).toContain("weather");
   });
-
 });

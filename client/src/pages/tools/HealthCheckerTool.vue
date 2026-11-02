@@ -90,7 +90,10 @@ onMounted(() => {
     </p>
     <template v-else>
       <div v-if="canWrite" class="page-tool-actions">
-        <form class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2" @submit.prevent="createMonitor">
+        <form
+          class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2"
+          @submit.prevent="createMonitor"
+        >
           <BaseInput
             v-model="newUrl"
             class="min-w-0"
@@ -224,7 +227,6 @@ onMounted(() => {
             />
 
             <EmptyState v-else> no monitors yet. add a URL above to start checking. </EmptyState>
-
           </template>
         </div>
 

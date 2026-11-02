@@ -38,7 +38,10 @@ usePageChromeHeight(chromeRoot);
 </script>
 
 <template>
-  <div ref="chromeRoot" class="relative border-b border-surface-border bg-surface-dark/80 backdrop-blur-md">
+  <div
+    ref="chromeRoot"
+    class="relative border-b border-surface-border bg-surface-dark/80 backdrop-blur-md"
+  >
     <div class="relative my-[15px] flex min-h-10 min-w-0 items-center gap-3">
       <div class="flex min-w-0 flex-1 flex-col justify-center">
         <div class="flex h-10 items-center">

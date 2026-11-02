@@ -38,7 +38,6 @@ function confirmDelete(): void {
   showDeleteConfirm.value = false;
   emit("delete");
 }
-
 </script>
 
 <template>

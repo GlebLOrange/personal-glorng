@@ -25,7 +25,7 @@ describe("SiteLogo", () => {
     const wrapper = mount(SiteLogo, { props: { variant: "full" } });
 
     const img = wrapper.get("img");
-    expect(img.attributes("src")).toBe("/favicon.svg");
+    expect(img.attributes("src")).toBe("/brand/gy-logo-512.png");
     expect(img.attributes("width")).toBe("100");
     expect(img.attributes("height")).toBe("100");
   });
@@ -42,6 +42,6 @@ describe("SiteLogo", () => {
     expect(mark.get("img").attributes("src")).toBe("/brand/gy-mark-simple-light.svg");
 
     const full = mount(SiteLogo, { props: { variant: "full" } });
-    expect(full.get("img").attributes("src")).toBe("/brand/gy-mark-simple-light.svg");
+    expect(full.get("img").attributes("src")).toBe("/brand/gy-logo-512.png");
   });
 });

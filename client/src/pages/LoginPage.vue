@@ -72,6 +72,7 @@ async function handleLogin(): Promise<void> {
         name="email"
         autocomplete="email"
         label="email"
+        aria-label="email"
         placeholder="email@example.com"
         :tone="emailTone"
         :error="emailError"
@@ -83,6 +84,7 @@ async function handleLogin(): Promise<void> {
         name="password"
         autocomplete="current-password"
         label="password"
+        aria-label="password"
         placeholder="password"
         required
       />
