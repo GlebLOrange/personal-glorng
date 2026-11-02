@@ -13,6 +13,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import { api } from "@/composables/useApi";
@@ -248,7 +249,6 @@ onMounted(() => {
     title="qr generator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'qr generator' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <div class="flex w-full min-w-0 flex-col gap-6 self-stretch">
@@ -369,29 +369,10 @@ onMounted(() => {
           {{ guestLimitLabel }}
         </p>
         <AdminListSkeleton v-if="listLoading && items.length === 0" />
-        <AdminListFooter
-          v-if="items.length > 0"
-          class="!mt-0 mb-4"
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="listLoading"
-          item-label="QR codes"
-          aria-label="your QR codes pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
-        <p
+        <EmptyState
           v-else-if="!listLoading && items.length === 0"
-          class="py-2 text-sm lowercase text-surface-mid"
-          role="status"
-        >
-          no saved QR codes yet. generate one and save it.
-        </p>
+          description="no saved QR codes yet. generate one and save it."
+        />
         <div v-else class="w-full min-w-0 self-stretch">
           <AdminDataTable table-label="saved QR codes">
             <template #header>
@@ -415,5 +396,22 @@ onMounted(() => {
         </div>
       </section>
     </div>
+    <template #footer>
+      <AdminListFooter
+        v-if="canReadLibrary && items.length > 0"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="listLoading"
+        item-label="QR codes"
+        aria-label="your QR codes pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </template>
   </PageShell>
 </template>

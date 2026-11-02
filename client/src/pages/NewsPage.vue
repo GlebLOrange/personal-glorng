@@ -120,21 +120,22 @@ watch(page, () => {
       description="the digest has not published anything yet — check back after the next ingestion run"
     />
 
-    <AdminListFooter
-      v-if="!listLoading && !listError && articles.length > 0"
-      class="mt-8"
-      :total="total"
-      :page="page"
-      :total-pages="totalPages"
-      :has-next-page="hasNextPage"
-      :has-previous-page="page > 1"
-      :loading="listLoading"
-      item-label="articles"
-      aria-label="news pagination"
-      @first="goToPage(1)"
-      @prev="goToPage(page - 1)"
-      @next="goToPage(page + 1)"
-      @last="goToPage(totalPages)"
-    />
+    <template #footer>
+      <AdminListFooter
+        v-if="!listLoading && !listError && articles.length > 0"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="page > 1"
+        :loading="listLoading"
+        item-label="articles"
+        aria-label="news pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </template>
   </PageShell>
 </template>

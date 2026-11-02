@@ -44,7 +44,7 @@ describe("CaseStudies", () => {
 
     const first = cards[0]!;
     const art = first.get("img");
-    expect(art.attributes("alt")).toBe("");
+    expect(art.attributes("alt")).toBe("cookie auth & CSRF screenshot");
     expect(art.attributes("src")).toBe("/portfolio/cookie-auth-csrf-dark.svg");
     expect(first.text()).toContain("cookie auth & CSRF");
     expect(first.text()).toContain(projects[0]!.description);

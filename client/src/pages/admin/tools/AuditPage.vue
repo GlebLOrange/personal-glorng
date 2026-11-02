@@ -182,7 +182,6 @@ onMounted(load);
     title="audit logs"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'audit logs' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <AdminListSkeleton
@@ -227,22 +226,6 @@ onMounted(load);
         </AdminListToolbar>
       </div>
 
-      <AdminListFooter
-        v-if="!listError"
-        class="!mt-0 mb-4"
-        :total="total"
-        :page="page"
-        :total-pages="totalPages"
-        :has-next-page="hasNextPage"
-        :has-previous-page="hasPreviousPage"
-        :loading="loading"
-        item-label="events"
-        aria-label="audit pagination"
-        @first="goToPage(1)"
-        @prev="goToPage(page - 1)"
-        @next="goToPage(page + 1)"
-        @last="goToPage(totalPages)"
-      />
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
       <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
@@ -315,6 +298,23 @@ onMounted(load);
         </AdminDataTable>
       </div>
 
+    </template>
+    <template #footer>
+      <AdminListFooter
+        v-if="!listError"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="loading"
+        item-label="events"
+        aria-label="audit pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
     </template>
   </PageShell>
 </template>

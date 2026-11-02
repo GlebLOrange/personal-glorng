@@ -101,7 +101,6 @@ function buttonAriaLabel(val: string): string | undefined {
     title="calculator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'calculator' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <div class="page-tool-actions">

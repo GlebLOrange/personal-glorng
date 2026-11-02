@@ -224,7 +224,6 @@ onMounted(() => {
     title="url shortener"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url shortener' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <div class="page-tool-actions">
@@ -265,22 +264,6 @@ onMounted(() => {
       <AdminListSkeleton v-if="listLoading && !isLocalMode" label="loading shortened URLs" />
 
       <template v-else>
-        <AdminListFooter
-          v-if="urls.length > 0"
-          class="!mt-0 mb-4"
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="listLoading"
-          item-label="URLs"
-          aria-label="short URLs pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
         <div v-if="urls.length > 0" class="min-w-0">
           <AdminDataTable table-label="shortened URLs">
             <template #header>
@@ -304,5 +287,22 @@ onMounted(() => {
 
       </template>
     </div>
+    <template #footer>
+      <AdminListFooter
+        v-if="!(listLoading && !isLocalMode) && urls.length > 0"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="listLoading"
+        item-label="URLs"
+        aria-label="short URLs pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </template>
   </PageShell>
 </template>

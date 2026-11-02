@@ -23,6 +23,19 @@ const stubs = {
 };
 
 describe("PageChrome", () => {
+  it("renders Back in the breadcrumb row at the shell outer edge", () => {
+    const wrapper = mount(PageChrome, {
+      props: { title: "users", breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "users" }], backTo: "/admin" },
+      global: { stubs },
+    });
+    const back = wrapper.get("[data-testid=back]");
+    expect(back.attributes("href")).toBe("/admin");
+    expect(back.classes()).toEqual(
+      expect.arrayContaining(["shell-outside-end", "!-right-6", "top-1/2", "-translate-y-1/2"]),
+    );
+    expect(back.element.parentElement?.querySelector("[data-testid=crumbs]")).not.toBeNull();
+  });
+
   it("shows parent + current crumbs elevated when last matches title (admin child)", () => {
     const wrapper = mount(PageChrome, {
       props: {

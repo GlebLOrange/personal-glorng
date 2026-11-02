@@ -21,7 +21,7 @@ vi.mock("@/constants/sentry", () => ({
 }));
 
 const pageShellStub = {
-  props: ["title", "breadcrumbs", "backTo", "maxWidth"],
+  props: ["title", "breadcrumbs", "backTo"],
   template: '<div data-testid="shell"><h1>{{ title }}</h1><slot /></div>',
 };
 

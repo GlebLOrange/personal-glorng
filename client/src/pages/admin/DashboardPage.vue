@@ -7,7 +7,7 @@ const { isSuperuser } = usePermissions();
 </script>
 
 <template>
-  <AdminPageLayout title="admin" hub="tools" max-width="5xl" back-to="/tools">
+  <AdminPageLayout title="admin" hub="tools" back-to="/tools">
     <div v-if="isSuperuser" class="page-tool-actions mb-8">
       <MaintenanceJobActions mode="hub" />
     </div>

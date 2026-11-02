@@ -73,7 +73,6 @@ async function preview(): Promise<void> {
     title="send email"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'send email' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <div class="page-tool-actions">

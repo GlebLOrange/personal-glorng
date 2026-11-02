@@ -78,7 +78,6 @@ onMounted(() => {
     title="health checker"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'health checker' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
     description="Monitor URLs on a schedule — status history stays on this server."
   >
@@ -133,22 +132,6 @@ onMounted(() => {
           <AdminListSkeleton v-if="listLoading" label="loading monitors" />
 
           <template v-else>
-            <AdminListFooter
-              v-if="monitors.length > 0"
-              class="!mt-0 mb-4"
-              :total="total"
-              :page="page"
-              :total-pages="totalPages"
-              :has-next-page="hasNextPage"
-              :has-previous-page="hasPreviousPage"
-              :loading="listLoading"
-              item-label="monitors"
-              aria-label="monitors pagination"
-              @first="goToPage(1)"
-              @prev="goToPage(page - 1)"
-              @next="goToPage(page + 1)"
-              @last="goToPage(totalPages)"
-            />
             <ul v-if="monitors.length > 0" class="divide-y divide-surface-border">
               <li
                 v-for="monitor in monitors"
@@ -223,6 +206,22 @@ onMounted(() => {
                 </div>
               </li>
             </ul>
+            <AdminListFooter
+              v-if="monitors.length > 0"
+              class="mt-4"
+              :total="total"
+              :page="page"
+              :total-pages="totalPages"
+              :has-next-page="hasNextPage"
+              :has-previous-page="hasPreviousPage"
+              :loading="listLoading"
+              item-label="monitors"
+              aria-label="monitors pagination"
+              @first="goToPage(1)"
+              @prev="goToPage(page - 1)"
+              @next="goToPage(page + 1)"
+              @last="goToPage(totalPages)"
+            />
 
             <EmptyState v-else> no monitors yet. add a URL above to start checking. </EmptyState>
 
