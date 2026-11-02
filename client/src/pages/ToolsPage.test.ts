@@ -260,10 +260,13 @@ describe("ToolsPage spoiler catalog", () => {
     await flushPromises();
     const spoilers = wrapper.findAll("details");
     expect(spoilers.length).toBeGreaterThanOrEqual(1);
-    expect(spoilers.every((el) => el.attributes("open") === undefined)).toBe(true);
+    expect(wrapper.get("#utils").attributes("open")).toBeDefined();
+    expect(
+      spoilers.filter((el) => el.attributes("id") !== "utils").every((el) => el.attributes("open") === undefined),
+    ).toBe(true);
   });
 
-  it("keeps one section open at a time on mobile", async () => {
+  it("allows several sections open at once on mobile", async () => {
     stubMobileViewport();
     isSuperuserRef.value = true;
     canAccessMock.mockImplementation(() => true);
@@ -277,7 +280,7 @@ describe("ToolsPage spoiler catalog", () => {
     (second.element as HTMLDetailsElement).open = true;
     await second.trigger("toggle");
     await flushPromises();
-    expect(first.attributes("open")).toBeUndefined();
+    expect(first.attributes("open")).toBeDefined();
     expect(second.attributes("open")).toBeDefined();
   });
 
@@ -289,14 +292,14 @@ describe("ToolsPage spoiler catalog", () => {
     const first = mountPage();
     await flushPromises();
     const utils = first.get("#utils");
-    (utils.element as HTMLDetailsElement).open = true;
+    (utils.element as HTMLDetailsElement).open = false;
     await utils.trigger("toggle");
-    expect(JSON.parse(sessionStorage.getItem("tools:open-sections:narrow") ?? "{}")).toMatchObject({ utils: true });
+    expect(JSON.parse(sessionStorage.getItem("tools:open-sections:narrow") ?? "{}")).toMatchObject({ utils: false });
     first.unmount();
 
     const second = mountPage();
     await flushPromises();
-    expect(second.get("#utils").attributes("open")).toBeDefined();
+    expect(second.get("#utils").attributes("open")).toBeUndefined();
     sessionStorage.clear();
   });
 

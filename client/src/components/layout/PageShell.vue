@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, toRef } from "vue";
+import { computed } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
 import PageChrome from "@/components/layout/PageChrome.vue";
 import PinnedToolsRow from "@/components/layout/PinnedToolsRow.vue";
-import { provideRailBackTo } from "@/composables/usePageBackTo";
 
 export type BreadcrumbSegment = { label: string; to?: RouteLocationRaw };
 export type PageBodyWidth = "full" | "content" | "column";
@@ -43,9 +42,6 @@ const props = withDefaults(
   },
 );
 
-// Back renders on the shared bottom rail in ScrollControls (one band with scroll-to-next).
-provideRailBackTo(toRef(props, "backTo"));
-
 const resolvedBodyWidth = computed<PageBodyWidth>(() => {
   if (props.bodyWidth) return props.bodyWidth;
   if (props.tool) return "column";
@@ -68,6 +64,7 @@ const bodyClass = computed(() => [
     <PageChrome
       :title="title"
       :breadcrumbs="breadcrumbs"
+      :back-to="backTo"
       :omit-heading="omitHeading"
       :description="description"
     />

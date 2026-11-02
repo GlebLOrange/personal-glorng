@@ -13,12 +13,14 @@ const props = withDefaults(
   defineProps<{
     title: string;
     breadcrumbs: BreadcrumbSegment[];
+    backTo?: RouteLocationRaw;
     /** Skip sr-only h1 when the page renders its own visible heading. */
     omitHeading?: boolean;
     /** Optional page help; shown as ? in the chrome bottom-right. */
     description?: string;
   }>(),
   {
+    backTo: undefined,
     omitHeading: false,
     description: undefined,
   },
@@ -46,11 +48,11 @@ usePageChromeHeight(chromeRoot);
         <h1 v-if="!omitHeading" class="sr-only">{{ title }}</h1>
       </div>
 
-      <!-- chrome-rail-end shares the ScrollControls rail (same x at every width); top-1/2 centers on the breadcrumb row. -->
+      <!-- !-right-6 reaches the shell outer edge; top-1/2 centers on the breadcrumb row. -->
       <BackLink
         v-if="backTo"
         :to="backTo"
-        class="chrome-rail-end top-1/2 -translate-y-1/2"
+        class="shell-outside-end !-right-6 top-1/2 -translate-y-1/2"
       />
     </div>
 
