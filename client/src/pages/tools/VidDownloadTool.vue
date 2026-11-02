@@ -123,6 +123,18 @@ async function download(): Promise<void> {
               />
             </AdminFilterDropdown>
           </template>
+          <template #trailing>
+            <ToolbarPillButton
+              action="save"
+              :icon="false"
+              type="submit"
+              class="w-auto"
+              :disabled="loading || !url.trim()"
+            >
+              <DownloadIcon class-name="size-3.5 shrink-0" />
+              {{ loading ? "downloading…" : "download" }}
+            </ToolbarPillButton>
+          </template>
           <div
             class="min-w-0 max-w-full space-y-4 break-words text-sm text-surface-light [overflow-wrap:anywhere]"
           >
@@ -196,18 +208,6 @@ async function download(): Promise<void> {
           tip="example.com or https://…"
           class="w-full min-w-0"
         />
-        <div class="flex w-full justify-end">
-          <ToolbarPillButton
-            action="save"
-            :icon="false"
-            type="submit"
-            class="w-auto"
-            :disabled="loading || !url.trim()"
-          >
-            <DownloadIcon class-name="size-3.5 shrink-0" />
-            {{ loading ? "downloading…" : "download" }}
-          </ToolbarPillButton>
-        </div>
       </form>
     </div>
   </PageShell>

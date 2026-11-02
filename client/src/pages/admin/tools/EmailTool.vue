@@ -105,7 +105,7 @@ async function preview(): Promise<void> {
           v-model="to"
           type="email"
           label="to"
-          tip="email@example.com"
+          tip="one recipient address, e.g. name@example.com"
           autocomplete="email"
           spellcheck="false"
           class="w-full"
@@ -114,6 +114,7 @@ async function preview(): Promise<void> {
           id="email-subject"
           v-model="subject"
           label="subject"
+          tip="plain text, one line, max 255 chars"
           autocomplete="off"
           class="w-full"
         />
@@ -122,6 +123,7 @@ async function preview(): Promise<void> {
           v-model="body"
           :rows="6"
           label="body"
+          tip="plain text, max 5000 chars; sent with your signature"
           autocomplete="off"
           class="w-full"
         />
