@@ -1,29 +1,39 @@
-# Applies only when build context is repo root (e.g. .devcontainer).
-# server/ and client/ builds use their own context .dockerignore files.
-**/__pycache__
-**/.venv
-**/.classpath
-**/.dockerignore
+# Root build context is used by the devcontainer image. The repository is bind-mounted
+# at runtime; application images use ./server or ./client and their scoped ignores.
+# Keep source/config files eligible for intentional Docker COPY instructions.
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
 **/.env
+**/.env.local
+**/.env.*.local
+**/.env.production
+**/.env.staging
+.git
 **/.git
-**/.gitignore
-**/.project
-**/.settings
-**/.toolstarget
-**/.vs
-**/.vscode
-**/*.*proj.user
-**/*.dbmdl
-**/*.jfm
-**/bin
-**/charts
-**/docker-compose*
-**/compose*
-**/Dockerfile*
+node_modules
 **/node_modules
-**/npm-debug.log
-**/obj
-**/secrets.dev.yaml
-**/values.dev.yaml
-LICENSE
-README.md
+.venv
+**/.venv
+server/venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/.coverage
+**/htmlcov
+**/dist
+**/build
+**/coverage
+**/playwright-report
+**/test-results
+.docker-cache
+.worktrees
+server/media
+backups
+logs
+**/*.log
+**/.DS_Store
