@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card, CardBody } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import { passwordStrength } from "@/utils/passwordPolicy";
 
 const newEmail = defineModel<string>("newEmail", { required: true });
 const emailPassword = defineModel<string>("emailPassword", { required: true });
@@ -18,17 +15,15 @@ defineProps<{
   canSaveEmail: boolean;
   savingPassword: boolean;
   canSavePassword: boolean;
+  /** Validation messages from the page (single source of truth). */
+  newPasswordError?: string;
+  confirmPasswordError?: string;
 }>();
 
 const emit = defineEmits<{
   saveEmail: [];
   savePassword: [];
 }>();
-
-const passwordCheck = computed(() => passwordStrength(newPassword.value));
-const passwordsMatch = computed(
-  () => !!newPasswordConfirm.value && newPassword.value === newPasswordConfirm.value,
-);
 </script>
 
 <template>
@@ -45,21 +40,19 @@ const passwordsMatch = computed(
             tip="email@example.com"
             required
           />
-          <div class="flex min-w-0 items-center gap-2">
-            <BaseInput
-              v-model="emailPassword"
-              class="min-w-0 flex-1"
-              type="password"
-              name="current-password-for-email"
-              autocomplete="current-password"
-              label="current password"
-              required
-            />
+          <BaseInput
+            v-model="emailPassword"
+            type="password"
+            name="current-password-for-email"
+            autocomplete="current-password"
+            label="password to confirm"
+            required
+          />
+          <div class="flex justify-end">
             <BaseButton
               type="submit"
               variant="save"
               size="sm"
-              class="shrink-0"
               :loading="savingEmail"
               :disabled="!canSaveEmail"
             >
@@ -86,7 +79,7 @@ const passwordsMatch = computed(
             name="new-password"
             autocomplete="new-password"
             label="new password"
-            :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
+            :error="newPasswordError"
             required
           />
           <BaseInput
@@ -95,10 +88,10 @@ const passwordsMatch = computed(
             name="confirm-new-password"
             autocomplete="new-password"
             label="confirm new password"
-            :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
+            :error="confirmPasswordError"
             required
           />
-          <div class="flex items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <RouterLink to="/forgot-password" class="text-link text-xs">
               forgot password?
             </RouterLink>
@@ -118,7 +111,7 @@ const passwordsMatch = computed(
           class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-surface-border pt-4"
         >
           <p class="text-xs text-surface-mid">permissions</p>
-          <div v-if="permissions.length" class="flex flex-wrap justify-end gap-1.5">
+          <div v-if="permissions.length" class="flex flex-wrap gap-1.5 sm:justify-end">
             <span
               v-for="perm in permissions"
               :key="perm"

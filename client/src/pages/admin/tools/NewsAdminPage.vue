@@ -58,7 +58,8 @@ const {
   >
     <div v-if="!listLoading && !listError" class="page-tool-actions">
       <AdminListToolbar>
-        <template #actions>
+        <template #start>
+          <div class="flex min-w-0 flex-wrap items-center gap-1">
           <AdminFilterDropdown
             ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
@@ -88,16 +89,18 @@ const {
               run ingest
             </ToolbarPillButton>
           </template>
+          </div>
         </template>
-        <ToolbarPillButton
-          v-if="canWrite"
-          action="create"
-          class="w-auto"
-          :disabled="actionLoading"
-          @click="openCreate"
-        >
-          article
-        </ToolbarPillButton>
+        <template v-if="canWrite" #actions>
+          <ToolbarPillButton
+            action="create"
+            class="w-auto"
+            :disabled="actionLoading"
+            @click="openCreate"
+          >
+            article
+          </ToolbarPillButton>
+        </template>
       </AdminListToolbar>
     </div>
 

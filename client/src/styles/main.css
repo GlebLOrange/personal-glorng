@@ -375,6 +375,13 @@ html[data-theme="light"] {
   min-height: 5.5rem;
 }
 
+/* Tools catalog: two tiles per row from sm — column body stays narrow, just less scroll. */
+@media (min-width: 640px) {
+  .page-launcher-grid[data-presentation="public"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @keyframes page-tile-enter {
   from {
     opacity: 0;

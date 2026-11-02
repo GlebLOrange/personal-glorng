@@ -107,7 +107,10 @@ describe("ToolsPage spoiler catalog", () => {
     expect(utils.element.tagName.toLowerCase()).toBe("details");
     expect(utils.attributes("open")).toBeDefined();
     expect(utils.text()).toContain("▸");
-    expect(utils.get("summary h2").text()).toContain("utils");
+    expect(utils.get("summary [data-section-label]").text()).toBe("utils");
+    expect(utils.find("summary h2").exists()).toBe(false);
+    expect(utils.get('[aria-label="utils tools"] li a').attributes("title")).toBeUndefined();
+    expect(utils.get('[aria-label="utils tools"] li a').classes()).toContain("min-h-11");
     expect(utils.findAll('[aria-label="utils tools"] li').length).toBe(5);
     expect(utils.text()).toContain("quick math");
     const pills = utils.get('[aria-label="utils tools"]');
@@ -131,7 +134,7 @@ describe("ToolsPage spoiler catalog", () => {
     expect(spoilers.some((el) => el.attributes("id") === "utils")).toBe(true);
     const ids = wrapper.findAll("[id]").map((el) => el.attributes("id"));
     expect(new Set(ids).size).toBe(ids.length);
-    expect(wrapper.findAll("summary h2").length).toBe(spoilers.length);
+    expect(wrapper.findAll("summary [data-section-label]").length).toBe(spoilers.length);
 
     expect(wrapper.text()).toContain("content");
     expect(wrapper.text()).toContain("recipes");

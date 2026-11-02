@@ -253,7 +253,7 @@ onMounted(load);
           <template #header>
             <AdminSortableTh label="when" :direction="sortAriaSort()" @sort="toggleCreatedSort" />
             <th :class="ADMIN_TH_CLASS" scope="col">status</th>
-            <th :class="ADMIN_TH_CLASS" scope="col">who</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">user</th>
             <th :class="ADMIN_TH_CLASS" scope="col">title</th>
             <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
           </template>

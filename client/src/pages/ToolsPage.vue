@@ -240,7 +240,7 @@ function sectionCount(section: ToolsPageSection): number {
 }
 
 function tabPillClass(): string {
-  return actionFamilyClass("1xx", false);
+  return `${actionFamilyClass("1xx", false)} min-h-11`;
 }
 
 </script>
