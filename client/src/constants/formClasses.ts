@@ -63,7 +63,7 @@ export const SELECT_CLASS =
   `ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 transition-colors`;
 
 export const SELECT_CLASS_COMPACT =
-  "field-select-chevron box-border h-9 rounded-lg pl-2 pr-8 py-0 text-surface-light text-xs " +
+  `field-select-chevron ${CONTROL_SIZE} rounded-lg pl-2 pr-8 py-0 text-surface-light text-xs ` +
   "ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 transition-colors min-w-[7.5rem]";
 
 export const TEXTAREA_CLASS =
@@ -71,5 +71,5 @@ export const TEXTAREA_CLASS =
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/85 resize-y disabled:opacity-60`;
 
 export const TEXTAREA_CLASS_COMPACT =
-  "min-h-9 w-full bg-surface-card border border-surface-border rounded-lg px-3 py-1.5 text-surface-light text-sm " +
+  "min-h-11 w-full bg-surface-card border border-surface-border rounded-lg px-3 py-2 text-surface-light text-sm " +
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/85 resize-y disabled:opacity-60`;

@@ -131,7 +131,7 @@ const shellClass = computed(() => [
 const shellTextareaClass = computed(() =>
   [
     "relative z-10 min-w-0 flex-1 resize-y border-0 bg-transparent px-3 text-left text-sm text-surface-light outline-none disabled:opacity-60",
-    props.compact ? "min-h-9 py-1.5" : "min-h-11 py-2",
+    "min-h-11 py-2", // compact matches CONTROL_SIZE height
   ].join(" "),
 );
 const textareaAttrs = computed(() => {
