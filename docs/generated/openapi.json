@@ -6615,10 +6615,25 @@
       },
       "UrlCreate": {
         "example": {
+          "code": "docs",
           "original_url": "https://example.com/very-long-url",
           "title": "Example Site"
         },
         "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "pattern": "^[a-zA-Z0-9]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
           "original_url": {
             "format": "uri",
             "maxLength": 2083,
@@ -6741,27 +6756,6 @@
           "created_at"
         ],
         "title": "UrlResponse",
-        "type": "object"
-      },
-      "UrlUpdate": {
-        "example": {
-          "title": "Updated title"
-        },
-        "properties": {
-          "title": {
-            "anyOf": [
-              {
-                "maxLength": 255,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title"
-          }
-        },
-        "title": "UrlUpdate",
         "type": "object"
       },
       "UserPreferencesResponse": {
@@ -19346,6 +19340,23 @@
               "title": "Per Page",
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(queued_desc|queued_asc)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sort"
+            }
           }
         ],
         "responses": {
@@ -20225,102 +20236,6 @@
           }
         ],
         "summary": "Delete short URL",
-        "tags": [
-          "url-shortener"
-        ]
-      },
-      "patch": {
-        "description": "Requires permission `url-shortener:write`.",
-        "operationId": "update_url_api_tools_url_shortener__url_id__patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "url_id",
-            "required": true,
-            "schema": {
-              "title": "Url Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UrlUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UrlResponse"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not authenticated"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Update short URL",
         "tags": [
           "url-shortener"
         ]
