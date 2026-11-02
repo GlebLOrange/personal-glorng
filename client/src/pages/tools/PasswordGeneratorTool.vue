@@ -177,7 +177,7 @@ onMounted(() => {
             </template>
           </AdminFilterDropdown>
 
-          <div class="ml-auto flex min-w-0 flex-wrap items-end justify-end gap-2">
+          <div class="ml-auto flex shrink-0 flex-nowrap items-end justify-end gap-2">
             <BaseInput
               v-model.number="length"
               type="number"
@@ -185,7 +185,8 @@ onMounted(() => {
               :max="128"
               label="length"
               :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
-              class="shrink-0"
+              auto-width
+              class="w-24 shrink-0"
             />
 
             <IconActionButton
