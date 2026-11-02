@@ -57,7 +57,7 @@ _TRACKING_QUERY_KEYS = frozenset(
 )
 _FEED_HEADERS = {
     "User-Agent": (
-        "GlebY-NewsBot/1.0 (+https://gleblorange.github.io/personal-glorng/; news-ingest)"
+        "GlebY-NewsBot/1.0 (+https://gleblorange.github.io/portfolio-glorng/; news-ingest)"
     ),
     "Accept": (
         "application/rss+xml, application/atom+xml, application/xml, "
