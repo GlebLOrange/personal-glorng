@@ -224,9 +224,8 @@ function editRecipeFromCard(recipe: Recipe): void {
             : 'no recipes yet — add your first one to get cooking.'
         "
       >
-        <template v-if="hasFilters || canWrite" #action>
+        <template v-if="hasFilters" #action>
           <BaseButton
-            v-if="hasFilters"
             variant="ghost"
             size="sm"
             class="gap-1.5"
@@ -234,9 +233,6 @@ function editRecipeFromCard(recipe: Recipe): void {
           >
             <CloseIcon class-name="size-3.5 shrink-0" />
             clear filters
-          </BaseButton>
-          <BaseButton v-else-if="canWrite" variant="create" size="sm" @click="openCreate">
-            your first recipe
           </BaseButton>
         </template>
       </EmptyState>
