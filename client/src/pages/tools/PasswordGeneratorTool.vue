@@ -129,7 +129,7 @@ onMounted(() => {
   >
     <div class="page-tool-actions">
       <form class="flex w-full min-w-0 flex-col gap-2" @submit.prevent="generatePassword">
-        <div class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5">
+        <div class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_auto_auto] items-end gap-1.5">
           <AdminFilterDropdown
             label="options"
             class="min-w-0 w-full"
@@ -189,9 +189,7 @@ onMounted(() => {
             class="w-auto shrink-0"
             auto-width
           />
-        </div>
 
-        <div class="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1.5">
           <IconActionButton
             action="create"
             size="field"
@@ -208,7 +206,7 @@ onMounted(() => {
             type="submit"
             size="sm"
             :icon="false"
-            class="!h-9 !min-h-9 min-w-0 w-full gap-1.5 px-3 text-xs"
+            class="!h-9 !min-h-9 shrink-0 gap-1.5 px-3 text-xs"
             :disabled="loading || !hasCharset"
           >
             <span class="inline-grid justify-items-center">
