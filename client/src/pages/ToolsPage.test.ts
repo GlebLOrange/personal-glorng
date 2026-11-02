@@ -7,13 +7,14 @@ import ToolsPage from "@/pages/ToolsPage.vue";
 import { publicToolsAsServices } from "@/platform/services";
 import { groupServicesForToolsPage } from "@/utils/toolsPageGroups";
 
+const replaceMock = vi.fn();
 const useRouteMock = vi.fn(() => ({ query: {} as Record<string, string> }));
 const canAccessMock = vi.fn((_slug: string) => false);
 const isSuperuserRef = ref(false);
 
 vi.mock("vue-router", () => ({
   useRoute: () => useRouteMock(),
-  useRouter: () => ({ replace: vi.fn() }),
+  useRouter: () => ({ replace: replaceMock }),
   RouterLink: {
     name: "RouterLink",
     props: ["to"],
@@ -71,9 +72,12 @@ describe("ToolsPage spoiler catalog", () => {
     await flushPromises();
 
     const utils = wrapper.get("#utils");
-    expect(utils.element.tagName.toLowerCase()).toBe("section");
-    expect(utils.text()).toContain("•");
-    expect(utils.text()).not.toContain("▸");
+    expect(utils.element.tagName.toLowerCase()).toBe("details");
+    expect(utils.attributes("open")).toBeDefined();
+    expect(utils.text()).toContain("▸");
+    expect(utils.get("summary h2").text()).toContain("utils");
+    expect(utils.findAll('[aria-label="utils tools"] li').length).toBe(5);
+    expect(utils.text()).toContain("quick math");
     const pills = utils.get('[aria-label="utils tools"]');
     expect(pills.exists()).toBe(true);
     expect(pills.text()).toContain("weather");
@@ -87,13 +91,15 @@ describe("ToolsPage spoiler catalog", () => {
     expect(tileTitleCount(wrapper, "url shortener")).toBe(0);
     expect(utils.text()).not.toContain("video downloader");
     expect(utils.text()).not.toContain("send email");
-    expect(utils.text()).not.toContain("quick math");
     expect(wrapper.text()).not.toContain("health");
 
     const spoilers = wrapper.findAll("details");
     expect(spoilers.length).toBeGreaterThanOrEqual(1);
     expect(spoilers.every((el) => el.attributes("open") !== undefined)).toBe(true);
-    expect(spoilers.some((el) => el.attributes("id") === "utils")).toBe(false);
+    expect(spoilers.some((el) => el.attributes("id") === "utils")).toBe(true);
+    const ids = wrapper.findAll("[id]").map((el) => el.attributes("id"));
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(wrapper.findAll("summary h2").length).toBe(spoilers.length);
 
     expect(wrapper.text()).toContain("content");
     expect(wrapper.text()).toContain("recipes");
@@ -148,6 +154,14 @@ describe("ToolsPage spoiler catalog", () => {
     const wrapper = mountPage();
     await flushPromises();
     expect(wrapper.text()).toContain("You do not have access to that admin tool");
+  });
+
+  it("dismissing a notice drops its query key", async () => {
+    useRouteMock.mockReturnValue({ query: { expenses: "off", tab: "x" } });
+    const wrapper = mountPage();
+    await flushPromises();
+    await wrapper.get('[data-notice="expenses"] button').trigger("click");
+    expect(replaceMock).toHaveBeenCalledWith({ query: { tab: "x" } });
   });
 
   it("hides server and admin tiles from capability-only users", async () => {
