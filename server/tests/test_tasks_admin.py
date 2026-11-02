@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -17,9 +17,13 @@ from tests.factories import create_sync_queue_item, create_task, create_user
 async def test_create_task_requires_auth(client: AsyncClient) -> None:
     resp = await client.post(
         "/api/tools/tasks",
-        json={"title": "Buy milk", "scheduled_at": "2026-06-01T10:00:00"},
+        json={"title": "Buy milk", "scheduled_at": _future_task_time()},
     )
     assert resp.status_code == 401
+
+
+def _future_task_time(days: int = 2) -> str:
+    return (datetime.now(UTC) + timedelta(days=days)).replace(microsecond=0).isoformat()
 
 
 @pytest.mark.asyncio
@@ -28,7 +32,7 @@ async def test_create_task_sanitizes_title(auth_client: AsyncClient) -> None:
         "/api/tools/tasks",
         json={
             "title": "  buy\x00 milk  ",
-            "scheduled_at": "2026-06-01T10:00:00",
+            "scheduled_at": _future_task_time(),
             "description": "From admin",
         },
     )
@@ -44,7 +48,7 @@ async def test_create_task_sanitizes_description_and_location(
         "/api/tools/tasks",
         json={
             "title": "Errand",
-            "scheduled_at": "2026-06-01T10:00:00",
+            "scheduled_at": _future_task_time(),
             "description": "  pick\x00 up  ",
             "location": f"  shop\x00 {'x' * 240}",
         },
@@ -64,7 +68,7 @@ async def test_create_task_rejects_empty_title_after_sanitize(
         "/api/tools/tasks",
         json={
             "title": "   \x00  ",
-            "scheduled_at": "2026-06-01T10:00:00",
+            "scheduled_at": _future_task_time(),
         },
     )
     assert resp.status_code == 422
@@ -78,7 +82,7 @@ async def test_create_task_truncates_long_description(
         "/api/tools/tasks",
         json={
             "title": "Long notes",
-            "scheduled_at": "2026-06-01T10:00:00",
+            "scheduled_at": _future_task_time(),
             "description": "x" * 6000,
         },
     )
@@ -92,14 +96,14 @@ async def test_create_task(auth_client: AsyncClient) -> None:
         "/api/tools/tasks",
         json={
             "title": "Buy milk",
-            "scheduled_at": "2026-06-01T10:00:00",
+            "scheduled_at": _future_task_time(),
             "description": "From admin",
         },
     )
     assert resp.status_code == 201
     data = resp.json()
     assert data["title"] == "Buy milk"
-    assert data["telegram_user_id"] == 123456789
+    assert data["telegram_user_id"] == 123456
     assert data["status"] == "pending"
 
     listed = await auth_client.get("/api/tools/tasks")
@@ -148,11 +152,11 @@ async def test_list_tasks_filters_by_title_query(auth_client: AsyncClient) -> No
     """Title search matches substring case-insensitively."""
     await auth_client.post(
         "/api/tools/tasks",
-        json={"title": "Buy milk", "scheduled_at": "2026-06-01T10:00:00"},
+        json={"title": "Buy milk", "scheduled_at": _future_task_time()},
     )
     await auth_client.post(
         "/api/tools/tasks",
-        json={"title": "Walk dog", "scheduled_at": "2026-06-01T11:00:00"},
+        json={"title": "Walk dog", "scheduled_at": _future_task_time(3)},
     )
 
     resp = await auth_client.get("/api/tools/tasks", params={"q": "milk"})
@@ -277,7 +281,7 @@ async def test_bot_ping_requires_admin(tasks_reader_client: AsyncClient) -> None
 
 
 @pytest.mark.asyncio
-@patch("app.core.telegram.ping_todobot", new_callable=AsyncMock)
+@patch("app.routers.tools.tasks_admin.ping_todobot", new_callable=AsyncMock)
 async def test_bot_ping_endpoint(
     mock_ping: AsyncMock,
     auth_client: AsyncClient,
@@ -320,7 +324,7 @@ async def test_bot_ping_missing_token(
 async def test_update_task_status(auth_client: AsyncClient) -> None:
     create = await auth_client.post(
         "/api/tools/tasks",
-        json={"title": "Status test", "scheduled_at": "2026-06-01T10:00:00"},
+        json={"title": "Status test", "scheduled_at": _future_task_time(days=-1)},
     )
     task_id = create.json()["id"]
 
@@ -336,16 +340,16 @@ async def test_update_task_status(auth_client: AsyncClient) -> None:
 async def test_reschedule_task(auth_client: AsyncClient) -> None:
     create = await auth_client.post(
         "/api/tools/tasks",
-        json={"title": "Reschedule test", "scheduled_at": "2026-06-01T10:00:00"},
+        json={"title": "Reschedule test", "scheduled_at": _future_task_time()},
     )
     task_id = create.json()["id"]
 
     resp = await auth_client.patch(
         f"/api/tools/tasks/{task_id}",
-        json={"scheduled_at": "2026-06-02T14:30:00"},
+        json={"scheduled_at": _future_task_time(3)},
     )
     assert resp.status_code == 200
-    assert "2026-06-02T14:30:00" in resp.json()["scheduled_at"]
+    assert _future_task_time(3)[:16] in resp.json()["scheduled_at"]
 
 
 @pytest.fixture
@@ -372,7 +376,7 @@ async def test_task_mutations_require_superuser(
 
     create_resp = await tasks_reader_client.post(
         "/api/tools/tasks",
-        json={"title": "Denied", "scheduled_at": "2026-06-01T10:00:00"},
+        json={"title": "Denied", "scheduled_at": _future_task_time()},
     )
     assert create_resp.status_code == 403
 
