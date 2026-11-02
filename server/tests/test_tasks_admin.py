@@ -10,6 +10,7 @@ from app.core.telegram import TodobotPingResult
 from app.db.documents.task import TaskStatus
 from app.db.registry import DatabaseRegistry
 from app.services.task import complete_past_due_tasks
+from app.settings import get_settings
 from tests.factories import create_sync_queue_item, create_task, create_user
 
 
@@ -103,7 +104,7 @@ async def test_create_task(auth_client: AsyncClient) -> None:
     assert resp.status_code == 201
     data = resp.json()
     assert data["title"] == "Buy milk"
-    assert data["telegram_user_id"] == 123456
+    assert data["telegram_user_id"] == get_settings().TELEGRAM_ALLOWED_USER_ID
     assert data["status"] == "pending"
 
     listed = await auth_client.get("/api/tools/tasks")
