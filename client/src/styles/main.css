@@ -218,9 +218,6 @@ html[data-theme="light"] {
   --tile: calc((100% - 2 * var(--tile-gap)) / 3);
   --content: calc(var(--tile) * 2 + var(--tile-gap));
   --page-chrome-offset: 4rem;
-  /* Default tool container width. */
-  --page-column: 420px;
-  --page-column-min: 420px;
 }
 
 /** Icon chrome parked in the gutter just past the content shell’s right edge. */
