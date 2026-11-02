@@ -84,7 +84,7 @@ export function useNewsAdmin() {
   const form = ref<NewsArticleFormData>(emptyForm());
   const lastAutoTitle = ref<string | null>(null);
   const metadataRequestId = ref(0);
-  const DEFAULT_STATUS_FILTER: NewsStatus = "published";
+  const DEFAULT_STATUS_FILTER: StatusFilter = "";
   const statusFilter = ref<StatusFilter>(DEFAULT_STATUS_FILTER);
   const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
