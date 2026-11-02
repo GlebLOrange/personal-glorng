@@ -134,7 +134,8 @@ function readStoredOpen(): Record<string, boolean> {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     return Object.fromEntries(
       Object.entries(parsed as Record<string, unknown>).filter(
-        (entry): entry is [string, boolean] => /^[a-z0-9-]{1,32}$/.test(entry[0]) && typeof entry[1] === "boolean",
+        (entry): entry is [string, boolean] =>
+          /^[a-z0-9-]{1,32}$/.test(entry[0]) && typeof entry[1] === "boolean",
       ),
     );
   } catch {
@@ -195,7 +196,13 @@ function jumpToSection(id: string): void {
   });
 }
 
-const PREFETCH_SLUGS = new Set(["weather", "calculator", "password-generator", "qr-generator", "url-shortener"]);
+const PREFETCH_SLUGS = new Set([
+  "weather",
+  "calculator",
+  "password-generator",
+  "qr-generator",
+  "url-shortener",
+]);
 
 function onPillIntent(tab: { id: string; to: Parameters<typeof prefetchRoute>[1] }): void {
   if (PREFETCH_SLUGS.has(tab.id)) prefetchRoute(router, tab.to);
@@ -230,7 +237,6 @@ function sectionCount(section: ToolsPageSection): number {
 function tabPillClass(): string {
   return `${actionFamilyClass("1xx", false)} min-h-11`;
 }
-
 </script>
 
 <template>

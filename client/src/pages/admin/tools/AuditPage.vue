@@ -297,7 +297,6 @@ onMounted(load);
           </AdminDataRow>
         </AdminDataTable>
       </div>
-
     </template>
     <template #footer>
       <AdminListFooter

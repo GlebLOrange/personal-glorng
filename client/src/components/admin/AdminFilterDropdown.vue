@@ -295,7 +295,7 @@ defineExpose({ close });
         tabindex="-1"
         :class="[
           isLocalAnchor
-            ? ['absolute left-0 top-full z-50 mt-1', TOOLBAR_POPOVER_PANEL_WIDTH_CLASS]
+            ? ['absolute left-0 right-0 top-full z-50 mt-1', TOOLBAR_POPOVER_PANEL_WIDTH_CLASS]
             : [
                 'fixed z-50',
                 matchTriggerWidth

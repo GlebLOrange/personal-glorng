@@ -23,8 +23,8 @@ const isFull = computed(() => props.variant === "full");
 
 const src = computed(() => {
   const light = colorThemeResolved.value === "light";
-  if (light) return "/brand/gy-mark-simple-light.svg";
-  return "/favicon.svg";
+  if (isFull.value) return "/brand/gy-logo-512.png";
+  return light ? "/brand/gy-mark-simple-light.svg" : "/favicon.svg";
 });
 
 /** Intrinsic size matches SVG viewBox (square mark 100×100 for mark and full). */

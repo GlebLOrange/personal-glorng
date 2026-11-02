@@ -1,12 +1,14 @@
 """Tests for local World Time payloads."""
 
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 from zoneinfo import ZoneInfo
 
 import pytest
 from httpx import AsyncClient
 
+from app.core.deps import get_weather_service
+from app.main import app
 from app.services.world_time import WorldTimePayload, WorldTimeService
 
 
@@ -45,19 +47,23 @@ async def test_lookup_world_time_endpoint(client: AsyncClient) -> None:
                 "timezone": "Europe/London",
                 "datetime": "2026-06-07T13:00:00+01:00",
                 "utc_datetime": "2026-06-07T12:00:00+00:00",
-                "unixtime": 1_749_300_000,
+                "unixtime": 1_799_999_900,
                 "dst": True,
                 "abbreviation": "BST",
             }
         ],
     }
-    with patch(
-        "app.routers.weather.WeatherService.get_weather",
-        new=AsyncMock(return_value=enriched_weather),
-    ):
+
+    async def fake_weather_service():
+        return AsyncMock(get_weather=AsyncMock(return_value=enriched_weather))
+
+    app.dependency_overrides[get_weather_service] = fake_weather_service
+    try:
         resp = await client.get("/api/weather/time/London")
+    finally:
+        app.dependency_overrides.pop(get_weather_service, None)
 
     assert resp.status_code == 200
     data = resp.json()
     assert data["timezone"] == "Europe/London"
-    assert data["unixtime"] == 1_749_300_000
+    assert data["unixtime"] == 1_799_999_900

@@ -2,8 +2,9 @@
 export function getSectionTargets(root: ParentNode = document): HTMLElement[] {
   const main = root.querySelector("#main-content");
   if (!main) return [];
-  return Array.from(main.querySelectorAll<HTMLElement>("section[id]"))
-    .sort((a, b) => sectionTop(a) - sectionTop(b));
+  return Array.from(main.querySelectorAll<HTMLElement>("section[id]")).sort(
+    (a, b) => sectionTop(a) - sectionTop(b),
+  );
 }
 
 /** Absolute document top (offsetTop is relative to offsetParent, not the page). */

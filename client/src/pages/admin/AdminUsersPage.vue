@@ -244,7 +244,6 @@ onUnmounted(() => {
         :draft-permissions="draftPermissions"
         @select="openUserDrawer"
       />
-
     </template>
 
     <AdminUsersPermissionsDrawer

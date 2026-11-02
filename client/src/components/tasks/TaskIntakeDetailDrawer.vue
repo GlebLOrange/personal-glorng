@@ -64,9 +64,7 @@ const draftEntries = [
       <dl v-if="intake.draft_json" class="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
         <template v-for="entry in draftEntries" :key="entry.key">
           <template v-if="draftFields(intake.draft_json)[entry.key] != null">
-            <dt
-              class="flex items-center gap-1 text-xs uppercase tracking-wide text-surface-mid"
-            >
+            <dt class="flex items-center gap-1 text-xs uppercase tracking-wide text-surface-mid">
               <LocationIcon v-if="entry.key === 'location'" class-name="size-3 shrink-0" />
               {{ entry.label }}
             </dt>
@@ -83,9 +81,9 @@ const draftEntries = [
 
       <details v-if="intake.draft_json" class="mt-4 text-sm text-surface-mid">
         <summary class="cursor-pointer select-none hover:text-surface-light">raw draft</summary>
-        <pre
-          class="mt-2 overflow-x-auto rounded bg-surface-dark/50 p-2 text-xs text-surface-mid"
-          >{{ JSON.stringify(intake.draft_json, null, 2) }}</pre>
+        <pre class="mt-2 overflow-x-auto rounded bg-surface-dark/50 p-2 text-xs text-surface-mid">{{
+          JSON.stringify(intake.draft_json, null, 2)
+        }}</pre>
       </details>
     </template>
   </BaseDrawer>
