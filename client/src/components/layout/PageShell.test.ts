@@ -13,13 +13,14 @@ const stubs = {
 };
 
 describe("PageShell", () => {
-  it("forwards backTo to PageChrome (Back lives in the chrome row)", () => {
+  it("forwards backTo to PageChrome (Back lives in the breadcrumb row)", () => {
     const wrapper = mount(PageShell, {
       props: { title: "users", breadcrumbs: [{ label: "users" }], backTo: "/admin" },
       global: { stubs },
       slots: { default: "<div>body</div>" },
     });
     expect(wrapper.get('[data-testid="chrome"]').attributes("data-back")).toBe("/admin");
+    expect(wrapper.find('[data-testid="back"]').exists()).toBe(false);
   });
 
   it("leaves chrome Back unset when backTo is unset", () => {
