@@ -12,7 +12,7 @@ Definitions live in `.cursor/agents/`. Shared rules live **here** (and Gortex fa
 | Recruiter | [`recruiter.md`](recruiter.md) | Hiring-signal screen |
 | UX | [`ux.md`](ux.md) | Readonly UX/UI/a11y audit |
 
-The code-review prompt lives at [`../references/code-reviewer.md`](../references/code-reviewer.md) for Antigravity `/task-loop` only. It is **not** a Cursor subagent.
+Code review: [`code-reviewer.md`](code-reviewer.md) (real file here; `.agents/` and `.claude/` symlink to it). Used by Antigravity `/task-loop`.
 
 ## Orchestration
 
@@ -47,7 +47,7 @@ Do not conflate them: unmet `acceptance` is not “checks failed”; empty `chec
 
 ## Severity schemes
 
-**Code review** (Antigravity prompt in [`../references/code-reviewer.md`](../references/code-reviewer.md)):
+**Code review** ([`code-reviewer.md`](code-reviewer.md)):
 
 | Prefix | Meaning |
 |--------|---------|
