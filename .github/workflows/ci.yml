@@ -79,7 +79,7 @@ jobs:
           outside=false
           while IFS= read -r path; do
             case "$path" in
-              server/*|shared/*|rabbitmq/*|deploy/*|scripts/*|nginx/*|client/*|docs/*|postman/*|.github/workflows/*|.github/ISSUE_TEMPLATE/*|.github/skills/*|.cursor/*|.agents/*|.devcontainer/*|.vscode/*|.claude/*|.gemini/*|*.md|*.mdc|Makefile|docker-compose*.yml|.env.example|.env.production.example|.dockerignore|.pre-commit-config.yaml|.github/FUNDING.yml|.github/copilot-instructions.md|.github/social-preview.png|.github/dependabot.yml|.editorconfig|.nvmrc|.gitignore|.ignore|.rgignore|.cursorignore|.gitleaks.toml|AGENTS.md|CLAUDE.md|CODING_STANDARDS.md|CV.md|GEMINI.md|GEMINI.md.bak.*|GEMINI_SAVED_INFO.md|opencode.json|LICENSE)
+              server/*|shared/*|rabbitmq/*|deploy/*|scripts/*|nginx/*|client/*|docs/*|postman/*|.github/workflows/*|.github/ISSUE_TEMPLATE/*|.github/skills/*|.cursor/*|.agents/*|.devcontainer/*|.vscode/*|.claude/*|.gemini/*|*.md|*.mdc|Makefile|docker-compose*.yml|.env.example|.env.production.example|.dockerignore|.pre-commit-config.yaml|.github/FUNDING.yml|.github/copilot-instructions.md|.github/social-preview.png|.github/dependabot.yml|.editorconfig|.nvmrc|.gitignore|.ignore|.rgignore|.cursorignore|.mcp.json|.gitleaks.toml|AGENTS.md|CLAUDE.md|CODING_STANDARDS.md|CV.md|GEMINI.md|GEMINI.md.bak.*|GEMINI_SAVED_INFO.md|opencode.json|LICENSE)
                 ;;
               *)
                 echo "::error file=$path::Changed path is outside the CI gate and skip allowlist."
