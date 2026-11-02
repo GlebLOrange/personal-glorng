@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security policy
-    url: https://github.com/GlebLOrange/personal-glorng/blob/main/SECURITY.md
+    url: https://github.com/GlebLOrange/portfolio-glorng/blob/main/SECURITY.md
     about: Report vulnerabilities privately — do not use public issues
   - name: Documentation
-    url: https://github.com/GlebLOrange/personal-glorng/blob/main/README.md
+    url: https://github.com/GlebLOrange/portfolio-glorng/blob/main/README.md
     about: Setup, dev modes, and project structure

@@ -24,7 +24,7 @@ const projects: Project[] = [
     name: "SSRF-safe outbound fetch",
     description: "Server-side HTTP must not reach private networks.",
     tech: ["Python", "httpx"],
-    url: "https://github.com/GlebLOrange/personal-glorng/blob/main/server/app/core/url_safety.py",
+    url: "https://github.com/GlebLOrange/portfolio-glorng/blob/main/server/app/core/url_safety.py",
     problem: "SNI fails after DNS pin.",
     approach: "Connect to IP with Host + sni_hostname.",
     result: "Fail-closed public fetch with unit coverage.",

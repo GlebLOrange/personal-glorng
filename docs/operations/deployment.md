@@ -182,8 +182,8 @@ After each successful **CI** run on **`main`**, [`.github/workflows/publish.yml`
 
 **Images:** One image covers `server`, `migrate`, `worker`, `beat`, and `todobot` in prod (same Dockerfile). Tags:
 
-- `ghcr.io/gleblorange/personal-glorng-server:<git-sha>`
-- `ghcr.io/gleblorange/personal-glorng-server:main`
+- `ghcr.io/gleblorange/portfolio-glorng-server:<git-sha>`
+- `ghcr.io/gleblorange/portfolio-glorng-server:main`
 
 The client SPA is not published to GHCR (Firebase build args come from host `.env` at `make prod`). **Production deploy on the host still uses `make prod` / local `docker compose build`** unless you later point Compose at these tags.
 
