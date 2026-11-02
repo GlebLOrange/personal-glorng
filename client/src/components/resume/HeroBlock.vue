@@ -25,9 +25,7 @@ const props = withDefaults(
 const emit = defineEmits<{ inquire: [] }>();
 
 const isStatusRail = computed(() => props.layout === "status-rail");
-const showMeta = computed(() =>
-  Boolean(props.location || props.availability || false),
-);
+const showMeta = computed(() => Boolean(props.location || props.availability || false));
 
 const isDownloadingCv = ref(false);
 const showPrintFallback = ref(false);
@@ -59,7 +57,9 @@ function printPage(): void {
     <h1
       class="mb-2 text-balance font-bold tracking-tight text-surface-light"
       :class="
-        isStatusRail ? 'font-mono text-3xl sm:text-4xl md:text-5xl' : 'text-2xl sm:text-3xl md:text-4xl'
+        isStatusRail
+          ? 'font-mono text-3xl sm:text-4xl md:text-5xl'
+          : 'text-2xl sm:text-3xl md:text-4xl'
       "
     >
       {{ name }}

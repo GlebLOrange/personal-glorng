@@ -314,7 +314,6 @@ onMounted(load);
           </AdminDataRow>
         </AdminDataTable>
       </div>
-
     </template>
 
     <FeedbackDetailDrawer

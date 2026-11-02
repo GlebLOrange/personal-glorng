@@ -284,7 +284,6 @@ onMounted(() => {
         </div>
 
         <EmptyState v-else>no shortened URLs yet. create one above.</EmptyState>
-
       </template>
     </div>
     <template #footer>

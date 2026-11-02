@@ -63,7 +63,6 @@ describe("toolsPageGroups", () => {
     expect(PLATFORM_SERVICES.find((t) => t.slug === "weather")?.category).toBe("utilities");
   });
 
-
   it("strips utils-tab peers from tile candidate lists", () => {
     const weather = PLATFORM_SERVICES.find((t) => t.slug === "weather")!;
     const recipes = PLATFORM_SERVICES.find((t) => t.slug === "recipes")!;

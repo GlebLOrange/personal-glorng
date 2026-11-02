@@ -25,7 +25,11 @@ const stubs = {
 describe("PageChrome", () => {
   it("renders Back in the breadcrumb row at the shell outer edge", () => {
     const wrapper = mount(PageChrome, {
-      props: { title: "users", breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "users" }], backTo: "/admin" },
+      props: {
+        title: "users",
+        breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "users" }],
+        backTo: "/admin",
+      },
       global: { stubs },
     });
     const back = wrapper.get("[data-testid=back]");
