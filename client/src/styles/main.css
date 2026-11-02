@@ -283,6 +283,7 @@ html[data-theme="light"] {
   display: flex;
   min-width: 0;
   width: auto;
+  margin: auto;
   max-width: 100%;
   flex-direction: row;
   flex-wrap: wrap;
