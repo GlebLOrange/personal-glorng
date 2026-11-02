@@ -24,7 +24,7 @@ _RESUME_RAW: dict[str, Any] = {
     "hiring_note": (
         "This site is the live product sample: auth, jobs, search, OpenAPI,"
         " tests, and CI. Independent since 2017; the personal website"
-        " (2022–present) is what you can click through."
+        " (2022-present) is what you can click through."
     ),
     "skills": [
         {

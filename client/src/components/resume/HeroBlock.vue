@@ -58,7 +58,9 @@ function printPage(): void {
   <div class="py-12 md:py-16 text-center">
     <h1
       class="mb-2 text-balance font-bold tracking-tight text-surface-light"
-      :class="isStatusRail ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-2xl sm:text-3xl md:text-4xl'"
+      :class="
+        isStatusRail ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-2xl sm:text-3xl md:text-4xl'
+      "
     >
       {{ name }}
     </h1>
@@ -132,7 +134,11 @@ function printPage(): void {
     <div
       class="relative z-[45] mt-6 flex flex-col flex-wrap items-center justify-center gap-2 sm:flex-row print:hidden"
     >
-      <button type="button" class="cta-hero inline-flex items-center gap-1.5" @click="emit('inquire')">
+      <button
+        type="button"
+        class="cta-hero inline-flex items-center gap-1.5"
+        @click="emit('inquire')"
+      >
         <ChevronIcon class-name="size-3.5 shrink-0" />
         get in touch
       </button>
@@ -147,11 +153,7 @@ function printPage(): void {
       </button>
     </div>
 
-    <p
-      v-if="showPrintFallback"
-      class="mt-3 text-meta print:hidden"
-      role="status"
-    >
+    <p v-if="showPrintFallback" class="mt-3 text-meta print:hidden" role="status">
       PDF unavailable.
       <button
         type="button"

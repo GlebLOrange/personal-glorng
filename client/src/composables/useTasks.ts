@@ -6,11 +6,7 @@ import { useNotify } from "@/composables/useNotify";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { effectiveSearchQuery } from "@/constants/search";
 import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
-import {
-  datetimeLocalValue,
-  isValidIsoDate,
-  parseDatetimeLocalToIso,
-} from "@/utils/dates";
+import { datetimeLocalValue, isValidIsoDate, parseDatetimeLocalToIso } from "@/utils/dates";
 import type {
   BotPingResult,
   PaginatedList,
@@ -338,9 +334,7 @@ export function useTasks() {
       page.value = 1;
       const refreshes: Promise<void>[] = [loadTasks(), loadStats()];
       if (calendarRange.value) {
-        refreshes.push(
-          loadCalendarMonth(calendarRange.value.start, calendarRange.value.end),
-        );
+        refreshes.push(loadCalendarMonth(calendarRange.value.start, calendarRange.value.end));
       }
       await Promise.all(refreshes);
     }

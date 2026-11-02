@@ -153,12 +153,7 @@ async function createUrl(): Promise<void> {
   }
 
   if (isLocalMode.value) {
-    const result = createGuestShortUrl(
-      guestUrls.value,
-      trimmed,
-      null,
-      newCode.value || null,
-    );
+    const result = createGuestShortUrl(guestUrls.value, trimmed, null, newCode.value || null);
     if (!result.ok) {
       formError.value = result.error;
       return;

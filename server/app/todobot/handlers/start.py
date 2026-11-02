@@ -74,10 +74,7 @@ def build_welcome_text(
         "",
         calendar_line,
         "",
-        (
-            f"*Open:* {total_open} · *Today:* {today_count} · "
-            f"*Overdue:* {overdue_count}"
-        ),
+        (f"*Open:* {total_open} · *Today:* {today_count} · *Overdue:* {overdue_count}"),
         "",
     ]
 

@@ -306,7 +306,9 @@ onMounted(() => {
                   :disabled="!canSaveLibrary"
                   @click="saveToLibrary"
                 >
-                  {{ savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library" }}
+                  {{
+                    savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library"
+                  }}
                 </BaseButton>
                 <BaseButton
                   v-if="previewUrl"

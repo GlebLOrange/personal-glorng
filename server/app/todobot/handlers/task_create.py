@@ -36,10 +36,7 @@ AI_PROMPT = (
     "Send your task in one message.\n\n"
     'Example: "Tomorrow at 18:00 gym near city center"'
 )
-GUIDED_PROMPT = (
-    "What task?\n"
-    "Send a short title — then pick date and time."
-)
+GUIDED_PROMPT = "What task?\nSend a short title — then pick date and time."
 
 _FIELD_ORDER = ("title", "date", "time", "location", "notes")
 
