@@ -47,12 +47,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
           <LocationIcon class-name="size-4 shrink-0" />
         </template>
       </BaseInput>
-      <BaseTextarea
-        v-model="form.description"
-        label="notes"
-        :rows="3"
-        placeholder="(optional)"
-      />
+      <BaseTextarea v-model="form.description" label="notes" :rows="3" placeholder="(optional)" />
     </form>
 
     <template #footer>

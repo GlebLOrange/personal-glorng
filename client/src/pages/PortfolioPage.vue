@@ -142,14 +142,9 @@ onUnmounted(() => {
       <div class="mt-6">
         <PortfolioGlance :resume="resume" />
       </div>
-      <div
-        v-if="currentRole"
-        class="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-meta"
-      >
+      <div v-if="currentRole" class="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-meta">
         <p class="text-label text-accent-coral">now</p>
-        <span>
-          {{ currentRole.role }} · {{ currentRole.company }} · {{ currentRole.period }}
-        </span>
+        <span> {{ currentRole.role }} · {{ currentRole.company }} · {{ currentRole.period }} </span>
         <a href="#experience" class="text-link">experience</a>
       </div>
     </SectionWrapper>

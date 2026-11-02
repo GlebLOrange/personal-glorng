@@ -100,11 +100,7 @@ const hasCustomHeader = computed(() => Boolean(slots.header));
               :class="props.compact ? 'min-h-11' : 'h-11'"
             >
               <slot name="header-actions" />
-              <IconCloseButton
-                ref="closeButton"
-                aria-label="close"
-                @click="emit('close')"
-              />
+              <IconCloseButton ref="closeButton" aria-label="close" @click="emit('close')" />
             </div>
           </div>
           <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">

@@ -158,10 +158,7 @@ watch(
         </div>
       </section>
 
-      <div
-        v-if="canMutateScheduleAndStatus"
-        class="flex min-w-0 flex-wrap items-end gap-2"
-      >
+      <div v-if="canMutateScheduleAndStatus" class="flex min-w-0 flex-wrap items-end gap-2">
         <BaseInput
           v-model="scheduleDraft"
           type="datetime-local"

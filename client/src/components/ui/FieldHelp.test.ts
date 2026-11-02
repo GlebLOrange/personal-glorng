@@ -39,9 +39,7 @@ describe("FieldHelp", () => {
     });
 
     const button = wrapper.get('button[aria-label="help"]');
-    expect(button.classes()).toEqual(
-      expect.arrayContaining(["min-h-11", "min-w-11"]),
-    );
+    expect(button.classes()).toEqual(expect.arrayContaining(["min-h-11", "min-w-11"]));
     expect(button.find("svg").classes()).toEqual(expect.arrayContaining(["size-3"]));
 
     wrapper.unmount();

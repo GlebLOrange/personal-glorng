@@ -134,12 +134,10 @@ describe("useTasks", () => {
     vi.mocked(api.get).mockClear();
     await createTask();
 
-    const calendarGets = vi
-      .mocked(api.get)
-      .mock.calls.filter(([, config]) => {
-        const params = config?.params as { start?: string; end?: string } | undefined;
-        return Boolean(params?.start && params?.end);
-      });
+    const calendarGets = vi.mocked(api.get).mock.calls.filter(([, config]) => {
+      const params = config?.params as { start?: string; end?: string } | undefined;
+      return Boolean(params?.start && params?.end);
+    });
     expect(calendarGets.length).toBeGreaterThanOrEqual(1);
     expect(api.post).toHaveBeenCalledWith(
       "/tools/tasks",

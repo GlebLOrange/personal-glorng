@@ -18,7 +18,7 @@ def index_entries() -> list[str]:
     path = ROOT / "index.yaml"
     if not path.exists():
         return []
-    text = "\n".join(l for l in path.read_text().splitlines() if not l.lstrip().startswith("#"))
+    text = "\n".join(line for line in path.read_text().splitlines() if not line.lstrip().startswith("#"))
     return [b.strip() for b in re.split(r"\n(?=\s*- date:)", text) if "date:" in b]
 
 

@@ -41,7 +41,6 @@ def clarification_prompt(parsed: ParsedTask) -> str:
     return "What time?"  # event time — not reminder lead
 
 
-
 def merge_clarification(parsed: ParsedTask, reply: str, field: str) -> ParsedTask:
     """Apply a one-field clarification reply onto a draft parse."""
     from app.todobot.utils.nlp import parse_datetime_text, parse_task_input
