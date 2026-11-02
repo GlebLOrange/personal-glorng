@@ -278,7 +278,7 @@ onMounted(() => {
   >
     <div class="w-full min-w-0 self-stretch">
       <div class="page-tool-actions">
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
+        <div class="flex w-full min-w-0 flex-wrap items-center gap-2 md:flex-nowrap">
           <AdminFilterDropdown
             v-show="activeTab === 'queue'"
             ref="filterDropdown"
@@ -317,7 +317,7 @@ onMounted(() => {
           <SearchInput
             v-if="activeTab === 'queue'"
             v-model="searchQuery"
-            class="min-w-0"
+            class="min-w-0 flex-1"
             auto-width
             placeholder="search tasks"
           />
@@ -333,7 +333,7 @@ onMounted(() => {
           <ToolbarPillButton
             v-if="isSuperuser"
             family="2xx"
-            class="w-auto gap-1.5"
+            class="w-auto shrink-0 gap-1.5"
             :disabled="pingingBot"
             title="Ping Telegram todobot (getMe + DM). Does not prove polling is up."
             @click="pingBot"
@@ -347,7 +347,7 @@ onMounted(() => {
             v-show="activeTab === 'queue' || activeTab === 'calendar'"
             action="create"
             :icon="false"
-            class="w-auto"
+            class="ml-auto w-auto shrink-0"
             :disabled="createDisabled"
             :title="
               activeTab === 'calendar' && selectedDateIsPast
