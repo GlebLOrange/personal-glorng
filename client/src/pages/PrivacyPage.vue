@@ -2,7 +2,7 @@
 import * as CookieConsent from "vanilla-cookieconsent";
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
-import FilterIcon from "@/components/icons/FilterIcon.vue";
+import EyeIcon from "@/components/icons/EyeIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
@@ -18,8 +18,8 @@ function openPreferences() {
 
 <template>
   <PageShell
-    title="Privacy policy"
-    :breadcrumbs="[{ label: 'Privacy policy' }]"
+    title="privacy policy"
+    :breadcrumbs="[{ label: 'privacy policy' }]"
     back-to="/"
     body-width="content"
   >
@@ -106,7 +106,7 @@ function openPreferences() {
           class="text-link inline-flex items-center gap-1 transition-colors"
           @click="openPreferences"
         >
-          <FilterIcon class-name="size-3.5 shrink-0" />
+          <EyeIcon class-name="size-3.5 shrink-0" />
           cookie settings</button
         >.
         <span v-if="isFirebaseAnalyticsEnabled && isSentryEnabled">

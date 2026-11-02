@@ -80,7 +80,14 @@ const timezoneOptions = computed((): TimezoneOption[] => {
             {{ code }}
           </option>
         </BaseSelect>
-        <BaseButton type="submit" variant="save" size="sm" :loading="saving" :disabled="!canSave">
+        <BaseButton
+          type="submit"
+          variant="save"
+          size="sm"
+          class="ml-auto shrink-0"
+          :loading="saving"
+          :disabled="!canSave"
+        >
           {{ saving ? "saving…" : "save" }}
         </BaseButton>
       </form>

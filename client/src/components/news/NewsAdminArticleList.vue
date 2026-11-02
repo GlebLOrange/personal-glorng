@@ -40,12 +40,6 @@ const emit = defineEmits<{
       @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
       <div class="mb-2 flex min-w-0 flex-wrap items-center gap-2 text-xs">
-        <time
-          class="text-datetime shrink-0 whitespace-nowrap lowercase"
-          :datetime="item.published_at ?? item.created_at"
-        >
-          {{ formatNewsDate(item.published_at ?? item.created_at) }}
-        </time>
         <a
           v-if="safeNavigationHref(item.source_url)"
           :href="safeNavigationHref(item.source_url) ?? '#'"
@@ -57,6 +51,12 @@ const emit = defineEmits<{
           {{ item.source_name }}
         </a>
         <span v-else class="shrink-0 text-accent-coral">{{ item.source_name }}</span>
+        <time
+          class="text-datetime shrink-0 whitespace-nowrap lowercase"
+          :datetime="item.published_at ?? item.created_at"
+        >
+          {{ formatNewsDate(item.published_at ?? item.created_at) }}
+        </time>
         <StatusBadge
           :label="newsStatusLabel(item.status)"
           :class-name="newsStatusClass(item.status)"
@@ -64,14 +64,44 @@ const emit = defineEmits<{
         <span v-if="item.telegram_message_id" class="shrink-0 text-accent-coral">
           Telegram #{{ item.telegram_message_id }}
         </span>
-        <div v-if="item.tags.length" class="ml-auto flex min-w-0 flex-wrap justify-end gap-2">
-          <span
-            v-for="tag in item.tags"
-            :key="tag"
-            class="rounded bg-accent-coral/10 px-2.5 py-1 text-xs text-accent-coral"
+        <div
+          v-if="canWrite"
+          class="ml-auto flex flex-wrap items-center gap-2"
+          @click.stop
+          @keydown.stop
+        >
+          <BaseButton
+            v-if="item.status !== 'published'"
+            variant="save"
+            size="sm"
+            :disabled="actionLoading"
+            @click="emit('setStatus', item.id, 'published')"
           >
-            #{{ tag }}
-          </span>
+            publish
+          </BaseButton>
+          <BaseButton
+            v-else
+            variant="ghost"
+            quiet
+            size="sm"
+            class="gap-1.5"
+            :disabled="actionLoading"
+            @click="emit('setStatus', item.id, 'private')"
+          >
+            <CloseIcon class-name="size-3.5 shrink-0" />
+            unpublish
+          </BaseButton>
+          <BaseButton
+            variant="ghost"
+            quiet
+            size="sm"
+            class="gap-1.5"
+            :disabled="actionLoading"
+            @click="emit('repost', item.id)"
+          >
+            <RefreshIcon class-name="size-3.5 shrink-0" />
+            repost telegram
+          </BaseButton>
         </div>
       </div>
 
@@ -79,44 +109,14 @@ const emit = defineEmits<{
 
       <p class="mb-2 break-words text-sm text-surface-mid">{{ item.summary }}</p>
 
-      <div
-        v-if="canWrite"
-        class="flex w-full flex-wrap items-center justify-between gap-2"
-        @click.stop
-        @keydown.stop
-      >
-        <BaseButton
-          v-if="item.status !== 'published'"
-          variant="save"
-          size="sm"
-          :disabled="actionLoading"
-          @click="emit('setStatus', item.id, 'published')"
+      <div v-if="item.tags.length" class="flex min-w-0 flex-wrap gap-2">
+        <span
+          v-for="tag in item.tags"
+          :key="tag"
+          class="rounded bg-accent-coral/10 px-2.5 py-1 text-xs text-accent-coral"
         >
-          publish
-        </BaseButton>
-        <BaseButton
-          v-else
-          variant="ghost"
-          quiet
-          size="sm"
-          class="gap-1.5"
-          :disabled="actionLoading"
-          @click="emit('setStatus', item.id, 'private')"
-        >
-          <CloseIcon class-name="size-3.5 shrink-0" />
-          unpublish
-        </BaseButton>
-        <BaseButton
-          variant="ghost"
-          quiet
-          size="sm"
-          class="ml-auto gap-1.5"
-          :disabled="actionLoading"
-          @click="emit('repost', item.id)"
-        >
-          <RefreshIcon class-name="size-3.5 shrink-0" />
-          repost telegram
-        </BaseButton>
+          #{{ tag }}
+        </span>
       </div>
     </Card>
   </section>

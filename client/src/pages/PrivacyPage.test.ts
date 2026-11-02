@@ -37,7 +37,7 @@ describe("PrivacyPage", () => {
       },
     });
 
-    expect(wrapper.get("h1").text()).toBe("Privacy policy");
+    expect(wrapper.get("h1").text()).toBe("privacy policy");
     expect(wrapper.text()).toContain("What data is collected");
     expect(wrapper.text()).toContain("Cookies used");
     expect(wrapper.text()).toContain("cc_cookie");
