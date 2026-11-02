@@ -12,7 +12,6 @@ defineProps<{
   loading: boolean;
   filterStatus: string;
   whenAriaSort: "ascending" | "descending" | "none";
-  whenIndicator: string;
 }>();
 
 const emit = defineEmits<{ select: [id: number]; sortWhen: [] }>();

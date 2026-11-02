@@ -87,7 +87,6 @@ const {
   filterStatus,
   searchQuery,
   whenAriaSort,
-  whenIndicator,
   page,
   showCreateForm,
   createForm,
@@ -375,7 +374,6 @@ onMounted(() => {
         :loading="listLoading"
         :filter-status="filterStatus"
         :when-aria-sort="whenAriaSort"
-        :when-indicator="whenIndicator"
         :stats="stats"
         :total="total"
         :page="page"

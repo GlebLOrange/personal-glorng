@@ -9,7 +9,6 @@ defineProps<{
   loading: boolean;
   filterStatus: string;
   whenAriaSort: "ascending" | "descending" | "none";
-  whenIndicator: string;
   total: number;
   page: number;
   totalPages: number;
@@ -84,7 +83,6 @@ const emit = defineEmits<{
       :loading="loading"
       :filter-status="filterStatus"
       :when-aria-sort="whenAriaSort"
-      :when-indicator="whenIndicator"
       @select="emit('select', $event)"
       @sort-when="emit('sortWhen')"
     />

@@ -361,12 +361,6 @@ export function useTasks() {
     return "none" as const;
   });
 
-  const whenIndicator = computed(() => {
-    if (sort.value === "when_asc") return " ↑";
-    if (sort.value === "when_desc") return " ↓";
-    return "";
-  });
-
   function goToIntakePage(nextPage: number): void {
     if (nextPage < 1) return;
     if (intakeTotalPages.value > 0 && nextPage > intakeTotalPages.value) return;
@@ -422,7 +416,6 @@ export function useTasks() {
     searchQuery,
     sort,
     whenAriaSort,
-    whenIndicator,
     page,
     intakePage,
     syncPage,
