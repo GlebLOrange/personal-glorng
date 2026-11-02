@@ -22,7 +22,7 @@ describe("HeroBlock", () => {
     apiGet.mockReset();
   });
 
-  it("uses the name as the page heading and keeps bio out of the hero", () => {
+  it("uses name and role in the page heading and keeps bio out of the hero", () => {
     const wrapper = mount(HeroBlock, {
       props: {
         name: "Gleb.Y",
@@ -31,7 +31,8 @@ describe("HeroBlock", () => {
       },
     });
 
-    expect(wrapper.get("h1").text()).toBe("Gleb.Y");
+    expect(wrapper.get("h1").text()).toContain("Gleb.Y");
+    expect(wrapper.get("h1").text()).toContain("Python Backend / FastAPI Engineer");
     expect(wrapper.text()).toContain("Python Backend / FastAPI Engineer");
     expect(wrapper.text()).toContain("I build production APIs");
     expect(wrapper.find("img").exists()).toBe(false);

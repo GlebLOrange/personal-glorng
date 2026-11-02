@@ -104,7 +104,7 @@ Host Vite uses `client/.env.development` (`VITE_API_PROXY_TARGET=http://127.0.0.
 
 - **2026-11-02:** Canonical checkout/MCP index is `/Users/glorange/projects/portfolio-glorng` (not `portfolio-glorng` / `_backup`). Machine SoT: `~/projects/config` → `./scripts/sync-repo.sh portfolio-glorng`. Grok Bot remote MCP uses `~/.gortex/public-mcp-url`; unbound sessions pass `view: {kind:"worktree", path:"/Users/glorange/projects/portfolio-glorng"}` or a `base` `graph_id` from `gortex repos explain-view`. See config README § Gortex.
 - **2026-10-31:** Cursor does not expand `${workspaceFolder}` in MCP `env` (literal string); set `CURSOR_WORKSPACE` and `mcp --proxy --index` to the same absolute repo path (project [`.cursor/mcp.json`](../../.cursor/mcp.json) → [`.agents/mcp_config.json`](../../.agents/mcp_config.json), or `~/.cursor/mcp.json`). Tilde session roots (`~/projects/...`) fail against absolute tracks — reconnect MCP after edits; do not `gortex track` `$HOME`.
-- **2026-10-30:** Superseded 2026-10-31 — Cursor Gortex MCP inactive for `$HOME` while `portfolio-glorng` is tracked means the MCP process cwd is home — set `CURSOR_WORKSPACE=${workspaceFolder}` (and `mcp --proxy`) in mcp.json; do not `gortex track` home.
+- **2026-10-30:** Superseded 2026-10-31 — Cursor Gortex MCP inactive for `$HOME` while the app repo is tracked (historically `portfolio-glorng`) means the MCP process cwd is home — set `CURSOR_WORKSPACE=${workspaceFolder}` (and `mcp --proxy`) in mcp.json; do not `gortex track` home.
 - **2026-10-26:** Worktree UI checks must hit that worktree’s Vite (e.g. `:3001`) with API healthy on `:8000`; `http://localhost` nginx serves the primary checkout’s client, so `/api` 502 there is a down proxy target, not an app auth bug.
 
 ### Public route loading (perf / Lighthouse)
@@ -136,6 +136,8 @@ How tasks, Telegram reminders, and Google Calendar sync connect: [Telegram + tas
 **2026-09-23 — Google Keep:** `notes.create` is Workspace-only; a personal Gmail account cannot create Keep notes via API. A Create menu (Note vs Event; one Telegram message → Keep note, no task/calendar) was designed but is not in this tree. Do not plan Keep again unless the operator has Workspace.
 
 ## Quality checks
+
+`make check` runs backend `lint-check` / `type-check` / `test` (and `db-check` when `CHECK_DB=1`) through `docker compose … exec server`, so the **lite stack must already be up** (`make` / `make dev`). Client steps run on the host via npm. For host-only backend checks without Compose, use the same commands CI uses under `server/` (`uv run ruff`, `uv run mypy app`, `uv run pytest`).
 
 ```bash
 make lint-check type-check

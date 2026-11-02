@@ -1,23 +1,16 @@
 """Business logic for curated news articles."""
 
-import html
-import json
 import re
 from datetime import date
-from html.parser import HTMLParser
 from math import ceil
-from typing import Any
-from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 from pymongo.errors import DuplicateKeyError
 
 from app.core.exceptions import ConflictError, NotFoundError, ValidationError
-from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
 from app.core.pagination import build_paginated
-from app.core.text import sanitize_fetched_text
-from app.core.url_safety import get_public_http_url, is_public_http_url
+from app.core.url_safety import get_public_http_url
 from app.core.utils import DEFAULT_PER_PAGE, paginate_params, utc_now
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.registry import DatabaseRegistry
@@ -35,240 +28,21 @@ from app.schemas.news import (
     NewsStatsResponse,
 )
 from app.services.audit import AuditService
+from app.services.news.html_meta import (
+    _METADATA_MAX_BYTES,
+    _METADATA_TIMEOUT_SECONDS,
+    NewsHtmlMeta,
+)
+from app.services.news.payloads import (
+    _SLUG_RETRY_LIMIT,
+    _apply_article_updates,
+    _article_payload_from_create,
+    _duplicate_key_field,
+    _loads_json_list,
+    _slugify,
+    _source_payload_from_create,
+)
 from app.services.search_indexers.news import index_news_article, remove_news_article
-
-_SLUG_RE = re.compile(r"[^a-z0-9]+")
-_SLUG_RETRY_LIMIT = 5
-_METADATA_MAX_BYTES = 200_000
-_METADATA_TIMEOUT_SECONDS = 5.0
-
-
-def _loads_json_list(field: str, raw: str) -> list[str]:
-    """Load a persisted JSON string list."""
-    return parse_json_string_list(raw, strict=True, field=field)
-
-
-def _dumps_json_list(value: list[str]) -> str:
-    """Dump a list for storage."""
-    return json.dumps(value)
-
-
-def _slugify(value: str) -> str:
-    """Return a URL-safe slug."""
-    slug = _SLUG_RE.sub("-", value.lower()).strip("-")
-    return slug[:80].strip("-") or "news"
-
-
-def _duplicate_key_field(exc: DuplicateKeyError) -> str | None:
-    """Return the Mongo duplicate key field when the driver includes it."""
-    key_pattern = (exc.details or {}).get("keyPattern") or {}
-    if len(key_pattern) == 1:
-        return next(iter(key_pattern))
-    errmsg = str(exc)
-    if "source_url" in errmsg:
-        return "source_url"
-    if "slug" in errmsg:
-        return "slug"
-    if "host" in errmsg:
-        return "host"
-    return None
-
-
-class _TitleParser(HTMLParser):
-    """Extract page title metadata from a small HTML document."""
-
-    def __init__(self) -> None:
-        """Initialize title collection state."""
-        super().__init__()
-        self.in_title = False
-        self.title_parts: list[str] = []
-        self.meta_titles: list[str] = []
-
-    def handle_starttag(
-        self,
-        tag: str,
-        attrs: list[tuple[str, str | None]],
-    ) -> None:
-        """Capture title and common metadata tags."""
-        if tag.lower() == "title":
-            self.in_title = True
-            return
-        if tag.lower() != "meta":
-            return
-        attr_map = {key.lower(): value for key, value in attrs if value}
-        name = (attr_map.get("property") or attr_map.get("name") or "").lower()
-        if name in {"og:title", "twitter:title"} and attr_map.get("content"):
-            self.meta_titles.append(attr_map["content"])
-
-    def handle_endtag(self, tag: str) -> None:
-        """Stop title capture after the closing title tag."""
-        if tag.lower() == "title":
-            self.in_title = False
-
-    def handle_data(self, data: str) -> None:
-        """Append text inside the title tag."""
-        if self.in_title:
-            self.title_parts.append(data)
-
-    def best_title(self) -> str | None:
-        """Return the best extracted title."""
-        title = _clean_metadata_text(" ".join(self.title_parts), max_length=90)
-        if title:
-            return title
-        for value in self.meta_titles:
-            title = _clean_metadata_text(value, max_length=90)
-            if title:
-                return title
-        return None
-
-
-def _require_public_feed_url(feed_url: str) -> None:
-    """Reject feed URLs that could target local infrastructure."""
-    if not is_public_http_url(feed_url):
-        raise ValidationError("Feed URL must be a public http(s) URL")
-
-
-def _canonical_url(value: str) -> str:
-    """Normalize URL casing and remove fragments."""
-    parts = urlsplit(value.strip())
-    return urlunsplit(
-        (
-            parts.scheme.lower(),
-            parts.netloc.lower(),
-            parts.path or "/",
-            parts.query,
-            "",
-        )
-    )
-
-
-def _normalized_host(value: str) -> str:
-    """Return a stable source host for a URL."""
-    parsed = urlsplit(value)
-    if not parsed.hostname:
-        raise ValidationError("Article URL must include a host")
-    host = parsed.hostname.rstrip(".").lower()
-    if host.startswith("www."):
-        host = host[4:]
-    return host
-
-
-def _homepage_url(value: str) -> str:
-    """Return a source homepage URL from an article URL."""
-    parts = urlsplit(value)
-    host = parts.hostname or ""
-    return urlunsplit((parts.scheme.lower(), host.lower(), "/", "", ""))
-
-
-def _source_name_from_host(host: str) -> str:
-    """Build a readable source name from a host."""
-    labels = host.split(".")
-    stem = labels[0] if labels else host
-    return (
-        " ".join(part.capitalize() for part in re.split(r"[-_]+", stem) if part) or host
-    )
-
-
-def _clean_metadata_text(value: str | None, *, max_length: int) -> str:
-    """Normalize fetched metadata text."""
-    if not value:
-        return ""
-    return sanitize_fetched_text(html.unescape(value), max_length=max_length)
-
-
-def _extract_title(document: str) -> str | None:
-    """Extract title metadata from HTML."""
-    parser = _TitleParser()
-    parser.feed(document)
-    return parser.best_title()
-
-
-def _article_source_fields(
-    data: NewsArticleCreate,
-    source: NewsSource | None,
-) -> dict[str, str | int | None]:
-    """Return article source fields from a selected source or payload."""
-    source_name = source.name if source else data.source_name
-    source_feed_url = (
-        source.feed_url
-        if source
-        else (str(data.source_feed_url) if data.source_feed_url else None)
-    )
-    if not source_name or not source_feed_url:
-        raise ValidationError("News source is required")
-    return {
-        "source_id": source.id if source else data.source_id,
-        "source_name": source_name,
-        "source_feed_url": source_feed_url,
-    }
-
-
-def _article_payload_from_create(
-    data: NewsArticleCreate,
-    slug: str,
-    source: NewsSource | None,
-) -> dict[str, Any]:
-    """Build a document payload from create data."""
-    published_at = utc_now() if data.status == "published" else None
-    source_fields = _article_source_fields(data, source)
-    return {
-        "slug": slug,
-        "status": data.status,
-        **source_fields,
-        "source_url": str(data.source_url),
-        "source_published_at": data.source_published_at,
-        "original_title": data.original_title,
-        "title": data.title,
-        "summary": data.summary,
-        "bullets": _dumps_json_list(data.bullets or []),
-        "tags": _dumps_json_list([str(tag) for tag in data.tags]),
-        "language": data.language,
-        "published_at": published_at,
-        "ai_model": data.ai_model,
-        "ai_input_hash": data.ai_input_hash,
-        "ingest_error": data.ingest_error,
-    }
-
-
-def _apply_article_updates(
-    article: NewsArticle,
-    data: NewsArticleUpdate,
-    source: NewsSource | None,
-) -> NewsArticle:
-    """Apply update payload to an article document."""
-    updates = data.model_dump(exclude_unset=True)
-    if source is not None:
-        updates["source_id"] = source.id
-        updates["source_name"] = source.name
-        updates["source_feed_url"] = source.feed_url
-    for field in ("bullets", "tags"):
-        if field in updates and updates[field] is not None:
-            updates[field] = _dumps_json_list(updates[field])
-    for field in ("source_url", "source_feed_url"):
-        if field in updates and updates[field] is not None:
-            updates[field] = str(updates[field])
-    if updates.get("slug"):
-        updates["slug"] = _slugify(str(updates["slug"]))
-    if updates.get("status") == "published" and article.published_at is None:
-        updates["published_at"] = utc_now()
-    merged = article.model_dump()
-    merged.update(updates)
-    return NewsArticle.model_validate(merged)
-
-
-def _source_payload_from_create(data: NewsSourceCreate) -> dict[str, Any]:
-    """Build a source document payload from create data."""
-    feed_url = str(data.feed_url)
-    _require_public_feed_url(feed_url)
-    host = data.host or _normalized_host(feed_url)
-    return {
-        "name": data.name,
-        "feed_url": feed_url,
-        "host": host,
-        "category": data.category,
-        "region": data.region,
-        "enabled": data.enabled,
-    }
 
 
 class NewsService:
@@ -360,19 +134,19 @@ class NewsService:
         actor_id: int | None = None,
     ) -> NewsSource:
         """Return an existing source for the URL host or create one."""
-        _require_public_feed_url(source_url)
-        host = _normalized_host(source_url)
+        NewsHtmlMeta.require_public_feed_url(source_url)
+        host = NewsHtmlMeta.normalized_host(source_url)
         existing = await self._sources().get_by_host(host)
         if existing is not None:
             return existing
-        feed_url = source_feed_url or _homepage_url(source_url)
+        feed_url = source_feed_url or NewsHtmlMeta.homepage_url(source_url)
         existing = await self._sources().get_by_feed_url(feed_url)
         if existing is not None:
             if existing.host is None:
                 return await self._sources().update_fields(existing.id, host=host)
             return existing
         data = NewsSourceCreate(
-            name=source_name or _source_name_from_host(host),
+            name=source_name or NewsHtmlMeta.source_name_from_host(host),
             feed_url=feed_url,
             host=host,
             category="world",
@@ -388,8 +162,8 @@ class NewsService:
         actor_id: int | None = None,
     ) -> NewsArticleMetadataResponse:
         """Fetch article metadata and ensure a matching source exists."""
-        normalized_url = _canonical_url(source_url)
-        _require_public_feed_url(normalized_url)
+        normalized_url = NewsHtmlMeta.canonical_url(source_url)
+        NewsHtmlMeta.require_public_feed_url(normalized_url)
         try:
             async with httpx.AsyncClient(timeout=_METADATA_TIMEOUT_SECONDS) as client:
                 result = await get_public_http_url(
@@ -400,8 +174,8 @@ class NewsService:
             response = result.response
             try:
                 response.raise_for_status()
-                final_url = _canonical_url(result.url)
-                _require_public_feed_url(final_url)
+                final_url = NewsHtmlMeta.canonical_url(result.url)
+                NewsHtmlMeta.require_public_feed_url(final_url)
                 content = response.content[:_METADATA_MAX_BYTES]
                 encoding = response.encoding or "utf-8"
             finally:
@@ -409,9 +183,11 @@ class NewsService:
         except (httpx.HTTPError, ValueError) as exc:
             raise ValidationError("Could not load article URL") from exc
         document = content.decode(encoding, errors="replace")
-        host = _normalized_host(final_url)
+        host = NewsHtmlMeta.normalized_host(final_url)
         source = await self._get_or_create_source_for_url(final_url, actor_id=actor_id)
-        title = _extract_title(document) or _source_name_from_host(host)
+        title = NewsHtmlMeta.extract_title(
+            document
+        ) or NewsHtmlMeta.source_name_from_host(host)
         return NewsArticleMetadataResponse(
             source_url=final_url,
             title=title,
@@ -587,7 +363,7 @@ class NewsService:
         feed_url = str(data.feed_url)
         if await self._sources().get_by_feed_url(feed_url):
             raise ConflictError("A news source with this feed URL already exists")
-        host = data.host or _normalized_host(feed_url)
+        host = data.host or NewsHtmlMeta.normalized_host(feed_url)
         if await self._sources().get_by_host(host):
             raise ConflictError("A news source for this host already exists")
         source = await self._sources().insert(
@@ -614,12 +390,12 @@ class NewsService:
         updates = data.model_dump(exclude_unset=True)
         if data.feed_url is not None:
             feed_url = str(data.feed_url)
-            _require_public_feed_url(feed_url)
+            NewsHtmlMeta.require_public_feed_url(feed_url)
             existing = await self._sources().get_by_feed_url(feed_url)
             if existing is not None and existing.id != source_id:
                 raise ConflictError("A news source with this feed URL already exists")
             updates["feed_url"] = feed_url
-            updates.setdefault("host", _normalized_host(feed_url))
+            updates.setdefault("host", NewsHtmlMeta.normalized_host(feed_url))
         if updates.get("host") is not None:
             host = str(updates["host"])
             existing = await self._sources().get_by_host(host)

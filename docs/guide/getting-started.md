@@ -49,6 +49,10 @@ make reindex-search
 
 Set `AI_SEARCH_ENABLED`, `GROQ_API_KEY`, and `VITE_AI_SEARCH_ENABLED` in `.env`. Full variable reference: [Configuration](/reference/configuration).
 
+## Local quality gate
+
+With the lite stack running, `make check` is the local backend+frontend gate (Compose `exec` for server steps). Details: [Development → Quality checks](/guide/development#quality-checks).
+
 ## Next steps
 
 - [Development modes](/guide/development) — all `make dev-*` targets

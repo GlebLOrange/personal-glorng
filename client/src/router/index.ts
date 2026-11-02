@@ -351,7 +351,11 @@ const routes: RouteRecordRaw[] = [
     path: "/privacy",
     name: "privacy",
     component: () => import("@/pages/PrivacyPage.vue"),
-    meta: { title: "Privacy policy" },
+    meta: {
+      title: "Privacy policy",
+      description:
+        "How Gleb.Y handles account data, cookies, analytics, and contact submissions on this portfolio site.",
+    },
   },
   {
     path: "/:pathMatch(.*)*",

@@ -25,79 +25,20 @@ jobs:
     outputs:
       backend: ${{ steps.select.outputs.backend }}
       frontend: ${{ steps.select.outputs.frontend }}
-      outside: ${{ steps.select.outputs.outside }}
+      outside: ${{ steps.outside.outputs.outside || steps.select.outputs.outside }}
     steps:
       - uses: actions/checkout@v7
       - name: Communities drift guard
         run: bash scripts/check_communities_drift.sh
+      - name: Verify generated CI path filters
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/generate_ci_path_filters.py --check
       - uses: dorny/paths-filter@v4
         id: filter
         if: github.event_name == 'pull_request'
         with:
-          # ponytail: outside negations duplicate the gate + skip lists.
-          # Upgrade path: generate the three filters from one path manifest.
-          filters: |
-            backend:
-              - 'server/**'
-              - 'shared/**'
-              - 'rabbitmq/**'
-              - 'deploy/**'
-              - 'scripts/**'
-              - 'nginx/**'
-              - 'Makefile'
-              - 'docker-compose*.yml'
-              - '.github/workflows/**'
-              - '.env.example'
-              - '.env.production.example'
-              - '.dockerignore'
-              - '.pre-commit-config.yaml'
-            frontend:
-              - 'client/**'
-              - 'shared/**'
-              - 'nginx/**'
-              - 'docker-compose*.yml'
-              - '.github/workflows/**'
-            outside:
-              - '**'
-              - '*'
-              - '.*'
-              - '**/.*'
-              - '**/.*/**'
-              - '!server/**'
-              - '!shared/**'
-              - '!rabbitmq/**'
-              - '!deploy/**'
-              - '!scripts/**'
-              - '!nginx/**'
-              - '!Makefile'
-              - '!docker-compose*.yml'
-              - '!.github/workflows/**'
-              - '!.env.example'
-              - '!.env.production.example'
-              - '!.dockerignore'
-              - '!.pre-commit-config.yaml'
-              - '!client/**'
-              - '!docs/**'
-              - '!**/*.md'
-              - '!**/*.mdc'
-              - '!.github/ISSUE_TEMPLATE/**'
-              - '!.github/FUNDING.yml'
-              - '!.github/copilot-instructions.md'
-              - '!.github/social-preview.png'
-              - '!.github/dependabot.yml'
-              - '!.cursor/**'
-              - '!.agents/**'
-              - '!.devcontainer/**'
-              - '!.vscode/**'
-              - '!postman/**'
-              - '!.editorconfig'
-              - '!.nvmrc'
-              - '!.gitignore'
-              - '!.ignore'
-              - '!.rgignore'
-              - '!.cursorignore'
-              - '!.gitleaks.toml'
-              - '!LICENSE'
+          # Filters generated from .github/ci-path-manifest.yml
+          filters: .github/generated/ci-path-filters.yml
       - name: Select jobs
         id: select
         run: |
@@ -109,7 +50,25 @@ jobs:
           fi
           echo "backend=${{ steps.filter.outputs.backend }}" >> "$GITHUB_OUTPUT"
           echo "frontend=${{ steps.filter.outputs.frontend }}" >> "$GITHUB_OUTPUT"
-          echo "outside=${{ steps.filter.outputs.outside }}" >> "$GITHUB_OUTPUT"
+
+      - name: Guard unclassified PR paths
+        id: outside
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          outside=false
+          # shellcheck source=.github/generated/ci-path-outside.sh
+          source .github/generated/ci-path-outside.sh
+          while IFS= read -r path; do
+            if ci_path_is_allowed "$path"; then
+              continue
+            fi
+            echo "::error file=$path::Changed path is outside the CI gate and skip allowlist."
+            outside=true
+          done < <(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename')
+          echo "outside=$outside" >> "$GITHUB_OUTPUT"
 
   backend:
     needs: changes
