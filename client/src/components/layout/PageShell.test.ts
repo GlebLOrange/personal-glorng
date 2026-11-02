@@ -2,6 +2,7 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import PageShell from "@/components/layout/PageShell.vue";
+import { usePageBackTo } from "@/composables/usePageBackTo";
 
 const stubs = {
   PageChrome: {
