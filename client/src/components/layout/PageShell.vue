@@ -13,6 +13,7 @@ const props = withDefaults(
     title: string;
     breadcrumbs: BreadcrumbSegment[];
     backTo?: RouteLocationRaw;
+    /** @deprecated Ignored: shell width is fixed sitewide. */
     maxWidth?: "sm" | "md" | "5xl";
     /**
      * Body width inside the shell: full (stretch), content (2-of-3 tiles),
@@ -51,16 +52,10 @@ const resolvedBodyWidth = computed<PageBodyWidth>(() => {
   return "full";
 });
 
-const shellClass = computed(() => {
-  // Default shell fits three 420px tiles + 1rem gaps + px-6 padding.
-  const widthClass =
-    props.maxWidth === "sm"
-      ? "max-w-sm"
-      : props.maxWidth === "md"
-        ? "max-w-3xl"
-        : "max-w-[calc(3*420px+2*1rem+3rem)]";
-  return ["page-shell", widthClass, props.paddingY].filter(Boolean);
-});
+// Sitewide shell: three 420px tiles + 1rem gaps + px-6 padding; min-width 768px lives in .page-shell.
+const shellClass = computed(() =>
+  ["page-shell", "max-w-[calc(3*420px+2*1rem+3rem)]", props.paddingY].filter(Boolean),
+);
 
 const bodyClass = computed(() => [
   "page-body",
