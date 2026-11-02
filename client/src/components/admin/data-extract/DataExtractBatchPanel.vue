@@ -45,6 +45,21 @@ const emit = defineEmits<{
           refresh
         </BaseButton>
       </div>
+      <AdminListFooter
+        v-if="batchHistory.length > 0"
+        class="!mt-0 mb-4"
+        :total="batchTotal"
+        :page="batchPage"
+        :total-pages="batchTotalPages"
+        :has-next-page="hasNextBatchPage"
+        :has-previous-page="hasPreviousBatchPage"
+        item-label="batches"
+        aria-label="import batches pagination"
+        @first="emit('first')"
+        @prev="emit('prev')"
+        @next="emit('next')"
+        @last="emit('last')"
+      />
       <ul class="space-y-2">
         <li v-for="batch in batchHistory" :key="batch.id">
           <button
@@ -62,20 +77,6 @@ const emit = defineEmits<{
           </button>
         </li>
       </ul>
-      <AdminListFooter
-        v-if="batchHistory.length > 0"
-        :total="batchTotal"
-        :page="batchPage"
-        :total-pages="batchTotalPages"
-        :has-next-page="hasNextBatchPage"
-        :has-previous-page="hasPreviousBatchPage"
-        item-label="batches"
-        aria-label="import batches pagination"
-        @first="emit('first')"
-        @prev="emit('prev')"
-        @next="emit('next')"
-        @last="emit('last')"
-      />
     </Card>
 
     <Card v-if="importResult" class="mb-6 space-y-3">

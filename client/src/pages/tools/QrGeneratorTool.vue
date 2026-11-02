@@ -369,6 +369,22 @@ onMounted(() => {
           {{ guestLimitLabel }}
         </p>
         <AdminListSkeleton v-if="listLoading && items.length === 0" />
+        <AdminListFooter
+          v-if="items.length > 0"
+          class="!mt-0 mb-4"
+          :total="total"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="listLoading"
+          item-label="QR codes"
+          aria-label="your QR codes pagination"
+          @first="goToPage(1)"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+          @last="goToPage(totalPages)"
+        />
         <p
           v-else-if="!listLoading && items.length === 0"
           class="py-2 text-sm lowercase text-surface-mid"
@@ -397,21 +413,6 @@ onMounted(() => {
             />
           </AdminDataTable>
         </div>
-        <AdminListFooter
-          v-if="items.length > 0"
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="listLoading"
-          item-label="QR codes"
-          aria-label="your QR codes pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
       </section>
     </div>
   </PageShell>

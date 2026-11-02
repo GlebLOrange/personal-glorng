@@ -29,9 +29,9 @@ const emit = defineEmits<{
     tabindex="0"
     class="outline-none"
   >
-    <TaskIntakeList :intakes="intakes" :loading="loading" />
     <AdminListFooter
       v-if="!loading"
+      class="!mt-0 mb-4"
       :total="total"
       :page="page"
       :total-pages="totalPages"
@@ -45,5 +45,6 @@ const emit = defineEmits<{
       @next="emit('nextPage')"
       @last="emit('lastPage')"
     />
+    <TaskIntakeList :intakes="intakes" :loading="loading" />
   </section>
 </template>

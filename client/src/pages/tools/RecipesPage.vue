@@ -201,6 +201,21 @@ function editRecipeFromCard(recipe: Recipe): void {
         </AdminDataTable>
       </div>
 
+      <AdminListFooter
+        v-if="!listLoading && !listError && (recipes.length > 0 || page > 1)"
+        class="!mt-0 mb-4"
+        :count-label="recipeCountLabel"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="page > 1"
+        aria-label="recipes pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
       <EmptyState
         v-else
         :description="
@@ -226,20 +241,6 @@ function editRecipeFromCard(recipe: Recipe): void {
         </template>
       </EmptyState>
 
-      <AdminListFooter
-        v-if="!listLoading && !listError && (recipes.length > 0 || page > 1)"
-        :count-label="recipeCountLabel"
-        :total="total"
-        :page="page"
-        :total-pages="totalPages"
-        :has-next-page="hasNextPage"
-        :has-previous-page="page > 1"
-        aria-label="recipes pagination"
-        @first="goToPage(1)"
-        @prev="goToPage(page - 1)"
-        @next="goToPage(page + 1)"
-        @last="goToPage(totalPages)"
-      />
     </RecipeFilters>
 
     <RecipeFormDrawer

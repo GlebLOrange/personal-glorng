@@ -198,14 +198,9 @@ onMounted(loadFiles);
             </tr>
           </AdminDataTable>
 
-          <EmptyState
-            v-else
-            title="no shared files"
-            description="upload a file above to get a shareable link"
-          />
-
           <AdminListFooter
             v-if="files.length > 0"
+            class="!mt-0 mb-4"
             :total="total"
             :page="page"
             :total-pages="totalPages"
@@ -219,6 +214,12 @@ onMounted(loadFiles);
             @next="goToPage(page + 1)"
             @last="goToPage(totalPages)"
           />
+          <EmptyState
+            v-else
+            title="no shared files"
+            description="upload a file above to get a shareable link"
+          />
+
         </template>
       </div>
     </template>

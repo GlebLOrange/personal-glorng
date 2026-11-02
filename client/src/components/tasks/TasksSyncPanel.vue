@@ -49,14 +49,9 @@ const emit = defineEmits<{
         Sync now
       </BaseButton>
     </div>
-    <TaskSyncQueue
-      :items="items"
-      :loading="loading"
-      :can-mutate="canMutate"
-      @retry="emit('retry', $event)"
-    />
     <AdminListFooter
       v-if="!loading"
+      class="!mt-0 mb-4"
       :total="total"
       :page="page"
       :total-pages="totalPages"
@@ -69,6 +64,12 @@ const emit = defineEmits<{
       @prev="emit('prevPage')"
       @next="emit('nextPage')"
       @last="emit('lastPage')"
+    />
+    <TaskSyncQueue
+      :items="items"
+      :loading="loading"
+      :can-mutate="canMutate"
+      @retry="emit('retry', $event)"
     />
   </section>
 </template>
