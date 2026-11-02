@@ -13,7 +13,7 @@ from pathlib import Path
 
 session = os.environ.get("PORTFOLIO_CTX_SESSION") or "unknown"
 safe = re.sub(r"[^A-Za-z0-9._-]+", "_", session)[:120] or "unknown"
-path = Path(os.environ.get("TMPDIR") or "/tmp") / "portfolio-glorng-ctx" / f"{safe}.state"
+path = Path(os.environ.get("TMPDIR") or "/tmp") / "personal-glorng-ctx" / f"{safe}.state"
 path.parent.mkdir(parents=True, exist_ok=True)
 
 state = {"edited": True, "prompted": False}

@@ -30,21 +30,21 @@ mkdir -p "$(dirname "$LOG_FILE")"
 
 existing="$(crontab -l 2>/dev/null || true)"
 filtered="$(printf '%s\n' "$existing" | awk '
-  /portfolio-glorng-db-maintenance-begin/ { skip=1; next }
-  /portfolio-glorng-db-maintenance-end/ { skip=0; next }
+  /(personal|portfolio)-glorng-db-maintenance-begin/ { skip=1; next }
+  /(personal|portfolio)-glorng-db-maintenance-end/ { skip=0; next }
   skip { next }
   { print }
 ')"
 
 {
   printf '%s\n' "$filtered" | sed '/^$/d'
-  printf '%s\n' "# portfolio-glorng-db-maintenance-begin"
+  printf '%s\n' "# personal-glorng-db-maintenance-begin"
   printf '%s\n' "CRON_TZ=${BACKUP_TIMEZONE}"
   printf '%s\n' "PATH=${CRON_PATH}"
   printf '%s\n' "HOME=${CRON_HOME}"
   printf '%s\n' "${CRON_SCHEDULE} cd ${root} && ${MAINTENANCE_SCRIPT} >> ${LOG_FILE} 2>&1"
   printf '%s\n' "${STALE_CRON_SCHEDULE} cd ${root} && ${MAINTENANCE_SCRIPT} --check-stale >> ${LOG_FILE} 2>&1"
-  printf '%s\n' "# portfolio-glorng-db-maintenance-end"
+  printf '%s\n' "# personal-glorng-db-maintenance-end"
 } | crontab -
 
 cat <<EOF
@@ -57,7 +57,7 @@ Installed daily DB maintenance cron jobs.
   PATH     : ${CRON_PATH}
   HOME     : ${CRON_HOME}
 
-Verify with: crontab -l | grep portfolio-glorng
+Verify with: crontab -l | grep personal-glorng
 Confirm docker is visible to cron: which docker (under the PATH above).
 
 macOS launchd alternative (save as ~/Library/LaunchAgents/com.glorng.db-maintenance.plist):
