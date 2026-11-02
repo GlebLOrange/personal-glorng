@@ -241,8 +241,6 @@ html[data-theme="light"] {
   }
 }
 
-}
-
 @utility page-body {
   @apply flex w-full flex-col;
   min-width: 1024px;
