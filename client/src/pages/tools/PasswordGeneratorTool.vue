@@ -46,6 +46,12 @@ const hasCustomOptions = computed(
     excludeAmbiguous.value,
 );
 
+/** Reserve trigger width for the longest possible active label. */
+const OPTIONS_SIZING_LABELS = [
+  "uppercase · lowercase · numbers · symbols · exclude ambiguous",
+  "none",
+];
+
 const optionsActiveLabel = computed(() => {
   if (!hasCustomOptions.value) return undefined;
   const parts: string[] = [];
@@ -136,6 +142,7 @@ onMounted(() => {
             :match-trigger-width="false"
             :has-active-filters="hasCustomOptions"
             :active-label="optionsActiveLabel"
+            :option-labels="OPTIONS_SIZING_LABELS"
             @clear="resetState"
           >
             <template #chips>
