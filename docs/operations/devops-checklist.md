@@ -24,7 +24,7 @@ Inspection snapshot of edge, CI, backups, logging, and observability for this re
 Re-enable the ruleset (GitHub → **Settings → Rules → main-protection → Enforce**), or:
 
 ```bash
-gh api --method PUT repos/GlebLOrange/personal-glorng/rulesets/16927789 \
+gh api --method PUT repos/GlebLOrange/portfolio-glorng/rulesets/16927789 \
   -f enforcement=active
 # Prefer a full PUT that preserves rules; see GitHub ruleset UI if unsure.
 ```

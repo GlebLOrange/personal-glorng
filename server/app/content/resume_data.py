@@ -192,7 +192,7 @@ _RESUME_RAW: dict[str, Any] = {
             ),
             "tech": ["Python", "httpx", "asyncio", "DNS"],
             "url": (
-                "https://github.com/GlebLOrange/personal-glorng/blob/main/"
+                "https://github.com/GlebLOrange/portfolio-glorng/blob/main/"
                 "server/app/core/url_safety.py"
             ),
         },

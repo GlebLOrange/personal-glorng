@@ -76,7 +76,7 @@ Approach: Resolve public DNS off the event loop, connect to that IP with Host + 
 
 Result: Fail-closed public fetch with unit coverage for SNI, relative redirects, and off-loop DNS — used by outbound tool paths.
 
-Code: https://github.com/GlebLOrange/personal-glorng/blob/main/server/app/core/url_safety.py
+Code: https://github.com/GlebLOrange/portfolio-glorng/blob/main/server/app/core/url_safety.py
 
 ## EDUCATION
 
