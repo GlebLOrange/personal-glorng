@@ -186,9 +186,37 @@ jobs:
           E2E_BASE_URL: http://127.0.0.1:4173
         run: npx playwright test e2e/built-shell.spec.ts
 
+  docker-build:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build production backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          target: production
+          push: false
+          cache-from: type=gha,scope=server-production
+          cache-to: type=gha,scope=server-production,mode=max
+      - name: Build production frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./client
+          file: ./client/Dockerfile.prod
+          push: false
+          build-args: |
+            VITE_PUBLIC_ORIGIN=https://ci.example.test
+          cache-from: type=gha,scope=client-production
+          cache-to: type=gha,scope=client-production,mode=max
+
   ci-ok:
     if: always()
-    needs: [changes, backend, frontend]
+    needs: [changes, backend, frontend, docker-build]
     runs-on: ubuntu-latest
     steps:
       - name: Verify selected jobs
@@ -196,9 +224,11 @@ jobs:
           CHANGES: ${{ needs.changes.result }}
           BACKEND: ${{ needs.changes.outputs.backend }}
           FRONTEND: ${{ needs.changes.outputs.frontend }}
+          DOCKER_SELECTED: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' }}
           OUTSIDE: ${{ needs.changes.outputs.outside }}
           BACKEND_RESULT: ${{ needs.backend.result }}
           FRONTEND_RESULT: ${{ needs.frontend.result }}
+          DOCKER_RESULT: ${{ needs.docker-build.result }}
         run: |
           if [ "$CHANGES" != "success" ]; then
             echo "changes: $CHANGES"
@@ -218,6 +248,7 @@ jobs:
           }
           check backend "$BACKEND" "$BACKEND_RESULT"
           check frontend "$FRONTEND" "$FRONTEND_RESULT"
+          check docker-build "$DOCKER_SELECTED" "$DOCKER_RESULT"
           if [ "$OUTSIDE" != "false" ]; then
             echo "outside: changed paths are outside the PR gate and the skip allowlist ($OUTSIDE)"
             fail=1
