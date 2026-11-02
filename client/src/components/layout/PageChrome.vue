@@ -47,11 +47,7 @@ const displaySegments = computed((): BreadcrumbSegment[] => {
         !-right-6 reaches the shell outer edge (chrome is content-width; nav CB includes px-6).
         top-1/2 centers on this row with the breadcrumbs.
       -->
-      <BackLink
-        v-if="backTo"
-        :to="backTo"
-        class="shell-outside-end !-right-6 top-1/2 -translate-y-1/2"
-      />
+      <BackLink v-if="backTo" :to="backTo" class="back-rail-end top-1/2 -translate-y-1/2" />
     </div>
 
     <!-- Wrapper owns absolute pins; FieldHelp root is relative for its tip. -->

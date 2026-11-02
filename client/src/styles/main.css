@@ -238,6 +238,16 @@ html[data-theme="light"] {
   }
 }
 
+/** Back in PageChrome: same right rail as scroll-rail-end (chrome is content-width inside page-shell). */
+@utility back-rail-end {
+  @apply absolute z-10;
+  /* Below 1180px: match fixed scroll controls (viewport edge - 0.5rem); content edge is shell edge - 3.5rem lane. */
+  right: calc(-3rem - max(0px, (100vw - 1024px) / 2));
+  @media (width >= 1180px) {
+    @apply -right-6 translate-x-[calc(100%+15px)] mr-[env(safe-area-inset-right)];
+  }
+}
+
 @utility page-body {
   @apply w-full;
   min-width: 1024px;
