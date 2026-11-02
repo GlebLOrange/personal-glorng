@@ -136,55 +136,55 @@ onMounted(() => {
     <div class="page-tool-actions">
       <form class="flex w-full min-w-0 flex-col gap-2" @submit.prevent="generatePassword">
         <div class="flex w-full min-w-0 flex-wrap items-end justify-between gap-2">
-          <AdminFilterDropdown
-            label="options"
-            anchor="local"
-            :match-trigger-width="false"
-            :has-active-filters="hasCustomOptions"
-            :active-label="optionsActiveLabel"
-            :option-labels="OPTIONS_SIZING_LABELS"
-            @clear="resetState"
-          >
-            <template #chips>
-              <AdminFilterChip
-                label="uppercase"
-                title="uppercase (A-Z)"
-                :active="uppercase"
-                :color-class="familyBadgeClass('1xx')"
-                @click="uppercase = !uppercase"
-              />
-              <AdminFilterChip
-                label="lowercase"
-                title="lowercase (a-z)"
-                :active="lowercase"
-                :color-class="familyBadgeClass('1xx')"
-                @click="lowercase = !lowercase"
-              />
-              <AdminFilterChip
-                label="numbers"
-                title="numbers (0-9)"
-                :active="digits"
-                :color-class="familyBadgeClass('1xx')"
-                @click="digits = !digits"
-              />
-              <AdminFilterChip
-                label="symbols"
-                title="symbols (!@#$…)"
-                :active="symbols"
-                :color-class="familyBadgeClass('1xx')"
-                @click="symbols = !symbols"
-              />
-              <AdminFilterChip
-                label="exclude ambiguous"
-                title="exclude ambiguous (0, O, 1, l, I)"
-                :active="excludeAmbiguous"
-                :color-class="familyBadgeClass('3xx')"
-                @click="excludeAmbiguous = !excludeAmbiguous"
-              />
-            </template>
-          </AdminFilterDropdown>
+          <div class="flex min-w-0 flex-wrap items-end gap-2">
+            <AdminFilterDropdown
+              label="options"
+              anchor="local"
+              :match-trigger-width="false"
+              :has-active-filters="hasCustomOptions"
+              :active-label="optionsActiveLabel"
+              :option-labels="OPTIONS_SIZING_LABELS"
+              @clear="resetState"
+            >
+              <template #chips>
+                <AdminFilterChip
+                  label="uppercase"
+                  title="uppercase (A-Z)"
+                  :active="uppercase"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="uppercase = !uppercase"
+                />
+                <AdminFilterChip
+                  label="lowercase"
+                  title="lowercase (a-z)"
+                  :active="lowercase"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="lowercase = !lowercase"
+                />
+                <AdminFilterChip
+                  label="numbers"
+                  title="numbers (0-9)"
+                  :active="digits"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="digits = !digits"
+                />
+                <AdminFilterChip
+                  label="symbols"
+                  title="symbols (!@#$…)"
+                  :active="symbols"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="symbols = !symbols"
+                />
+                <AdminFilterChip
+                  label="exclude ambiguous"
+                  title="exclude ambiguous (0, O, 1, l, I)"
+                  :active="excludeAmbiguous"
+                  :color-class="familyBadgeClass('3xx')"
+                  @click="excludeAmbiguous = !excludeAmbiguous"
+                />
+              </template>
+            </AdminFilterDropdown>
 
-          <div class="ml-auto flex shrink-0 flex-nowrap items-end justify-end gap-2">
             <BaseInput
               v-model.number="length"
               type="number"
@@ -205,24 +205,22 @@ onMounted(() => {
             >
               <RefreshIcon class-name="size-3.5" />
             </IconActionButton>
-
-            <BaseButton
-              variant="primary"
-              type="submit"
-              :icon="false"
-              class="shrink-0"
-              :disabled="loading || !hasCharset"
-            >
-              <span class="inline-grid justify-items-center">
-                <span class="invisible col-start-1 row-start-1" aria-hidden="true"
-                  >generating…</span
-                >
-                <span class="col-start-1 row-start-1">
-                  {{ loading ? "generating…" : "generate" }}
-                </span>
-              </span>
-            </BaseButton>
           </div>
+
+          <BaseButton
+            variant="primary"
+            type="submit"
+            :icon="false"
+            class="shrink-0"
+            :disabled="loading || !hasCharset"
+          >
+            <span class="inline-grid justify-items-center">
+              <span class="invisible col-start-1 row-start-1" aria-hidden="true">generating…</span>
+              <span class="col-start-1 row-start-1">
+                {{ loading ? "generating…" : "generate" }}
+              </span>
+            </span>
+          </BaseButton>
         </div>
 
         <div class="w-full min-w-0 space-y-1">
