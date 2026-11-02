@@ -47,7 +47,7 @@ const props = withDefaults(
   }>(),
   {
     label: "filters",
-    showFilterIcon: false,
+    showFilterIcon: true,
     showClear: true,
     bare: false,
     matchTriggerWidth: true,
@@ -230,6 +230,7 @@ defineExpose({ close });
     <ToolbarPillButton
       ref="trigger"
       action="create"
+      :icon="false"
       :class="[
         TOOLBAR_POPOVER_MAX_WIDTH_CLASS,
         '!justify-between',
