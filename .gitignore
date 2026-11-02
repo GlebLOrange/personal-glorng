@@ -1,46 +1,65 @@
-# Environment & secrets
+# === OS & Editor Junk ===
+.DS_Store
+Thumbs.db
+.AppleDouble
+.Trashes
+ehthumbs.db
+._*
+.vscode/
+!.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+
+# === Environment & Secrets ===
 .env
+.env.local
+.env.*.local
 .env.production
 .env.staging
-*.env.local
 /env
 /deploy/cloudflare/*.pem
 /deploy/cloudflare/*.key
+*.pem
+*.key
 
-# Python
-__pycache__/
-*.db
-*.py[cod]
-*.egg-info/
+# === Python & Backend (server/) ===
+server/.venv/
+server/venv/
 .venv/
-.mypy_cache/
-.ruff_cache/
+__pycache__/
+*.py[cod]
+*.db
 .pytest_cache/
-htmlcov/
+.ruff_cache/
+.mypy_cache/
 .coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
 
-# Node (lockfile lives in client/ only)
+# === Node & Frontend (client/) ===
 /package-lock.json
 node_modules/
+client/node_modules/
+client/dist/
 client/.vite/
+client/vue-typecheck/
 client/playwright-report/
 client/test-results/
 coverage/
 .eslintcache
-dist/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 docs/.vitepress/.temp/
+client/tsconfig.tsbuildinfo
 *.tsbuildinfo
+client/npm-debug.log*
 
-# IDE & AI Tools
-.vscode/
-!.vscode/tasks.json
-.idea/
+# === IDE, AI Tools & Gortex ===
 .gortex/
-*.swp
-*.swo
-*.cursorrules
+.cursorrules
 *howitworks.md
 
 # Cursor (local-only; rules and hooks under .cursor/ are tracked)
@@ -48,46 +67,37 @@ docs/.vitepress/.temp/
 .cursor/settings.json
 .cursor/worktrees.json
 .cursor/setup-worktree-unix.sh
+.cursor/workspace-context/sessions/
 latestcommit.mdc
 
-# Ephemeral agent review dumps (screenshots, Lighthouse JSON)
+# Ephemeral agent review dumps
 .cursor-review-artifacts/
 .review-artifacts/
 
-# Celery beat (dev/runtime schedule db)
+# Celery & Background Jobs
 celerybeat-schedule*
 
-# Docker
+# Docker & Logs
 .docker-cache/
-*.log
 docker-compose.override.yml
 docker-compose.*.override.yml
 backups/
-logs/backup.log
+logs/
+*.log
 
 # Media uploads
 media/
 
-# OS
-.DS_Store
-._*
-.AppleDouble
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Local git worktrees (created under repo root)
+# Local git worktrees
 .worktrees/
 
-# Gortex Mermaid dumps (post-commit hook); see docs/architecture/README.md
+# Gortex Mermaid dumps
 docs/architecture/*.mermaid
 
-
-# npx skills lockfile stays local-only
+# Skills lockfile
 skills-lock.json
 
 # Shared agent activation for Cursor / Antigravity / Claude (tracked).
-# Ignore other local mirrors under .agents/ and .claude/ (e.g. npx skills dumps).
 .agents/*
 !.agents/skills
 !.agents/agents/
@@ -106,7 +116,3 @@ skills-lock.json
 !.claude/commands/
 !.claude/commands/**
 !.claude/settings.json
-
-
-# Workspace context archives (template + index.yaml are tracked)
-.cursor/workspace-context/sessions/
