@@ -102,6 +102,22 @@ const {
       </AdminListToolbar>
     </div>
 
+    <AdminListFooter
+      v-if="!listLoading && !listError"
+      class="!mt-0 mb-4"
+      :total="total"
+      :page="page"
+      :total-pages="totalPages"
+      :has-next-page="hasNextPage"
+      :has-previous-page="hasPreviousPage"
+      :loading="listLoading"
+      item-label="articles"
+      aria-label="news pagination"
+      @first="goToPage(1)"
+      @prev="goToPage(page - 1)"
+      @next="goToPage(page + 1)"
+      @last="goToPage(totalPages)"
+    />
     <section
       v-if="listLoading"
       class="w-full min-w-0 space-y-3 self-stretch"
@@ -129,21 +145,6 @@ const {
       :description="emptyFilterDescription"
     />
 
-    <AdminListFooter
-      v-if="!listLoading && !listError"
-      :total="total"
-      :page="page"
-      :total-pages="totalPages"
-      :has-next-page="hasNextPage"
-      :has-previous-page="hasPreviousPage"
-      :loading="listLoading"
-      item-label="articles"
-      aria-label="news pagination"
-      @first="goToPage(1)"
-      @prev="goToPage(page - 1)"
-      @next="goToPage(page + 1)"
-      @last="goToPage(totalPages)"
-    />
 
     <NewsArticleDrawer
       v-if="canWrite"

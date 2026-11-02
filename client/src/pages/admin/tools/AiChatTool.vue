@@ -9,7 +9,6 @@ import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
-import { ACTION_PILL_BASE } from "@/constants/httpStatusColors";
 import { useAiChat } from "@/composables/useAiChat";
 
 const AI_CHAT_TABS = [
@@ -142,18 +141,14 @@ const {
         <section class="min-w-0 space-y-2">
           <div class="flex min-w-0 items-center justify-between gap-3">
             <h2 class="text-sm font-semibold lowercase text-surface-light">current setup</h2>
-            <button
-              type="button"
-              :class="[
-                ACTION_PILL_BASE,
-                'min-h-11 gap-1.5 shrink-0 border-transparent bg-accent-coral/3 text-accent-coral hover:enabled:border-accent-coral/40 hover:enabled:bg-accent-coral/15',
-              ]"
+            <ToolbarPillButton
+              class="w-auto shrink-0 gap-1.5"
               :disabled="configLoading"
               @click="loadConfig"
             >
               <RefreshIcon class-name="size-3.5 shrink-0" />
               refresh
-            </button>
+            </ToolbarPillButton>
           </div>
           <p v-if="configLoading" class="text-sm lowercase text-surface-mid">loading…</p>
           <dl v-else-if="chatConfig" class="grid min-w-0 gap-1.5 text-sm">

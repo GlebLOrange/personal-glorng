@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+function setTop(el: HTMLElement, top: number): void {
+  el.getBoundingClientRect = () => ({ top }) as DOMRect;
+}
+
 import {
   findNextSection,
   getSectionTargets,
@@ -7,7 +11,7 @@ import {
 } from "@/composables/useNextSectionScroll";
 
 describe("getSectionTargets", () => {
-  it("returns section[id] elements under main sorted by offsetTop", () => {
+  it("returns section[id] elements under main sorted by document top", () => {
     document.body.innerHTML = `
       <main id="main-content">
         <section id="b"></section>
@@ -20,8 +24,8 @@ describe("getSectionTargets", () => {
     const sectionA = main?.querySelector<HTMLElement>("#a");
     const sectionB = main?.querySelector<HTMLElement>("#b");
     if (!sectionA || !sectionB) throw new Error("fixture sections missing");
-    Object.defineProperty(sectionA, "offsetTop", { value: 100, configurable: true });
-    Object.defineProperty(sectionB, "offsetTop", { value: 200, configurable: true });
+    setTop(sectionA, 100);
+    setTop(sectionB, 200);
 
     const sections = getSectionTargets(document);
     expect(sections.map((el) => el.id)).toEqual(["a", "b"]);
@@ -31,12 +35,13 @@ describe("getSectionTargets", () => {
 describe("findNextSection", () => {
   it("picks the first section below scrollY + offset", () => {
     const first = document.createElement("section");
-    Object.defineProperty(first, "offsetTop", { value: 100, configurable: true });
+    setTop(first, 100);
     const second = document.createElement("section");
-    Object.defineProperty(second, "offsetTop", { value: 500, configurable: true });
+    setTop(second, 500);
 
-    expect(findNextSection([first, second], 50)?.offsetTop).toBe(100);
-    expect(findNextSection([first, second], 200)?.offsetTop).toBe(500);
+    expect(findNextSection([first, second], 50)).toBe(first);
+    expect(findNextSection([first, second], 200)).toBe(second);
+    expect(findNextSection([first, second], 90)).toBe(first);
     expect(findNextSection([first, second], 900)).toBeNull();
   });
 });

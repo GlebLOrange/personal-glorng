@@ -230,6 +230,7 @@ defineExpose({ close });
     <ToolbarPillButton
       ref="trigger"
       action="create"
+      :icon="false"
       :class="[
         TOOLBAR_POPOVER_MAX_WIDTH_CLASS,
         '!justify-between',

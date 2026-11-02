@@ -142,8 +142,9 @@ async def list_sync_queue(
     user: AuthorizedUser,  # noqa: ARG001
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
+    sort: Annotated[str | None, Query(pattern=r"^(queued_desc|queued_asc)$")] = None,
 ) -> SyncQueueListResponse:
-    return await svc.list_sync_queue(page=page, per_page=per_page)
+    return await svc.list_sync_queue(page=page, per_page=per_page, sort=sort)
 
 
 @router.post(

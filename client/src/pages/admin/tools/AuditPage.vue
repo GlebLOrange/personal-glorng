@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdminSortableTh from "@/components/admin/AdminSortableTh.vue";
 import { computed, onMounted, ref, useTemplateRef } from "vue";
 
 import AdminDataRow from "@/components/admin/AdminDataRow.vue";
@@ -9,12 +10,10 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import PageShell from "@/components/layout/PageShell.vue";
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import {
-  ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
   ADMIN_TD_TITLE_CLASS,
@@ -45,8 +44,8 @@ interface AuditEvent {
 
 type PeriodFilter = "yesterday" | "today" | "7d" | "all";
 
-const DEFAULT_CATEGORY = "security";
-const DEFAULT_PERIOD: PeriodFilter = "yesterday";
+const DEFAULT_CATEGORY = "";
+const DEFAULT_PERIOD: PeriodFilter = "all";
 
 type WhenSort = "when_desc" | "when_asc";
 
@@ -59,7 +58,6 @@ const period = ref<PeriodFilter>(DEFAULT_PERIOD);
 const sort = ref<WhenSort>("when_desc");
 
 const whenAriaSort = computed(() => (sort.value === "when_asc" ? "ascending" : "descending"));
-const whenIndicator = computed(() => (sort.value === "when_asc" ? " ↑" : " ↓"));
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -99,7 +97,10 @@ const activeFilterLabel = computed(() => {
   const categoryLabel = CATEGORY_FILTERS.find((chip) => chip.value === category.value)?.label;
   return [categoryLabel, periodLabel.value].filter(Boolean).join(" · ");
 });
-const emptyDescription = computed(() => `no ${category.value} audit events ${periodLabel.value}`);
+const emptyDescription = computed(
+  () =>
+    `no ${category.value ? `${category.value} ` : ""}audit events${period.value === "all" ? "" : ` ${periodLabel.value}`}`,
+);
 
 useScrollListFingerprint(
   () =>
@@ -226,6 +227,22 @@ onMounted(load);
         </AdminListToolbar>
       </div>
 
+      <AdminListFooter
+        v-if="!listError"
+        class="!mt-0 mb-4"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="loading"
+        item-label="events"
+        aria-label="audit pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
       <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
@@ -233,20 +250,10 @@ onMounted(load);
       <div v-else class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="audit log events">
           <template #header>
-            <th :class="ADMIN_TH_CLASS">type</th>
-            <th :class="ADMIN_TH_CLASS">who</th>
-            <th :class="ADMIN_TH_CLASS" :aria-sort="whenAriaSort">
-              <button
-                type="button"
-                :class="ADMIN_SORT_HEADER_BUTTON_CLASS"
-                aria-label="sort by when"
-                @click="toggleWhenSort"
-              >
-                <ChevronIcon class-name="size-3 shrink-0" />
-                when{{ whenIndicator }}
-              </button>
-            </th>
-            <th :class="ADMIN_TH_CLASS">title</th>
+            <AdminSortableTh label="when" :direction="whenAriaSort" @sort="toggleWhenSort" />
+            <th :class="ADMIN_TH_CLASS" scope="col">type</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">who</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">title</th>
             <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">expand</th>
           </template>
 
@@ -259,6 +266,7 @@ onMounted(load);
             :col-span="5"
             @click="toggleExpanded(event.id)"
           >
+            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(event.occurred_at) }}</td>
             <td :class="ADMIN_TD_CLASS">
               <StatusBadge
                 :label="event.category"
@@ -268,7 +276,6 @@ onMounted(load);
             <td :class="ADMIN_TD_MUTED_CLASS" :title="actorLabel(event)">
               {{ actorLabel(event) }}
             </td>
-            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(event.occurred_at) }}</td>
             <td :class="ADMIN_TD_TITLE_CLASS">
               <p class="truncate text-sm text-surface-light" :title="event.action">
                 {{ event.action }}
@@ -308,21 +315,6 @@ onMounted(load);
         </AdminDataTable>
       </div>
 
-      <AdminListFooter
-        v-if="!listError"
-        :total="total"
-        :page="page"
-        :total-pages="totalPages"
-        :has-next-page="hasNextPage"
-        :has-previous-page="hasPreviousPage"
-        :loading="loading"
-        item-label="events"
-        aria-label="audit pagination"
-        @first="goToPage(1)"
-        @prev="goToPage(page - 1)"
-        @next="goToPage(page + 1)"
-        @last="goToPage(totalPages)"
-      />
     </template>
   </PageShell>
 </template>

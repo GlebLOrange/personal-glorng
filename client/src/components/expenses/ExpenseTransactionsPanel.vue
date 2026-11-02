@@ -86,6 +86,7 @@ const emit = defineEmits<{
           placeholder="filter by name"
           aria-label="filter by name"
           :min-length="1"
+          collapsible
         />
       </div>
 
@@ -95,6 +96,22 @@ const emit = defineEmits<{
 
       <ErrorState v-if="listError" :message="listError" show-retry @retry="emit('retryList')" />
 
+      <AdminListFooter
+        v-if="expenses.length > 0"
+        class="!mt-0 mb-4"
+        :total="expenseTotal"
+        :page="expensePage"
+        :total-pages="expensePages"
+        :has-next-page="hasNextExpensePage"
+        :has-previous-page="hasPreviousExpensePage"
+        :loading="listLoading"
+        item-label="expenses"
+        aria-label="expenses pagination"
+        @first="emit('firstPage')"
+        @prev="emit('prevPage')"
+        @next="emit('nextPage')"
+        @last="emit('lastPage')"
+      />
       <ExpenseList
         :expenses="expenses"
         :loading="listLoading"
@@ -113,21 +130,6 @@ const emit = defineEmits<{
         @smart-text="emit('smartText')"
       />
 
-      <AdminListFooter
-        v-if="expenses.length > 0"
-        :total="expenseTotal"
-        :page="expensePage"
-        :total-pages="expensePages"
-        :has-next-page="hasNextExpensePage"
-        :has-previous-page="hasPreviousExpensePage"
-        :loading="listLoading"
-        item-label="expenses"
-        aria-label="expenses pagination"
-        @first="emit('firstPage')"
-        @prev="emit('prevPage')"
-        @next="emit('nextPage')"
-        @last="emit('lastPage')"
-      />
     </Card>
   </section>
 </template>

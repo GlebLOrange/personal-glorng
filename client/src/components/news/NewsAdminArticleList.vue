@@ -40,6 +40,12 @@ const emit = defineEmits<{
       @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
       <div class="mb-2 flex min-w-0 flex-wrap items-center gap-2 text-xs">
+        <time
+          class="text-datetime shrink-0 whitespace-nowrap lowercase"
+          :datetime="item.published_at ?? item.created_at"
+        >
+          {{ formatNewsDate(item.published_at ?? item.created_at) }}
+        </time>
         <a
           v-if="safeNavigationHref(item.source_url)"
           :href="safeNavigationHref(item.source_url) ?? '#'"
@@ -51,12 +57,6 @@ const emit = defineEmits<{
           {{ item.source_name }}
         </a>
         <span v-else class="shrink-0 text-accent-coral">{{ item.source_name }}</span>
-        <time
-          class="text-datetime shrink-0 whitespace-nowrap lowercase"
-          :datetime="item.published_at ?? item.created_at"
-        >
-          {{ formatNewsDate(item.published_at ?? item.created_at) }}
-        </time>
         <StatusBadge
           :label="newsStatusLabel(item.status)"
           :class-name="newsStatusClass(item.status)"

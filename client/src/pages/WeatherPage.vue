@@ -51,7 +51,7 @@ function handleSelect(query: string): void {
     <p v-if="guestLimitMessage" class="mb-4 w-full self-stretch text-xs text-surface-mid">
       Pinned cities stay in this browser.
     </p>
-    <section class="page-tool-actions">
+    <section class="page-tool-actions w-full self-stretch">
       <WeatherLocationForm
         :add-location="handleAdd"
         :disabled="!canAddLocation"

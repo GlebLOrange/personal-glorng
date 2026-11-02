@@ -9,7 +9,6 @@ defineProps<{
   loading: boolean;
   filterStatus: string;
   whenAriaSort: "ascending" | "descending" | "none";
-  whenIndicator: string;
   total: number;
   page: number;
   totalPages: number;
@@ -37,17 +36,9 @@ const emit = defineEmits<{
     tabindex="0"
     class="outline-none"
   >
-    <TaskList
-      :tasks="tasks"
-      :loading="loading"
-      :filter-status="filterStatus"
-      :when-aria-sort="whenAriaSort"
-      :when-indicator="whenIndicator"
-      @select="emit('select', $event)"
-      @sort-when="emit('sortWhen')"
-    />
     <AdminListFooter
       v-if="!loading"
+      class="mb-4"
       :total="total"
       :page="page"
       :total-pages="totalPages"
@@ -87,5 +78,13 @@ const emit = defineEmits<{
         </div>
       </template>
     </AdminListFooter>
+    <TaskList
+      :tasks="tasks"
+      :loading="loading"
+      :filter-status="filterStatus"
+      :when-aria-sort="whenAriaSort"
+      @select="emit('select', $event)"
+      @sort-when="emit('sortWhen')"
+    />
   </section>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdminSortableTh from "@/components/admin/AdminSortableTh.vue";
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useRouter } from "vue-router";
 
@@ -10,7 +11,6 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import {
-  ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
   ADMIN_TD_TITLE_CLASS,
@@ -19,7 +19,6 @@ import {
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import ArchiveIcon from "@/components/icons/ArchiveIcon.vue";
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
@@ -41,13 +40,13 @@ interface FeedbackItem {
   created_at: string;
 }
 
-type StatusFilter = "unread" | "read" | "archived";
+type StatusFilter = "" | "unread" | "read" | "archived";
 type CreatedSort = "created_asc" | "created_desc";
 
-const DEFAULT_STATUS_FILTER: StatusFilter = "unread";
+const DEFAULT_STATUS_FILTER: StatusFilter = "";
 const DEFAULT_SORT: CreatedSort = "created_desc";
 
-const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
+const STATUS_FILTERS: { label: string; value: Exclude<StatusFilter, ""> }[] = [
   { label: "unread", value: "unread" },
   { label: "read", value: "read" },
   { label: "archived", value: "archived" },
@@ -106,7 +105,7 @@ async function load(): Promise<void> {
         params: {
           page: page.value,
           per_page: ADMIN_LIST_PAGE_SIZE,
-          status: filter.value,
+          status: filter.value || undefined,
           sort: sort.value,
         },
       });
@@ -130,10 +129,6 @@ function setFilter(next: StatusFilter): void {
 function toggleCreatedSort(): void {
   sort.value = sort.value === "created_desc" ? "created_asc" : "created_desc";
   page.value = 1;
-}
-
-function sortIndicator(): string {
-  return sort.value === "created_asc" ? " ↑" : " ↓";
 }
 
 function sortAriaSort(): "ascending" | "descending" {
@@ -248,6 +243,20 @@ onMounted(load);
         </AdminListToolbar>
       </div>
 
+      <AdminListFooter
+        class="!mt-0 mb-4"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="page < totalPages"
+        :has-previous-page="page > 1"
+        item-label="messages"
+        aria-label="feedback pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
       <EmptyState
         v-if="items.length === 0"
         class="mt-4"
@@ -257,20 +266,10 @@ onMounted(load);
       <div v-else class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="feedback messages">
           <template #header>
-            <th :class="ADMIN_TH_CLASS">status</th>
-            <th :class="ADMIN_TH_CLASS">who</th>
-            <th :class="ADMIN_TH_CLASS" :aria-sort="sortAriaSort()">
-              <button
-                type="button"
-                :class="ADMIN_SORT_HEADER_BUTTON_CLASS"
-                aria-label="sort by when"
-                @click="toggleCreatedSort"
-              >
-                <ChevronIcon class-name="size-3 shrink-0" />
-                when{{ sortIndicator() }}
-              </button>
-            </th>
-            <th :class="ADMIN_TH_CLASS">title</th>
+            <AdminSortableTh label="when" :direction="sortAriaSort()" @sort="toggleCreatedSort" />
+            <th :class="ADMIN_TH_CLASS" scope="col">status</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">who</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">title</th>
             <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
           </template>
 
@@ -283,6 +282,7 @@ onMounted(load);
             :expanded="drawerOpen && selectedItem?.id === item.id"
             @click="openItem(item)"
           >
+            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(item.created_at) }}</td>
             <td :class="ADMIN_TD_CLASS">
               <button
                 type="button"
@@ -296,7 +296,6 @@ onMounted(load);
               </button>
             </td>
             <td :class="ADMIN_TD_MUTED_CLASS" :title="item.email">{{ item.email }}</td>
-            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(item.created_at) }}</td>
             <td :class="ADMIN_TD_TITLE_CLASS">
               <p class="truncate text-sm lowercase text-surface-light" :title="item.theme">
                 {{ item.theme }}
@@ -331,19 +330,6 @@ onMounted(load);
         </AdminDataTable>
       </div>
 
-      <AdminListFooter
-        :total="total"
-        :page="page"
-        :total-pages="totalPages"
-        :has-next-page="page < totalPages"
-        :has-previous-page="page > 1"
-        item-label="messages"
-        aria-label="feedback pagination"
-        @first="goToPage(1)"
-        @prev="goToPage(page - 1)"
-        @next="goToPage(page + 1)"
-        @last="goToPage(totalPages)"
-      />
     </template>
 
     <FeedbackDetailDrawer

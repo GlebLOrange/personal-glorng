@@ -45,8 +45,8 @@ async function retrySession(): Promise<void> {
         />
       </div>
       <RouterView />
-      <ScrollControls />
     </main>
+    <ScrollControls />
     <FooterBar />
     <ToastContainer variant="overlay" />
   </div>

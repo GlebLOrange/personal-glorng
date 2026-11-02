@@ -220,16 +220,8 @@ onUnmounted(() => {
         v-model:status-filter="statusFilter"
       />
 
-      <EmptyState v-if="users.length === 0"> No users match the current filters. </EmptyState>
-
-      <AdminUsersGrid
-        v-else
-        :users="users"
-        :draft-permissions="draftPermissions"
-        @select="openUserDrawer"
-      />
-
       <AdminListFooter
+        class="!mt-0 mb-4"
         :total="total"
         :page="page"
         :total-pages="totalPages"
@@ -244,6 +236,15 @@ onUnmounted(() => {
         @next="goToPage(page + 1)"
         @last="goToPage(totalPages)"
       />
+      <EmptyState v-if="users.length === 0"> No users match the current filters. </EmptyState>
+
+      <AdminUsersGrid
+        v-else
+        :users="users"
+        :draft-permissions="draftPermissions"
+        @select="openUserDrawer"
+      />
+
     </template>
 
     <AdminUsersPermissionsDrawer

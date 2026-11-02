@@ -75,7 +75,7 @@ const {
     body-width="column"
   >
     <div class="page-tool-actions">
-      <div class="flex min-w-0 flex-wrap items-center gap-2">
+      <div class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
         <AdminFilterDropdown
           ref="filterDropdown"
           :has-active-filters="hasActiveFilters"
@@ -125,6 +125,21 @@ const {
       />
 
       <template v-else>
+        <AdminListFooter
+          class="!mt-0 mb-4"
+          :total="total"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="loading"
+          item-label="sources"
+          aria-label="news sources pagination"
+          @first="goToPage(1)"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+          @last="goToPage(totalPages)"
+        />
         <EmptyState v-if="sources.length === 0" :description="emptyFilterDescription" />
 
         <div v-else class="mt-1 min-w-0">
@@ -200,20 +215,6 @@ const {
           </AdminDataTable>
         </div>
 
-        <AdminListFooter
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="loading"
-          item-label="sources"
-          aria-label="news sources pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
       </template>
     </div>
 

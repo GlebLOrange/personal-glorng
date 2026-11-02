@@ -342,10 +342,12 @@ class TaskRepository(MongoRepository[Task]):
         *,
         offset: int = 0,
         limit: int = 20,
+        ascending: bool = False,
     ) -> list[GoogleSyncQueue]:
+        direction = 1 if ascending else -1
         cursor = (
             self.db.google_sync_queue.find()
-            .sort("created_at", -1)
+            .sort([("created_at", direction), ("_id", direction)])
             .skip(offset)
             .limit(limit)
         )

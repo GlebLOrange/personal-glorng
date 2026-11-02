@@ -135,7 +135,7 @@ onMounted(loadFiles);
       This tool is turned off on this server.
     </p>
     <template v-if="!toolDisabled">
-      <div class="page-tool-actions mb-10">
+      <div class="page-tool-actions page-tool-actions-stack mb-10">
         <div class="flex items-center justify-center gap-2">
           <ToolbarPillButton
             action="save"
@@ -198,14 +198,9 @@ onMounted(loadFiles);
             </tr>
           </AdminDataTable>
 
-          <EmptyState
-            v-else
-            title="no shared files"
-            description="upload a file above to get a shareable link"
-          />
-
           <AdminListFooter
             v-if="files.length > 0"
+            class="!mt-0 mb-4"
             :total="total"
             :page="page"
             :total-pages="totalPages"
@@ -219,6 +214,12 @@ onMounted(loadFiles);
             @next="goToPage(page + 1)"
             @last="goToPage(totalPages)"
           />
+          <EmptyState
+            v-else
+            title="no shared files"
+            description="upload a file above to get a shareable link"
+          />
+
         </template>
       </div>
     </template>

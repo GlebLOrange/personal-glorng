@@ -4,6 +4,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import { urlSlugTitle } from "@/utils/urlSlugTitle";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import PageShell from "@/components/layout/PageShell.vue";
@@ -23,7 +24,6 @@ import {
   GUEST_URL_SHORTENER_KEY,
   guestUrlLimitMessage,
   sanitizeGuestShortUrls,
-  updateGuestShortUrlTitle,
 } from "@/utils/guestUrlShortener";
 import { ensureHttpsUrl } from "@/utils/safeUrl";
 import { publicUrl } from "@/utils/publicLinks";
@@ -33,9 +33,7 @@ const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
 const newUrl = ref("");
-const newCode = ref("");
 const formError = ref("");
-const savingId = ref<number | null>(null);
 const deletingId = ref<number | null>(null);
 const { copy } = useClipboard();
 const { can } = usePermissions();
@@ -46,7 +44,6 @@ const isLocalMode = computed(() => !canManage.value);
 const canWrite = computed(() => isLocalMode.value || canWriteServer.value);
 const { loading: listLoading, run: runList } = useApiAction();
 const { loading, lastError, run: runCreate } = useApiAction();
-const { run: runUpdate } = useApiAction();
 const { run: runDelete } = useApiAction();
 
 const guestStored = useLocalStorage<unknown>(GUEST_URL_SHORTENER_KEY, []);
@@ -153,14 +150,13 @@ async function createUrl(): Promise<void> {
   }
 
   if (isLocalMode.value) {
-    const result = createGuestShortUrl(guestUrls.value, trimmed, null, newCode.value || null);
+    const result = createGuestShortUrl(guestUrls.value, trimmed, urlSlugTitle(trimmed), null);
     if (!result.ok) {
       formError.value = result.error;
       return;
     }
     guestUrls.value = result.next;
     newUrl.value = "";
-    newCode.value = "";
     formError.value = "";
     page.value = 1;
     syncLocalPage();
@@ -171,14 +167,12 @@ async function createUrl(): Promise<void> {
     () =>
       api.post("/tools/url-shortener", {
         original_url: ensureHttpsUrl(trimmed),
-        title: null,
-        code: newCode.value.trim() || null,
+        title: urlSlugTitle(trimmed),
       }),
     { successMessage: "URL created", errorFallback: "Failed to create URL" },
   );
   if (result) {
     newUrl.value = "";
-    newCode.value = "";
     formError.value = "";
     if (canManage.value) {
       page.value = 1;
@@ -188,28 +182,6 @@ async function createUrl(): Promise<void> {
   }
   // Keep a durable inline error — toast alone is easy to miss after submit.
   formError.value = lastError.value ?? "Failed to create URL";
-}
-
-async function updateUrl(id: number, title: string | null): Promise<void> {
-  if (isLocalMode.value) {
-    savingId.value = id;
-    guestUrls.value = updateGuestShortUrlTitle(guestUrls.value, id, title);
-    savingId.value = null;
-    syncLocalPage();
-    return;
-  }
-  savingId.value = id;
-  const result = await runUpdate(
-    () => api.patch<UrlItem>(`/tools/url-shortener/${id}`, { title }),
-    { successMessage: "Title updated", errorFallback: "Failed to update title" },
-  );
-  savingId.value = null;
-  if (result) {
-    const index = urls.value.findIndex((url) => url.id === id);
-    if (index !== -1) {
-      urls.value[index] = result.data;
-    }
-  }
 }
 
 async function deleteUrl(id: number): Promise<void> {
@@ -257,23 +229,15 @@ onMounted(() => {
   >
     <div class="page-tool-actions">
       <form
-        class="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-start"
+        class="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
         @submit.prevent="createUrl"
       >
-        <BaseInput
-          v-model="newCode"
-          class="w-full min-w-0 sm:max-w-[12rem] sm:flex-none"
-          compact
-          label="short link"
-          tip="optional · auto"
-          @update:model-value="formError = ''"
-        />
         <BaseInput
           v-model="newUrl"
           class="min-w-0 flex-1"
           compact
-          label="original url"
-          tip="example.com or https://…"
+          label="link to shorten"
+          tip="paste a link, e.g. https://example.com/page"
           :tone="urlTone"
           :error="urlError"
           @update:model-value="formError = ''"
@@ -281,7 +245,7 @@ onMounted(() => {
         <ToolbarPillButton
           action="create"
           type="submit"
-          class="w-full shrink-0 sm:mt-0 sm:w-auto"
+          class="w-full shrink-0 sm:w-auto"
           :disabled="!canShorten"
         >
           {{ loading ? "creating…" : "shorten" }}
@@ -301,33 +265,9 @@ onMounted(() => {
       <AdminListSkeleton v-if="listLoading && !isLocalMode" label="loading shortened URLs" />
 
       <template v-else>
-        <div v-if="urls.length > 0" class="min-w-0">
-          <AdminDataTable table-label="shortened URLs">
-            <template #header>
-              <th :class="ADMIN_TH_CLASS" scope="col">title</th>
-              <th :class="ADMIN_TH_CLASS" scope="col">short link</th>
-              <th :class="ADMIN_TH_CLASS" scope="col">original URL</th>
-              <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
-            </template>
-            <UrlShortenerListItem
-              v-for="url in urls"
-              :key="url.id"
-              :url="url"
-              :can-write="canWrite"
-              :local-row="isLocalMode"
-              :saving="savingId === url.id"
-              :deleting="deletingId === url.id"
-              @copy="onCopy(url)"
-              @save="updateUrl(url.id, $event)"
-              @delete="deleteUrl(url.id)"
-            />
-          </AdminDataTable>
-        </div>
-
-        <EmptyState v-else>no shortened URLs yet. create one above.</EmptyState>
-
         <AdminListFooter
           v-if="urls.length > 0"
+          class="!mt-0 mb-4"
           :total="total"
           :page="page"
           :total-pages="totalPages"
@@ -341,6 +281,27 @@ onMounted(() => {
           @next="goToPage(page + 1)"
           @last="goToPage(totalPages)"
         />
+        <div v-if="urls.length > 0" class="min-w-0">
+          <AdminDataTable table-label="shortened URLs">
+            <template #header>
+              <th :class="ADMIN_TH_CLASS" scope="col">original URL</th>
+              <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
+            </template>
+            <UrlShortenerListItem
+              v-for="url in urls"
+              :key="url.id"
+              :url="url"
+              :can-write="canWrite"
+              :local-row="isLocalMode"
+              :deleting="deletingId === url.id"
+              @copy="onCopy(url)"
+              @delete="deleteUrl(url.id)"
+            />
+          </AdminDataTable>
+        </div>
+
+        <EmptyState v-else>no shortened URLs yet. create one above.</EmptyState>
+
       </template>
     </div>
   </PageShell>

@@ -57,18 +57,25 @@ class NewsRepository(MongoRepository[NewsArticle]):
             date_from=date_from,
             date_to=date_to,
         )
-        cursor = (
-            self._col()
-            .find(query)
-            .sort(
-                [
-                    ("source_published_at", -1),
-                    ("published_at", -1),
-                    ("created_at", -1),
-                ]
-            )
-            .skip(offset)
-            .limit(limit)
+        cursor = self._col().aggregate(
+            [
+                {"$match": query},
+                {
+                    "$addFields": {
+                        "_effective_date": {
+                            "$ifNull": [
+                                "$source_published_at",
+                                "$published_at",
+                                "$created_at",
+                            ]
+                        }
+                    }
+                },
+                {"$sort": {"_effective_date": -1, "_id": -1}},
+                {"$skip": offset},
+                {"$limit": limit},
+                {"$project": {"_effective_date": 0}},
+            ]
         )
         return [_parse_doc(NewsArticle, row) async for row in cursor]
 

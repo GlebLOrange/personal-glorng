@@ -125,10 +125,10 @@ async function handleGoHome(): Promise<void> {
             <SiteLogo class-name="h-9 w-auto" />
           </RouterLink>
 
-          <div class="hidden md:flex items-center gap-1 text-base shrink-0">
+          <div class="hidden md:flex nav-menu items-center text-base shrink-0">
             <RouterLink
               to="/"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg font-medium"
+              class="nav-link-accent nav-item font-medium"
               :class="{ 'text-accent-coral': navSection === 'portfolio' }"
               :aria-current="navSection === 'portfolio' ? 'page' : undefined"
               @click.prevent="handleGoHome"
@@ -140,7 +140,7 @@ async function handleGoHome(): Promise<void> {
 
             <RouterLink
               to="/news"
-              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
+              class="nav-link-quiet nav-item"
               :class="{ 'text-accent-coral': navSection === 'news' }"
               :aria-current="navSection === 'news' ? 'page' : undefined"
             >
@@ -149,7 +149,7 @@ async function handleGoHome(): Promise<void> {
 
             <RouterLink
               to="/tools"
-              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
+              class="nav-link-quiet nav-item"
               :class="{ 'text-accent-coral': navSection === 'tools' }"
               :aria-current="navSection === 'tools' ? 'page' : undefined"
             >
@@ -159,7 +159,7 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               v-if="auth.isAuthenticated"
               to="/settings"
-              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
+              class="nav-link-quiet nav-item"
               :class="{ 'text-accent-coral': navSection === 'settings' }"
               :aria-current="navSection === 'settings' ? 'page' : undefined"
             >
@@ -169,7 +169,7 @@ async function handleGoHome(): Promise<void> {
             <button
               v-if="auth.isAuthenticated"
               type="button"
-              class="nav-link-quiet text-status-error inline-flex min-h-11 items-center gap-1.5 px-2.5 py-2 rounded-lg"
+              class="nav-link-quiet text-status-error nav-item"
               @click="handleLogout"
             >
               <CloseIcon class-name="size-3.5 shrink-0" />

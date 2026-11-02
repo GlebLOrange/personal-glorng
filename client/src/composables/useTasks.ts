@@ -37,14 +37,15 @@ export function useTasks() {
   const intakes = ref<TaskIntakeItem[]>([]);
   const selectedTask = ref<TaskDetail | null>(null);
   const stats = ref<TaskStats | null>(null);
-  const DEFAULT_FILTER_STATUS = "pending";
+  const DEFAULT_FILTER_STATUS = "";
   const filterStatus = ref(DEFAULT_FILTER_STATUS);
   const searchQuery = ref("");
-  /** Null until When header is used; then when_desc | when_asc. */
-  const sort = ref<"when_desc" | "when_asc" | null>(null);
+  /** Defaults to newest first; When header toggles. */
+  const sort = ref<"when_desc" | "when_asc" | null>("when_desc");
   const page = ref(1);
   const intakePage = ref(1);
   const syncPage = ref(1);
+  const syncSort = ref<"queued_desc" | "queued_asc">("queued_desc");
   const totalPages = ref(0);
   const intakeTotalPages = ref(0);
   const syncTotalPages = ref(0);
@@ -71,7 +72,7 @@ export function useTasks() {
   const { loading: statusUpdating, run: runStatusUpdate } = useApiAction();
   const { loading: rescheduling, run: runReschedule } = useApiAction();
   const { loading: pingingBot, run: runPingBot } = useApiAction();
-  const { run: runRetry } = useApiAction();
+  const { loading: syncProcessing, run: runRetry } = useApiAction();
   const { run: runStats } = useApiAction();
   const { toast } = useNotify();
 
@@ -157,7 +158,7 @@ export function useTasks() {
     const data = await runSync(
       async () => {
         const response = await api.get<PaginatedList<SyncQueueItem>>("/tools/tasks/sync-queue", {
-          params: { page: syncPage.value, per_page: ADMIN_LIST_PAGE_SIZE },
+          params: { page: syncPage.value, per_page: ADMIN_LIST_PAGE_SIZE, sort: syncSort.value },
         });
         return response.data;
       },
@@ -361,17 +362,24 @@ export function useTasks() {
     return "none" as const;
   });
 
-  const whenIndicator = computed(() => {
-    if (sort.value === "when_asc") return " ↑";
-    if (sort.value === "when_desc") return " ↓";
-    return "";
-  });
-
   function goToIntakePage(nextPage: number): void {
     if (nextPage < 1) return;
     if (intakeTotalPages.value > 0 && nextPage > intakeTotalPages.value) return;
     intakePage.value = nextPage;
   }
+
+  function toggleSyncSort(): void {
+    syncSort.value = syncSort.value === "queued_desc" ? "queued_asc" : "queued_desc";
+    if (syncPage.value !== 1) {
+      syncPage.value = 1;
+      return;
+    }
+    void loadSyncQueue();
+  }
+
+  const syncAriaSort = computed(() =>
+    syncSort.value === "queued_asc" ? ("ascending" as const) : ("descending" as const),
+  );
 
   function goToSyncPage(nextPage: number): void {
     if (nextPage < 1) return;
@@ -415,6 +423,9 @@ export function useTasks() {
     calendarTasks,
     calendarTruncated,
     syncQueue,
+    syncProcessing,
+    syncAriaSort,
+    toggleSyncSort,
     intakes,
     selectedTask,
     stats,
@@ -422,7 +433,6 @@ export function useTasks() {
     searchQuery,
     sort,
     whenAriaSort,
-    whenIndicator,
     page,
     intakePage,
     syncPage,

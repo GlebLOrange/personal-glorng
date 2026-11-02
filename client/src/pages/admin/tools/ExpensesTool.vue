@@ -269,13 +269,13 @@ function focusAddFromInsights(): void {
           <div class="flex flex-col gap-3">
             <form
               v-if="canWriteExpenses"
-              class="flex min-w-0 flex-wrap items-end justify-start gap-2"
+              class="flex min-w-0 flex-wrap items-end justify-between gap-2"
               @submit.prevent="addCategory"
             >
               <BaseInput
                 v-model="newCategoryName"
-                label="title"
-                tip="category name"
+                label="name"
+                tip="new category for expenses; rename or delete below"
                 class="min-w-0"
                 auto-width
               />

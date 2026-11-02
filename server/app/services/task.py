@@ -404,9 +404,14 @@ class TaskService:
         *,
         page: int = 1,
         per_page: int = DEFAULT_PER_PAGE,
+        sort: str | None = None,
     ) -> SyncQueueListResponse:
         offset, limit = paginate_params(page, per_page)
-        items_raw = await self._tasks().list_sync_queue(offset=offset, limit=limit)
+        items_raw = await self._tasks().list_sync_queue(
+            offset=offset,
+            limit=limit,
+            ascending=sort == "queued_asc",
+        )
         total = await self._tasks().count_sync_queue()
         titles = await self._tasks().titles_by_ids(
             list({entry.task_id for entry in items_raw}),

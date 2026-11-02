@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
@@ -180,25 +181,40 @@ function editRecipeFromCard(recipe: Recipe): void {
 
       <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
-      <div v-else-if="recipes.length" class="mt-1 w-full min-w-0 self-stretch">
-        <AdminDataTable table-label="recipes">
-          <template #header>
-            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">thumb</th>
-            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">title</th>
-            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">meta</th>
-            <th class="w-px px-2 text-right text-xs tracking-wider" scope="col">actions</th>
-          </template>
-          <RecipeCard
-            v-for="recipe in recipes"
-            :key="recipe.id"
-            :recipe="recipe"
-            :can-write="canWrite"
-            @select="openRecipeFromCard"
-            @edit="editRecipeFromCard"
-            @delete="requestDelete"
-          />
-        </AdminDataTable>
-      </div>
+      <template v-else-if="recipes.length || page > 1">
+        <AdminListFooter
+          class="!mt-0 mb-1"
+          :count-label="recipeCountLabel"
+          :total="total"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="page > 1"
+          aria-label="recipes pagination"
+          @first="goToPage(1)"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+          @last="goToPage(totalPages)"
+        />
+        <div v-if="recipes.length" class="mt-1 w-full min-w-0 self-stretch">
+          <AdminDataTable table-label="recipes">
+            <template #header>
+              <th :class="ADMIN_TH_CLASS" scope="col">title</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">meta</th>
+              <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
+            </template>
+            <RecipeCard
+              v-for="recipe in recipes"
+              :key="recipe.id"
+              :recipe="recipe"
+              :can-write="canWrite"
+              @select="openRecipeFromCard"
+              @edit="editRecipeFromCard"
+              @delete="requestDelete"
+            />
+          </AdminDataTable>
+        </div>
+      </template>
 
       <EmptyState
         v-else
@@ -224,21 +240,6 @@ function editRecipeFromCard(recipe: Recipe): void {
           </BaseButton>
         </template>
       </EmptyState>
-
-      <AdminListFooter
-        v-if="!listLoading && !listError && (recipes.length > 0 || page > 1)"
-        :count-label="recipeCountLabel"
-        :total="total"
-        :page="page"
-        :total-pages="totalPages"
-        :has-next-page="hasNextPage"
-        :has-previous-page="page > 1"
-        aria-label="recipes pagination"
-        @first="goToPage(1)"
-        @prev="goToPage(page - 1)"
-        @next="goToPage(page + 1)"
-        @last="goToPage(totalPages)"
-      />
     </RecipeFilters>
 
     <RecipeFormDrawer

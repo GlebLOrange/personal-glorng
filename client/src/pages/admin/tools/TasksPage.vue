@@ -81,13 +81,15 @@ const {
   calendarTasks,
   calendarTruncated,
   syncQueue,
+  syncProcessing,
+  syncAriaSort,
+  toggleSyncSort,
   intakes,
   selectedTask,
   stats,
   filterStatus,
   searchQuery,
   whenAriaSort,
-  whenIndicator,
   page,
   showCreateForm,
   createForm,
@@ -278,7 +280,9 @@ onMounted(() => {
   >
     <div class="w-full min-w-0 self-stretch">
       <div class="page-tool-actions">
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
+        <div
+          class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 md:flex-nowrap"
+        >
           <AdminFilterDropdown
             v-show="activeTab === 'queue'"
             ref="filterDropdown"
@@ -317,9 +321,10 @@ onMounted(() => {
           <SearchInput
             v-if="activeTab === 'queue'"
             v-model="searchQuery"
-            class="min-w-0"
+            class="min-w-0 flex-1"
             auto-width
             placeholder="search tasks"
+            collapsible
           />
 
           <AdminTabBar
@@ -331,9 +336,21 @@ onMounted(() => {
           />
 
           <ToolbarPillButton
+            v-if="isSuperuser && activeTab === 'sync'"
+            family="5xx"
+            class="w-auto shrink-0 gap-1.5"
+            :disabled="syncLoading || syncProcessing"
+            aria-label="process sync queue now"
+            @click="processSyncQueueNow"
+          >
+            <SyncIcon class-name="size-3.5 shrink-0" />
+            sync now
+          </ToolbarPillButton>
+
+          <ToolbarPillButton
             v-if="isSuperuser"
             family="2xx"
-            class="w-auto gap-1.5"
+            class="w-auto shrink-0 gap-1.5"
             :disabled="pingingBot"
             title="Ping Telegram todobot (getMe + DM). Does not prove polling is up."
             @click="pingBot"
@@ -347,7 +364,7 @@ onMounted(() => {
             v-show="activeTab === 'queue' || activeTab === 'calendar'"
             action="create"
             :icon="false"
-            class="w-auto"
+            class="ml-auto w-auto shrink-0"
             :disabled="createDisabled"
             :title="
               activeTab === 'calendar' && selectedDateIsPast
@@ -375,7 +392,6 @@ onMounted(() => {
         :loading="listLoading"
         :filter-status="filterStatus"
         :when-aria-sort="whenAriaSort"
-        :when-indicator="whenIndicator"
         :stats="stats"
         :total="total"
         :page="page"
@@ -425,13 +441,14 @@ onMounted(() => {
         :items="syncQueue"
         :loading="syncLoading"
         :can-mutate="isSuperuser"
+        :queued-aria-sort="syncAriaSort"
         :total="syncTotal"
         :page="syncPage"
         :total-pages="syncTotalPages"
         :has-next-page="hasNextSyncPage"
         :has-previous-page="hasPreviousSyncPage"
         @retry="retrySync"
-        @sync-now="processSyncQueueNow"
+        @sort-queued="toggleSyncSort"
         @first-page="goToSyncPage(1)"
         @prev-page="goToSyncPage(syncPage - 1)"
         @next-page="goToSyncPage(syncPage + 1)"

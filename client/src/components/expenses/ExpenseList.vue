@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import AdminSortableTh from "@/components/admin/AdminSortableTh.vue";
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import ExpenseRow from "@/components/expenses/ExpenseRow.vue";
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
@@ -31,8 +31,6 @@ const emit = defineEmits<{
   smartText: [];
 }>();
 
-const sortButtonClass =
-  "inline-flex h-8 items-center gap-1.5 text-left text-xs tracking-wider transition-colors hover:text-surface-light";
 </script>
 
 <template>
@@ -41,34 +39,10 @@ const sortButtonClass =
   <template v-else>
     <AdminDataTable :table-label="`expenses for ${monthLabel}`">
       <template #header>
-        <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('date')">
-          <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
-            <ChevronIcon class-name="size-3 shrink-0" />
-            date{{ sortIndicator("date") }}
-          </button>
-        </th>
-        <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('category')">
-          <button type="button" :class="sortButtonClass" @click="emit('sort', 'category')">
-            <ChevronIcon class-name="size-3 shrink-0" />
-            category{{ sortIndicator("category") }}
-          </button>
-        </th>
-        <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('product')">
-          <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
-            <ChevronIcon class-name="size-3 shrink-0" />
-            name{{ sortIndicator("product") }}
-          </button>
-        </th>
-        <th :class="[ADMIN_TH_CLASS, 'text-right']" scope="col" :aria-sort="sortAriaSort('amount')">
-          <button
-            type="button"
-            :class="[sortButtonClass, 'w-full justify-end text-right']"
-            @click="emit('sort', 'amount')"
-          >
-            <ChevronIcon class-name="size-3 shrink-0" />
-            amount{{ sortIndicator("amount") }}
-          </button>
-        </th>
+        <AdminSortableTh label="date" :direction="sortAriaSort('date')" @sort="emit('sort', 'date')" />
+        <AdminSortableTh label="category" :direction="sortAriaSort('category')" @sort="emit('sort', 'category')" />
+        <AdminSortableTh label="name" :direction="sortAriaSort('product')" @sort="emit('sort', 'product')" />
+        <AdminSortableTh label="amount" align="right" :direction="sortAriaSort('amount')" @sort="emit('sort', 'amount')" />
         <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
       </template>
 
