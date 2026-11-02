@@ -136,7 +136,6 @@ const showRecipesPager = computed(
     title="recipes"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'recipes' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
     description="Personal recipe list with cook mode."
   >

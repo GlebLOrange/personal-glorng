@@ -113,7 +113,6 @@ onMounted(() => {
     title="password generator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password generator' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <div class="page-tool-actions">

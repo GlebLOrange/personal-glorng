@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import type { RouteLocationRaw } from "vue-router";
+
+import BackLink from "@/components/ui/BackLink.vue";
 
 import FieldHelp from "@/components/ui/FieldHelp.vue";
 import PageBreadcrumbs from "@/components/layout/PageBreadcrumbs.vue";
@@ -43,6 +46,12 @@ usePageChromeHeight(chromeRoot);
         <h1 v-if="!omitHeading" class="sr-only">{{ title }}</h1>
       </div>
 
+      <!-- !-right-6 reaches the shell outer edge; top-1/2 centers on the breadcrumb row. -->
+      <BackLink
+        v-if="backTo"
+        :to="backTo"
+        class="shell-outside-end !-right-6 top-1/2 -translate-y-1/2"
+      />
     </div>
 
     <!-- Wrapper owns absolute pins; FieldHelp root is relative for its tip. -->

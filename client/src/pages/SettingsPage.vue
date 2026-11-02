@@ -156,7 +156,6 @@ async function savePassword(): Promise<void> {
     title="settings"
     :breadcrumbs="[{ label: 'settings', to: '/settings' }]"
     back-to="/"
-    max-width="5xl"
     body-width="column"
   >
     <div class="page-tool-actions page-tool-actions-stack gap-8">

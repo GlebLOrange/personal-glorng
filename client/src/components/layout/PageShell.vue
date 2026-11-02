@@ -14,8 +14,6 @@ const props = withDefaults(
     title: string;
     breadcrumbs: BreadcrumbSegment[];
     backTo?: RouteLocationRaw;
-    /** @deprecated Ignored: shell width is fixed sitewide. */
-    maxWidth?: "sm" | "md" | "5xl";
     /**
      * Body width inside the shell: full (stretch), content (2-of-3 tiles),
      * column (centred tool/settings panel). Prefer this over narrow/tool.
@@ -35,7 +33,6 @@ const props = withDefaults(
   }>(),
   {
     narrow: true,
-    maxWidth: "5xl",
     paddingY: "pb-8 md:pb-10",
     as: "div",
     bodyClass: "",

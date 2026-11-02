@@ -45,7 +45,6 @@ function handleSelect(query: string): void {
     title="weather"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <p v-if="guestLimitMessage" class="mb-4 w-full self-stretch text-xs text-surface-mid">

@@ -121,7 +121,6 @@ onUnmounted(() => {
     title="search"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'search' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <div class="page-tool-actions">

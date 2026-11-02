@@ -6,37 +6,30 @@ import { usePageBackTo } from "@/composables/usePageBackTo";
 
 const stubs = {
   PageChrome: {
-    props: ["description"],
-    template: `<div data-testid="chrome" :data-description="description ?? ''" />`,
+    props: ["description", "backTo"],
+    template: `<div data-testid="chrome" :data-description="description ?? ''" :data-back="backTo ?? ''" />`,
   },
   PinnedToolsRow: { template: '<div data-testid="pinned" />' },
   BackLink: { props: ["to"], template: '<a data-testid="back" :href="to" aria-label="back" />' },
 };
 
 describe("PageShell", () => {
-  it("registers Back on the shared bottom rail and clears it on unmount", () => {
-    const { backTo } = usePageBackTo();
+  it("forwards backTo to PageChrome (Back lives in the chrome row)", () => {
     const wrapper = mount(PageShell, {
       props: { title: "users", breadcrumbs: [{ label: "users" }], backTo: "/admin" },
       global: { stubs },
       slots: { default: "<div>body</div>" },
     });
-
-    expect(backTo.value).toBe("/admin");
-    expect(wrapper.find('[data-testid="back"]').exists()).toBe(false);
-    wrapper.unmount();
-    expect(backTo.value).toBeUndefined();
+    expect(wrapper.get('[data-testid="chrome"]').attributes("data-back")).toBe("/admin");
   });
 
-  it("leaves the rail Back unset when backTo is unset", () => {
-    const { backTo } = usePageBackTo();
-    mount(PageShell, {
+  it("leaves chrome Back unset when backTo is unset", () => {
+    const wrapper = mount(PageShell, {
       props: { title: "tools", breadcrumbs: [{ label: "tools" }] },
       global: { stubs },
       slots: { default: "<div>body</div>" },
     });
-
-    expect(backTo.value).toBeUndefined();
+    expect(wrapper.get('[data-testid="chrome"]').attributes("data-back")).toBe("");
   });
 
   it("forwards description to PageChrome when set", () => {

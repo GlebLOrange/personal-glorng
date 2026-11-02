@@ -8,7 +8,6 @@ import PageShell from "@/components/layout/PageShell.vue";
     title="db maintenance"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'db maintenance' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
     description="run backup, stale check, calendar sync, cleanup, or seed. each finished job emails the operator."
   >

@@ -54,7 +54,6 @@ const {
     title="manage news"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'manage news' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <div v-if="!listLoading && !listError" class="page-tool-actions">
@@ -102,22 +101,6 @@ const {
       </AdminListToolbar>
     </div>
 
-    <AdminListFooter
-      v-if="!listLoading && !listError"
-      class="!mt-0 mb-4"
-      :total="total"
-      :page="page"
-      :total-pages="totalPages"
-      :has-next-page="hasNextPage"
-      :has-previous-page="hasPreviousPage"
-      :loading="listLoading"
-      item-label="articles"
-      aria-label="news pagination"
-      @first="goToPage(1)"
-      @prev="goToPage(page - 1)"
-      @next="goToPage(page + 1)"
-      @last="goToPage(totalPages)"
-    />
     <section
       v-if="listLoading"
       class="w-full min-w-0 space-y-3 self-stretch"
@@ -145,7 +128,6 @@ const {
       :description="emptyFilterDescription"
     />
 
-
     <NewsArticleDrawer
       v-if="canWrite"
       :open="drawerOpen"
@@ -158,5 +140,22 @@ const {
       @delete="deleteDrawerArticle"
       @save="saveDrawer"
     />
+    <template #footer>
+      <AdminListFooter
+        v-if="!listLoading && !listError"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="listLoading"
+        item-label="articles"
+        aria-label="news pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </template>
   </PageShell>
 </template>

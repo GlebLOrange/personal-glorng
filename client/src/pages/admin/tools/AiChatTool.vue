@@ -48,7 +48,6 @@ const {
     title="ai chat"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'ai chat' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="full"
   >
     <div class="page-tool-actions">

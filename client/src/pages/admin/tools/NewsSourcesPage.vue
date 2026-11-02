@@ -71,7 +71,6 @@ const {
     title="manage news sources"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'manage news sources' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <div class="page-tool-actions">
@@ -125,21 +124,6 @@ const {
       />
 
       <template v-else>
-        <AdminListFooter
-          class="!mt-0 mb-4"
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="loading"
-          item-label="sources"
-          aria-label="news sources pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
         <EmptyState v-if="sources.length === 0" :description="emptyFilterDescription" />
 
         <div v-else class="mt-1 min-w-0">
@@ -241,5 +225,22 @@ const {
       @confirm="confirmDeleteSource"
       @cancel="cancelDeleteSource"
     />
+    <template #footer>
+      <AdminListFooter
+        v-if="!loading && !loadError"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="loading"
+        item-label="sources"
+        aria-label="news sources pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </template>
   </PageShell>
 </template>

@@ -9,7 +9,6 @@ import type { BreadcrumbSegment, PageBodyWidth } from "@/components/layout/PageS
 const props = withDefaults(
   defineProps<{
     title: string;
-    maxWidth?: "sm" | "md" | "5xl";
     backTo?: RouteLocationRaw;
     /** Breadcrumb root: admin hub or tools hub. */
     hub?: "admin" | "tools";
@@ -26,7 +25,6 @@ const props = withDefaults(
   {
     backTo: "/tools",
     hub: "tools",
-    maxWidth: "5xl",
     description: undefined,
     tool: undefined,
     bodyWidth: undefined,
@@ -58,7 +56,6 @@ const breadcrumbs = computed((): BreadcrumbSegment[] => {
     :title="title"
     :breadcrumbs="breadcrumbs"
     :back-to="backTo"
-    :max-width="maxWidth"
     :body-width="resolvedBodyWidth"
     :description="description"
     as="div"

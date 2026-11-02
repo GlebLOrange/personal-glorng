@@ -230,7 +230,6 @@ onMounted(load);
     title="app logs"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'app logs' }]"
     back-to="/tools"
-    max-width="5xl"
     body-width="column"
   >
     <AdminListSkeleton
@@ -279,24 +278,6 @@ onMounted(load);
                 @update:model-value="onRequestIdChange"
               />
             </AdminFilterDropdown>
-          </template>
-          <template #actions>
-            <AdminListFooter
-              v-if="!listError"
-              class="!mt-0"
-              :total="total"
-              :page="page"
-              :total-pages="totalPages"
-              :has-next-page="hasNextPage"
-              :has-previous-page="hasPreviousPage"
-              :loading="loading"
-              item-label="entries"
-              aria-label="app logs pagination"
-              @first="goToPage(1)"
-              @prev="goToPage(page - 1)"
-              @next="goToPage(page + 1)"
-              @last="goToPage(totalPages)"
-            />
           </template>
         </AdminListToolbar>
       </div>
@@ -360,6 +341,23 @@ onMounted(load);
           </AdminDataRow>
         </AdminDataTable>
       </div>
+    </template>
+    <template #footer>
+      <AdminListFooter
+        v-if="!listError && !(loading && items.length === 0)"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="loading"
+        item-label="entries"
+        aria-label="app logs pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
     </template>
   </PageShell>
 </template>
