@@ -46,8 +46,8 @@ interface AppLogEntry {
 
 type PeriodFilter = "yesterday" | "today" | "7d" | "all";
 
-const DEFAULT_LEVEL = "error";
-const DEFAULT_PERIOD: PeriodFilter = "yesterday";
+const DEFAULT_LEVEL = "";
+const DEFAULT_PERIOD: PeriodFilter = "all";
 
 type WhenSort = "when_desc" | "when_asc";
 
@@ -116,7 +116,10 @@ const activeFilterLabel = computed(() => {
   if (appliedRequestId.value) parts.push(appliedRequestId.value);
   return parts.join(" · ");
 });
-const emptyDescription = computed(() => `no ${level.value} logs ${periodLabel.value}`);
+const emptyDescription = computed(
+  () =>
+    `no ${level.value ? `${level.value} ` : ""}logs${period.value === "all" ? "" : ` ${periodLabel.value}`}`,
+);
 
 useScrollListFingerprint(
   () =>
@@ -280,22 +283,22 @@ onMounted(load);
             </AdminFilterDropdown>
           </template>
           <template #actions>
-          <AdminListFooter
-            class="!mt-0"
-            v-if="!listError"
-            :total="total"
-            :page="page"
-            :total-pages="totalPages"
-            :has-next-page="hasNextPage"
-            :has-previous-page="hasPreviousPage"
-            :loading="loading"
-            item-label="entries"
-            aria-label="app logs pagination"
-            @first="goToPage(1)"
-            @prev="goToPage(page - 1)"
-            @next="goToPage(page + 1)"
-            @last="goToPage(totalPages)"
-          />
+            <AdminListFooter
+              class="!mt-0"
+              v-if="!listError"
+              :total="total"
+              :page="page"
+              :total-pages="totalPages"
+              :has-next-page="hasNextPage"
+              :has-previous-page="hasPreviousPage"
+              :loading="loading"
+              item-label="entries"
+              aria-label="app logs pagination"
+              @first="goToPage(1)"
+              @prev="goToPage(page - 1)"
+              @next="goToPage(page + 1)"
+              @last="goToPage(totalPages)"
+            />
           </template>
         </AdminListToolbar>
       </div>
@@ -307,7 +310,6 @@ onMounted(load);
       <div v-else class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="app log entries">
           <template #header>
-            <th :class="ADMIN_TH_CLASS">type</th>
             <th :class="ADMIN_TH_CLASS" :aria-sort="whenAriaSort">
               <button
                 type="button"
@@ -319,6 +321,7 @@ onMounted(load);
                 when{{ whenIndicator }}
               </button>
             </th>
+            <th :class="ADMIN_TH_CLASS">type</th>
             <th :class="ADMIN_TH_CLASS">logger</th>
             <th :class="ADMIN_TH_CLASS">info</th>
           </template>
@@ -332,6 +335,7 @@ onMounted(load);
             :col-span="4"
             @click="onRowClick(entry)"
           >
+            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(entry.occurred_at) }}</td>
             <td :class="ADMIN_TD_CLASS">
               <div class="flex items-center gap-1">
                 <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
@@ -342,7 +346,6 @@ onMounted(load);
                 />
               </div>
             </td>
-            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(entry.occurred_at) }}</td>
             <td :class="[ADMIN_TD_MUTED_CLASS, 'font-data']" :title="loggerLabel(entry)">
               {{ loggerLabel(entry) }}
             </td>
@@ -369,7 +372,6 @@ onMounted(load);
           </AdminDataRow>
         </AdminDataTable>
       </div>
-
     </template>
   </PageShell>
 </template>

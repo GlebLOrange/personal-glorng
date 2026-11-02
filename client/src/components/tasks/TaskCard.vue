@@ -31,6 +31,7 @@ const emit = defineEmits<{ select: [id: number] }>();
     @keydown.enter.prevent="emit('select', task.id)"
     @keydown.space.prevent="emit('select', task.id)"
   >
+    <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(task.scheduled_at) }}</td>
     <td :class="ADMIN_TD_CLASS">
       <StatusBadge
         class="w-[9.5rem] justify-center"
@@ -38,7 +39,6 @@ const emit = defineEmits<{ select: [id: number] }>();
         :class-name="statusBadgeClass(task.status)"
       />
     </td>
-    <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(task.scheduled_at) }}</td>
     <th :class="ADMIN_TH_ROW_CLASS" scope="row">
       <div class="flex min-w-0 items-center gap-1.5">
         <p class="min-w-0 truncate text-sm lowercase text-surface-light" :title="task.title">

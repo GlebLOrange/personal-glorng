@@ -37,11 +37,11 @@ export function useTasks() {
   const intakes = ref<TaskIntakeItem[]>([]);
   const selectedTask = ref<TaskDetail | null>(null);
   const stats = ref<TaskStats | null>(null);
-  const DEFAULT_FILTER_STATUS = "pending";
+  const DEFAULT_FILTER_STATUS = "";
   const filterStatus = ref(DEFAULT_FILTER_STATUS);
   const searchQuery = ref("");
-  /** Null until When header is used; then when_desc | when_asc. */
-  const sort = ref<"when_desc" | "when_asc" | null>(null);
+  /** Defaults to newest first; When header toggles. */
+  const sort = ref<"when_desc" | "when_asc" | null>("when_desc");
   const page = ref(1);
   const intakePage = ref(1);
   const syncPage = ref(1);

@@ -45,8 +45,8 @@ interface AuditEvent {
 
 type PeriodFilter = "yesterday" | "today" | "7d" | "all";
 
-const DEFAULT_CATEGORY = "security";
-const DEFAULT_PERIOD: PeriodFilter = "yesterday";
+const DEFAULT_CATEGORY = "";
+const DEFAULT_PERIOD: PeriodFilter = "all";
 
 type WhenSort = "when_desc" | "when_asc";
 
@@ -99,7 +99,10 @@ const activeFilterLabel = computed(() => {
   const categoryLabel = CATEGORY_FILTERS.find((chip) => chip.value === category.value)?.label;
   return [categoryLabel, periodLabel.value].filter(Boolean).join(" · ");
 });
-const emptyDescription = computed(() => `no ${category.value} audit events ${periodLabel.value}`);
+const emptyDescription = computed(
+  () =>
+    `no ${category.value ? `${category.value} ` : ""}audit events${period.value === "all" ? "" : ` ${periodLabel.value}`}`,
+);
 
 useScrollListFingerprint(
   () =>
@@ -233,8 +236,6 @@ onMounted(load);
       <div v-else class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="audit log events">
           <template #header>
-            <th :class="ADMIN_TH_CLASS">type</th>
-            <th :class="ADMIN_TH_CLASS">who</th>
             <th :class="ADMIN_TH_CLASS" :aria-sort="whenAriaSort">
               <button
                 type="button"
@@ -246,6 +247,8 @@ onMounted(load);
                 when{{ whenIndicator }}
               </button>
             </th>
+            <th :class="ADMIN_TH_CLASS">type</th>
+            <th :class="ADMIN_TH_CLASS">who</th>
             <th :class="ADMIN_TH_CLASS">title</th>
             <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">expand</th>
           </template>
@@ -259,6 +262,7 @@ onMounted(load);
             :col-span="5"
             @click="toggleExpanded(event.id)"
           >
+            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(event.occurred_at) }}</td>
             <td :class="ADMIN_TD_CLASS">
               <StatusBadge
                 :label="event.category"
@@ -268,7 +272,6 @@ onMounted(load);
             <td :class="ADMIN_TD_MUTED_CLASS" :title="actorLabel(event)">
               {{ actorLabel(event) }}
             </td>
-            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(event.occurred_at) }}</td>
             <td :class="ADMIN_TD_TITLE_CLASS">
               <p class="truncate text-sm text-surface-light" :title="event.action">
                 {{ event.action }}

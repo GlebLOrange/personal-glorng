@@ -32,7 +32,6 @@ const emptyMessage = (filterStatus: string): string => {
   <div v-else class="min-w-0">
     <AdminDataTable table-label="tasks">
       <template #header>
-        <th :class="ADMIN_TH_CLASS" scope="col">status</th>
         <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="whenAriaSort">
           <button
             type="button"
@@ -44,6 +43,7 @@ const emptyMessage = (filterStatus: string): string => {
             when{{ whenIndicator }}
           </button>
         </th>
+        <th :class="ADMIN_TH_CLASS" scope="col">status</th>
         <th :class="ADMIN_TH_CLASS" scope="col">title</th>
         <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
       </template>
