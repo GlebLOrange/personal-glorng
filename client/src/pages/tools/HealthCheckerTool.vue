@@ -91,7 +91,7 @@ onMounted(() => {
     </p>
     <template v-else>
       <div v-if="canWrite" class="page-tool-actions">
-        <form class="flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createMonitor">
+        <form class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2" @submit.prevent="createMonitor">
           <BaseInput
             v-model="newUrl"
             class="min-w-0"

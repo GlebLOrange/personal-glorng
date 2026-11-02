@@ -229,7 +229,7 @@ onMounted(() => {
   >
     <div class="page-tool-actions">
       <form
-        class="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-end"
+        class="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
         @submit.prevent="createUrl"
       >
         <BaseInput

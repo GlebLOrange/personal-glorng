@@ -277,7 +277,7 @@ onMounted(() => {
   >
     <div class="w-full min-w-0 self-stretch">
       <div class="page-tool-actions">
-        <div class="flex w-full min-w-0 flex-wrap items-center gap-2 md:flex-nowrap">
+        <div class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 md:flex-nowrap">
           <AdminFilterDropdown
             v-show="activeTab === 'queue'"
             ref="filterDropdown"

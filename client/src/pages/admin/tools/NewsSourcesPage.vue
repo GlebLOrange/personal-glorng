@@ -75,7 +75,7 @@ const {
     body-width="column"
   >
     <div class="page-tool-actions">
-      <div class="flex min-w-0 flex-wrap items-center gap-2">
+      <div class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
         <AdminFilterDropdown
           ref="filterDropdown"
           :has-active-filters="hasActiveFilters"
