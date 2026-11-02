@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "gortex": {
+      "command": "gortex",
+      "args": [
+        "mcp",
+        "--proxy",
+        "--index",
+        "${workspaceFolder}"
+      ],
+      "env": {
+        "CURSOR_WORKSPACE": "${workspaceFolder}"
+      }
+    }
+  }
+}
