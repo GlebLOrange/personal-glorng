@@ -227,7 +227,8 @@ html[data-theme="light"] {
 
 /** Tool slot inside page-body (PageShell tool prop). Centers action panels; full-bleed siblings use w-full self-stretch. */
 @utility page-tool-body {
-  @apply flex w-full min-w-0 flex-col items-center;
+  @apply flex w-full flex-col items-center;
+  min-width: 768px;
 }
 
 /** Shared tool actions — spans 100% of parent; one horizontal lane, wraps only when narrow.
