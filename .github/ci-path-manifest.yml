@@ -1,0 +1,63 @@
+# Single source for CI path gates in .github/workflows/ci.yml.
+# Regenerate committed outputs with: python scripts/generate_ci_path_filters.py
+# backend/frontend → dorny/paths-filter; skip → allowed without selecting jobs;
+# outside allowlist = backend ∪ frontend ∪ skip.
+
+backend:
+  - server/**
+  - shared/**
+  - rabbitmq/**
+  - deploy/**
+  - scripts/**
+  - nginx/**
+  - Makefile
+  - docker-compose*.yml
+  - .github/workflows/**
+  - .env.example
+  - .env.production.example
+  - .dockerignore
+  - .pre-commit-config.yaml
+
+frontend:
+  - client/**
+  - shared/**
+  - nginx/**
+  - docker-compose*.yml
+  - .github/workflows/**
+
+skip:
+  - .github/generated/**
+  - .github/ci-path-manifest.yml
+  - docs/**
+  - postman/**
+  - .github/ISSUE_TEMPLATE/**
+  - .github/skills/**
+  - .cursor/**
+  - .agents/**
+  - .devcontainer/**
+  - .vscode/**
+  - .claude/**
+  - .gemini/**
+  - "*.md"
+  - "*.mdc"
+  - .github/FUNDING.yml
+  - .github/copilot-instructions.md
+  - .github/social-preview.png
+  - .github/dependabot.yml
+  - .editorconfig
+  - .nvmrc
+  - .gitignore
+  - .ignore
+  - .rgignore
+  - .cursorignore
+  - .mcp.json
+  - .gitleaks.toml
+  - AGENTS.md
+  - CLAUDE.md
+  - CODING_STANDARDS.md
+  - CV.md
+  - GEMINI.md
+  - GEMINI.md.bak.*
+  - GEMINI_SAVED_INFO.md
+  - opencode.json
+  - LICENSE
