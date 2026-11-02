@@ -229,15 +229,15 @@ onMounted(() => {
   >
     <div class="page-tool-actions">
       <form
-        class="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-start"
+        class="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-end"
         @submit.prevent="createUrl"
       >
         <BaseInput
           v-model="newUrl"
           class="min-w-0 flex-1"
           compact
-          label="original url"
-          tip="example.com or https://…"
+          label="link to shorten"
+          tip="paste a link, e.g. https://example.com/page"
           :tone="urlTone"
           :error="urlError"
           @update:model-value="formError = ''"
@@ -245,7 +245,7 @@ onMounted(() => {
         <ToolbarPillButton
           action="create"
           type="submit"
-          class="w-full shrink-0 sm:mt-0 sm:w-auto"
+          class="box-border !h-9 !min-h-9 w-full shrink-0 sm:w-auto"
           :disabled="!canShorten"
         >
           {{ loading ? "creating…" : "shorten" }}
