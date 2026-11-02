@@ -63,5 +63,5 @@ jobs:
           target: production
           push: true
           tags: |
-            ghcr.io/gleblorange/personal-glorng-server:${{ github.event.workflow_run.head_sha }}
-            ghcr.io/gleblorange/personal-glorng-server:main
+            ghcr.io/gleblorange/portfolio-glorng-server:${{ github.event.workflow_run.head_sha }}
+            ghcr.io/gleblorange/portfolio-glorng-server:main

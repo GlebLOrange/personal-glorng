@@ -14,7 +14,7 @@ const projects: Project[] = [
     name: "cookie auth & CSRF",
     description: "Browser sessions need CSRF without breaking Bearer clients.",
     tech: ["FastAPI", "cookies"],
-    url: "https://gleblorange.github.io/personal-glorng/reference/security.html",
+    url: "https://gleblorange.github.io/portfolio-glorng/reference/security.html",
     problem: "Cookie auth CSRF risk.",
     approach: "Origin checks on mutating /api.",
     result: "Bad Origin rejected in production.",

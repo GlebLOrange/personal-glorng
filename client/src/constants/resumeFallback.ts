@@ -121,7 +121,7 @@ export const RESUME_FALLBACK: ResumeData = {
         " bad Origin rejected in production; Bearer automation unaffected.",
       tech: ["FastAPI", "cookies", "CSRF", "RBAC", "Redis"],
       url:
-        "https://gleblorange.github.io/personal-glorng/" + "reference/security.html#csrf-and-cors",
+        "https://gleblorange.github.io/portfolio-glorng/" + "reference/security.html#csrf-and-cors",
     },
     {
       slug: "ssrf-safe-fetch",
