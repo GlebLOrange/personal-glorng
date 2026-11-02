@@ -19,6 +19,7 @@ const emit = defineEmits<{
           class="min-w-0 flex-1"
           placeholder="search recipes by title, tag…"
           aria-label="search recipes"
+          collapsible
           @update:model-value="emit('update:search', String($event ?? ''))"
         />
         <div v-if="$slots.actions" class="w-auto shrink-0">

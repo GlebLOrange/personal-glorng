@@ -98,6 +98,7 @@ function clearFilters(): void {
             placeholder="search users by name or email"
             class="min-w-0"
             auto-width
+            collapsible
           />
         </div>
       </template>

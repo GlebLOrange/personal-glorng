@@ -319,6 +319,7 @@ onMounted(() => {
             class="min-w-0 flex-1"
             auto-width
             placeholder="search tasks"
+            collapsible
           />
 
           <AdminTabBar

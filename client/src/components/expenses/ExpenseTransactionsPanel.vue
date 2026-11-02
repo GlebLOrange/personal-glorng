@@ -86,6 +86,7 @@ const emit = defineEmits<{
           placeholder="filter by name"
           aria-label="filter by name"
           :min-length="1"
+          collapsible
         />
       </div>
 

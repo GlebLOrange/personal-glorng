@@ -4,7 +4,6 @@ import { computed } from "vue";
 import ClockIcon from "@/components/icons/ClockIcon.vue";
 import TagIcon from "@/components/icons/TagIcon.vue";
 import UsersIcon from "@/components/icons/UsersIcon.vue";
-import BaseImage from "@/components/ui/BaseImage.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import {
@@ -27,13 +26,6 @@ const emit = defineEmits<{
   edit: [recipe: Recipe];
   delete: [recipe: Recipe];
 }>();
-
-const thumbInitials = computed(() => {
-  const parts = props.recipe.title.trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
-});
 
 const prepLabel = computed(() => formatRecipeTime(props.recipe.prep_time));
 const cookLabel = computed(() => formatRecipeTime(props.recipe.cook_time));
@@ -62,21 +54,6 @@ const hasMeta = computed(() => Boolean(recipeMetaTitle.value));
     @keydown.enter.prevent="emit('select', recipe.id)"
     @keydown.space.prevent="emit('select', recipe.id)"
   >
-    <td :class="ADMIN_TD_CLASS">
-      <BaseImage
-        v-if="recipe.image_url"
-        :src="recipe.image_url"
-        :alt="recipe.title"
-        class="size-6 shrink-0 rounded object-cover"
-      />
-      <div
-        v-else
-        class="flex size-6 shrink-0 items-center justify-center rounded bg-surface-dark text-[10px] font-semibold leading-none text-surface-sage"
-        aria-hidden="true"
-      >
-        {{ thumbInitials }}
-      </div>
-    </td>
     <th :class="ADMIN_TH_ROW_CLASS" scope="row">
       <p class="truncate text-sm text-surface-light" :title="recipe.title">{{ recipe.title }}</p>
     </th>

@@ -40,7 +40,7 @@ describe("RecipeCard", () => {
     await row.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
 
-    expect(wrapper.text()).toContain("TS");
+    expect(wrapper.findAll("td").length + wrapper.findAll("th").length).toBe(3);
     expect(wrapper.text()).toContain("Tomato Soup");
 
     const prepChip = wrapper.get('[aria-label="10m prep"]');

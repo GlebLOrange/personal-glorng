@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useAttrs, useId } from "vue";
+import { computed, nextTick, ref, useAttrs, useId } from "vue";
 
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import SearchIcon from "@/components/icons/SearchIcon.vue";
@@ -27,8 +27,11 @@ const props = withDefaults(
     minLength?: number;
     /** Shrink control to content (tool action panels) instead of w-full. */
     autoWidth?: boolean;
+    /** Collapse to a left-aligned search-icon button; click expands to full width. */
+    collapsible?: boolean;
   }>(),
   {
+    collapsible: false,
     minLength: SEARCH_MIN_QUERY_LENGTH,
     autoWidth: false,
   },
@@ -45,18 +48,53 @@ const showOverlay = computed(() => Boolean(props.placeholder) && !hasValue.value
 const accessibleName = computed(() => props.ariaLabel || "search");
 const inputAttrs = computed(() => pickNativeAttrs(attrs));
 
+const inputEl = ref<HTMLInputElement | null>(null);
+const expandedState = ref(false);
+const collapsed = computed(() => props.collapsible && !expandedState.value && !hasValue.value);
+
+async function expand(): Promise<void> {
+  expandedState.value = true;
+  await nextTick();
+  inputEl.value?.focus();
+}
+
+function onFocusOut(event: FocusEvent): void {
+  if (!props.collapsible || hasValue.value) return;
+  const root = event.currentTarget as HTMLElement | null;
+  if (root && event.relatedTarget instanceof Node && root.contains(event.relatedTarget)) return;
+  expandedState.value = false;
+}
+
 function clear(): void {
   model.value = "";
+  if (props.collapsible) void nextTick(() => inputEl.value?.focus());
 }
 </script>
 
 <template>
+  <button
+    v-if="collapsed"
+    type="button"
+    :aria-label="accessibleName"
+    :aria-controls="inputId"
+    aria-expanded="false"
+    :class="[
+      $attrs.class,
+      CONTROL_SIZE,
+      '!w-11 !flex-none shrink-0 self-start inline-flex items-center justify-center rounded-lg bg-surface-dark text-surface-mid ring-1 ring-inset ring-surface-border transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50',
+    ]"
+    @click="expand"
+  >
+    <SearchIcon class-name="size-4" />
+  </button>
   <div
+    v-else
+    @focusout="onFocusOut"
     :class="[
       FIELD_WRAPPER_CLASS,
       CONTROL_SIZE,
       'flex items-center overflow-hidden rounded-lg bg-surface-dark transition-colors ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50',
-      props.autoWidth ? 'w-auto max-w-full' : 'w-full',
+      props.collapsible ? 'w-full basis-full' : props.autoWidth ? 'w-auto max-w-full' : 'w-full',
       $attrs.class,
     ]"
   >
@@ -66,12 +104,14 @@ function clear(): void {
     <div class="relative z-10 flex h-full min-w-0 flex-1 items-center">
       <input
         :id="inputId"
+        ref="inputEl"
         v-model="model"
         type="search"
         :minlength="minLength"
         :aria-label="accessibleName"
         class="search-input-field relative z-10 h-full min-w-0 w-full border-0 bg-transparent py-0 pl-2.5 pr-1 text-left text-sm text-surface-light outline-none"
         v-bind="inputAttrs"
+        @keydown.esc="collapsible && !hasValue ? (expandedState = false) : undefined"
       />
       <span
         v-if="showOverlay"
