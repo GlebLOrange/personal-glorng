@@ -129,10 +129,9 @@ onMounted(() => {
   >
     <div class="page-tool-actions">
       <form class="flex w-full min-w-0 flex-col gap-2" @submit.prevent="generatePassword">
-        <div class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_auto_auto] items-end gap-1.5">
+        <div class="flex w-full min-w-0 flex-wrap items-end justify-between gap-2">
           <AdminFilterDropdown
             label="options"
-            class="min-w-0 w-full"
             anchor="local"
             :match-trigger-width="false"
             :has-active-filters="hasCustomOptions"
@@ -183,11 +182,9 @@ onMounted(() => {
             type="number"
             :min="PASSWORD_MIN_LENGTH"
             :max="128"
-            compact
             label="length"
             :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
-            class="w-auto shrink-0"
-            auto-width
+            class="shrink-0"
           />
 
           <IconActionButton
@@ -204,9 +201,8 @@ onMounted(() => {
           <BaseButton
             variant="primary"
             type="submit"
-            size="sm"
             :icon="false"
-            class="!h-9 !min-h-9 shrink-0 gap-1.5 px-3 text-xs"
+            class="shrink-0"
             :disabled="loading || !hasCharset"
           >
             <span class="inline-grid justify-items-center">
