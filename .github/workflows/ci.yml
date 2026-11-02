@@ -25,7 +25,7 @@ jobs:
     outputs:
       backend: ${{ steps.select.outputs.backend }}
       frontend: ${{ steps.select.outputs.frontend }}
-      outside: ${{ steps.select.outputs.outside }}
+      outside: ${{ steps.outside.outputs.outside || steps.select.outputs.outside }}
     steps:
       - uses: actions/checkout@v7
       - name: Communities drift guard
@@ -57,47 +57,6 @@ jobs:
               - 'nginx/**'
               - 'docker-compose*.yml'
               - '.github/workflows/**'
-            outside:
-              - '**'
-              - '*'
-              - '.*'
-              - '**/.*'
-              - '**/.*/**'
-              - '!server/**'
-              - '!shared/**'
-              - '!rabbitmq/**'
-              - '!deploy/**'
-              - '!scripts/**'
-              - '!nginx/**'
-              - '!Makefile'
-              - '!docker-compose*.yml'
-              - '!.github/workflows/**'
-              - '!.env.example'
-              - '!.env.production.example'
-              - '!.dockerignore'
-              - '!.pre-commit-config.yaml'
-              - '!client/**'
-              - '!docs/**'
-              - '!**/*.md'
-              - '!**/*.mdc'
-              - '!.github/ISSUE_TEMPLATE/**'
-              - '!.github/FUNDING.yml'
-              - '!.github/copilot-instructions.md'
-              - '!.github/social-preview.png'
-              - '!.github/dependabot.yml'
-              - '!.cursor/**'
-              - '!.agents/**'
-              - '!.devcontainer/**'
-              - '!.vscode/**'
-              - '!postman/**'
-              - '!.editorconfig'
-              - '!.nvmrc'
-              - '!.gitignore'
-              - '!.ignore'
-              - '!.rgignore'
-              - '!.cursorignore'
-              - '!.gitleaks.toml'
-              - '!LICENSE'
       - name: Select jobs
         id: select
         run: |
@@ -109,7 +68,26 @@ jobs:
           fi
           echo "backend=${{ steps.filter.outputs.backend }}" >> "$GITHUB_OUTPUT"
           echo "frontend=${{ steps.filter.outputs.frontend }}" >> "$GITHUB_OUTPUT"
-          echo "outside=${{ steps.filter.outputs.outside }}" >> "$GITHUB_OUTPUT"
+
+      - name: Guard unclassified PR paths
+        id: outside
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          outside=false
+          while IFS= read -r path; do
+            case "$path" in
+              server/*|shared/*|rabbitmq/*|deploy/*|scripts/*|nginx/*|client/*|docs/*|postman/*|.github/workflows/*|.github/ISSUE_TEMPLATE/*|.github/skills/*|.cursor/*|.agents/*|.devcontainer/*|.vscode/*|.claude/*|.gemini/*|*.md|*.mdc|Makefile|docker-compose*.yml|.env.example|.env.production.example|.dockerignore|.pre-commit-config.yaml|.github/FUNDING.yml|.github/copilot-instructions.md|.github/social-preview.png|.github/dependabot.yml|.editorconfig|.nvmrc|.gitignore|.ignore|.rgignore|.cursorignore|.gitleaks.toml|AGENTS.md|CLAUDE.md|CODING_STANDARDS.md|CV.md|GEMINI.md|GEMINI.md.bak.*|GEMINI_SAVED_INFO.md|opencode.json|LICENSE)
+                ;;
+              *)
+                echo "::error file=$path::Changed path is outside the CI gate and skip allowlist."
+                outside=true
+                ;;
+            esac
+          done < <(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename')
+          echo "outside=$outside" >> "$GITHUB_OUTPUT"
 
   backend:
     needs: changes
