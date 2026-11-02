@@ -221,15 +221,15 @@ const {
               <code class="break-all text-surface-sage">NEWS_INGEST_ENABLED=false</code>
             </li>
             <li>
-              <strong class="font-medium text-surface-light">App rate limit</strong> — this tool caps
-              chat to 5 messages per 5 minutes per signed-in superuser
+              <strong class="font-medium text-surface-light">App rate limit</strong> — this tool
+              caps chat to 5 messages per 5 minutes per signed-in superuser
             </li>
             <li>
               <strong class="font-medium text-surface-light">After .env changes</strong> — set
               <code class="break-all text-surface-sage">GROQ_API_KEY</code>,
               <code class="break-all text-surface-sage">GROQ_CHAT_MODEL</code>, and
-              <code class="break-all text-surface-sage">AI_CHAT_ENABLED=true</code>, then restart the
-              backend
+              <code class="break-all text-surface-sage">AI_CHAT_ENABLED=true</code>, then restart
+              the backend
             </li>
           </ul>
         </details>
@@ -251,8 +251,8 @@ const {
               <code class="break-all text-surface-sage">GROQ_API_KEY</code> and
               <code class="break-all text-surface-sage">GROQ_CHAT_MODEL</code> in your server
               <code class="break-all text-surface-sage">.env</code>, then restart the backend. Set
-              <code class="break-all text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this tool
-              entirely
+              <code class="break-all text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this
+              tool entirely
             </p>
             <p>
               The same Groq key is shared by AI chat, news ingest, and task intake. Groq enforces
@@ -280,8 +280,7 @@ const {
               <p class="text-xs font-medium text-surface-light">{{ example.name }}</p>
               <pre
                 class="max-w-full whitespace-pre-wrap break-all font-data text-xs text-surface-sage"
-                >{{ example.env }}</pre
-              >
+                >{{ example.env }}</pre>
             </div>
             <p class="break-words text-xs text-surface-mid">
               Get a key from

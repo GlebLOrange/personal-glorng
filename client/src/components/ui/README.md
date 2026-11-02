@@ -58,14 +58,14 @@ Product `BaseButton` / `ToolbarPillButton` labels must name the action with a sh
 
 | Control | Default height | Notes |
 |---|---|---|
-| `BaseButton` `sm` / `md` / `field` | **h-10** | `sm` only tightens `px`/`text` — it is **not** shorter |
+| `BaseButton` `sm` / `md` / `field` | **h-11** (44px) | `sm` only tightens `px`/`text` — it is **not** shorter |
 | `BaseButton` `lg` | **h-12** | Keypad exception (`CalculatorTool`) only |
-| `BaseButton` `icon` | **h-10 w-10** | Prefer `IconActionButton` in tools |
-| `ToolbarPillButton` | **h-10 px-4** | No size prop — do not add `min-h-10` |
-| `IconActionButton` (+ wrappers) | **h-10 w-10** | Icon-only chrome; in-field clear uses `size="field"` (same square) |
-| `BaseSelect` | **h-10** (`compact` → h-9) | Dense toolbars only for compact |
+| `BaseButton` `icon` | **h-11 w-11** (44px) | Prefer `IconActionButton` in tools |
+| `ToolbarPillButton` | **h-11 px-4** (44px) | No size prop — do not add `min-h-11` |
+| `IconActionButton` (+ wrappers) | **h-11 w-11** (44px) | Icon-only chrome; in-field clear uses `size="field"` (same square) |
+| `BaseSelect` | **h-11** (44px; `compact` → h-9) | Dense toolbars only for compact |
 
-Wash recipe (idle → hover/selected → active): fill `/10` → `/12` + border `/22` → active `/14`; labels `text-*/88` (`ACTION_BUTTON_PAINT` in `httpStatusColors.ts`). Primary / `cta-primary` use the same pale primary wash. Icon clear/edit/remove/copy use `transparentIdle`. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `action`, `family`, `quiet`, `transparentIdle`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
+Wash recipe (idle → hover/selected → active): fill `/10` → `/12` + border `/22` → active `/14`; labels `text-*/88` (`ACTION_BUTTON_PAINT` in `httpStatusColors.ts`). Primary / `cta-primary` use the same pale primary wash. Icon clear/edit/remove/copy use `transparentIdle`. Do **not** re-add `min-h-11` / `h-11` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `action`, `family`, `quiet`, `transparentIdle`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
 
 **Text links** — use the `text-link` utility (primary ink + underline on hover/focus). Do not paint every `<a>` (tiles, nav, breadcrumbs stay undecorated).
 
@@ -96,6 +96,8 @@ Canonical tokens live in `client/src/styles/main.css` as dual-theme CSS variable
 
 **Surfaces:** `surface-dark` = page, `surface-card` = elevated, `surface-border` = borders, `surface-grid` = container-low, `surface-light` = primary text, `surface-sage` / `surface-mid` / `surface-muted` = body → secondary → muted.
 
+**Semantic aliases (prefer for new code):** `bg-page` (= `surface-dark`), `bg-card` (= `surface-card`), `text-text` (= `surface-light`), `text-text-muted` (= `surface-muted`). Legacy `surface-*` names remain supported. Browser `theme-color` lives in `constants/themeColors.ts`.
+
 **Roles (sheet):** `primary` / `on-primary` / `primary-container` for chrome. `accent-coral` and `accent-lavender` **alias primary**. `tertiary` (`accent-violet`) and `custom` (`status-cyan`) for pills/chips. `error` for destructive. Secondary **controls** stay surface+outline (sheet secondary fill matches primary).
 
 | Role | Token | Dark | Light |
@@ -111,6 +113,7 @@ Canonical tokens live in `client/src/styles/main.css` as dual-theme CSS variable
 | Page bg | `surface-dark` | `#141218` | `#fef7ff` |
 | Card | `surface-card` | `#1d1b20` | `#f2ecf4` |
 | Primary text | `surface-light` | `#e6e1e5` | `#1d1b20` |
+| Muted text | `surface-muted` | `#9a96a0` | `#605c66` |
 
 Use `text-status-*`, `alert-surface-error`, `alert-surface-warning`, etc. — not raw Tailwind `red-400` / `amber-400`. Product button wash: idle `/10`, hover `/12` + border `/22`. Never invent one-off hex in components.
 

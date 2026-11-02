@@ -108,17 +108,17 @@ onMounted(() => {
             label="label"
             tip="optional"
           />
-          <BaseSelect
-            v-model="newInterval"
-            class="w-auto shrink-0"
-            compact
-            label="interval"
-          >
+          <BaseSelect v-model="newInterval" class="w-auto shrink-0" compact label="interval">
             <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
               every {{ mins }}m
             </option>
           </BaseSelect>
-          <ToolbarPillButton action="add" type="submit" class="w-auto shrink-0" :disabled="!canCreate">
+          <ToolbarPillButton
+            action="add"
+            type="submit"
+            class="w-auto shrink-0"
+            :disabled="!canCreate"
+          >
             {{ creating ? "adding…" : "add" }}
           </ToolbarPillButton>
         </form>

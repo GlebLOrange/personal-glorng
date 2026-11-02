@@ -232,12 +232,7 @@ watch(articleId, () => {
       </p>
       <div class="page-tool-actions mb-0">
         <div class="flex w-fit flex-wrap gap-2">
-          <BaseButton
-            variant="save"
-            class="w-auto"
-            :disabled="actionLoading"
-            @click="saveArticle"
-          >
+          <BaseButton variant="save" class="w-auto" :disabled="actionLoading" @click="saveArticle">
             {{ actionLoading ? "saving…" : "save article" }}
           </BaseButton>
         </div>

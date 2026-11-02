@@ -2,7 +2,7 @@
 
 Dispatch only. Do not put bootstrap recipes, ports, or skill bodies here.
 
-Shared entry for Cursor, Antigravity, and Claude. Skills and rules stay under [`.cursor/`](.cursor/); Antigravity and Claude reach them through [`.agents/`](.agents/) and [`.claude/`](.claude/) (symlinks and activation files).
+Shared entry for Cursor, Antigravity, Claude, and Gemini. Skills and rules stay under [`.cursor/`](.cursor/); Antigravity and Claude reach them through [`.agents/`](.agents/) and [`.claude/`](.claude/) (symlinks and activation files).
 
 | Before you… | Read |
 |-------------|------|

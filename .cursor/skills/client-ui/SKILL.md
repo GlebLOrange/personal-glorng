@@ -65,6 +65,8 @@ If visual language and UX priorities conflict on look (decorative gradients, mul
 - Ensure status is never communicated by color alone.
 - Prefer **pale** (desaturated) status/brand tokens — not saturated neon fills. Solid CTAs use pale `accent-coral` with `on-accent` ink.
 - Dual theme: rebuild grayscale per mode via `html[data-theme]`; preference is **dark** or **light** (default dark). Same token names in light and dark.
+- Real tokens (`client/src/styles/main.css`): page `bg-page`/`bg-surface-dark`, card `bg-card`/`bg-surface-card`, text `text-text`/`text-surface-light`, secondary `text-surface-sage`/`text-surface-mid`, muted `text-text-muted`/`text-surface-muted` (AA ≥4.5:1 on page/card), borders `border-surface-border`, accent `accent-coral` (= `primary`) + `on-accent`, status `status-success|warning|error|cyan`. Prefer the semantic aliases in new code. Browser `theme-color`: `constants/themeColors.ts`.
+- Controls are **h-11 (44px)** (`CONTROL_SIZE`), compact h-9, keypad h-12. Focus ring: `FOCUS_RING_DEFAULT`; error fields use `ring-status-error` on Input/Textarea/Select alike.
 
 ## Marketing / portfolio exception
 

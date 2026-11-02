@@ -85,12 +85,7 @@ function onTagsToggle(event: Event): void {
       </div>
       <BaseInput v-model="form.title" label="title" :disabled="!canWrite" />
       <BaseInput v-model="form.original_title" label="original title" :disabled="!canWrite" />
-      <BaseInput
-        v-model="form.language"
-        label="language"
-        tip="en"
-        :disabled="!canWrite"
-      />
+      <BaseInput v-model="form.language" label="language" tip="en" :disabled="!canWrite" />
     </div>
     <details class="mt-4 rounded border border-surface-border px-3 py-2" @toggle="onTagsToggle">
       <summary

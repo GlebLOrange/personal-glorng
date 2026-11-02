@@ -7,7 +7,7 @@ import {
   type SemanticButtonAction,
 } from "@/constants/actionButtonVariants";
 import {
-  ACTION_PILL_BASE,
+  ACTION_PILL_SHAPE,
   actionFamilyClass,
   type HttpStatusFamily,
 } from "@/constants/httpStatusColors";
@@ -43,7 +43,7 @@ defineEmits<{ click: [MouseEvent] }>();
 const attrs = useAttrs();
 
 /** Shape without hardcoded ring — classesForActionButton supplies focus ring. */
-const PILL_SHAPE = ACTION_PILL_BASE.replace(" focus-visible:ring-accent-coral/50", "");
+const PILL_SHAPE = ACTION_PILL_SHAPE;
 
 const mappedIcon = computed((): Component | undefined => {
   if (!props.action) return undefined;

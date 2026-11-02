@@ -241,12 +241,7 @@ onMounted(() => {
               >
                 <EyeIcon :off="showPassword" class-name="size-4" />
               </IconActionButton>
-              <IconCopyButton
-                size="field"
-                quiet
-                :disabled="!generated"
-                @click="copy(generated)"
-              />
+              <IconCopyButton size="field" quiet :disabled="!generated" @click="copy(generated)" />
             </template>
           </BaseInput>
           <p v-if="generated && !strength.valid" class="text-xs text-surface-mid">

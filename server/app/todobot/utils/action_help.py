@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-# Telegram toast text limit; keep strings short (~40–60).
+# Telegram toast text limit; keep strings short (~40-60).
 _TOAST_LIMIT = 200
 
 HELP_SECTIONS: list[tuple[str, list[str]]] = [

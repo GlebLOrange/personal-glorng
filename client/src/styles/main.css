@@ -50,7 +50,7 @@ html[data-theme="dark"] {
   --palette-surface-light: #e6e1e5;
   --palette-surface-sage: #cac4d0;
   --palette-surface-mid: #938f99;
-  --palette-surface-muted: #79747e;
+  --palette-surface-muted: #9a96a0; /* ≥4.5:1 on page, card, grid */
   --palette-surface-dark: #141218;
   --palette-surface-card: #1d1b20;
   --palette-surface-border: #49454e;
@@ -94,7 +94,7 @@ html[data-theme="light"] {
   --palette-surface-light: #1d1b20;
   --palette-surface-sage: #49454e;
   --palette-surface-mid: #79747e;
-  --palette-surface-muted: #cac4d0;
+  --palette-surface-muted: #605c66; /* ≥4.5:1 on page, card, grid */
   --palette-surface-dark: #fef7ff;
   --palette-surface-card: #f2ecf4;
   --palette-surface-border: #848086;
@@ -165,6 +165,11 @@ html[data-theme="light"] {
   --color-surface-card: var(--palette-surface-card);
   --color-surface-border: var(--palette-surface-border);
   --color-surface-grid: var(--palette-surface-grid);
+  /* Semantic aliases (prefer in new code; legacy surface-* names stay). */
+  --color-page: var(--palette-surface-dark);
+  --color-card: var(--palette-surface-card);
+  --color-text: var(--palette-surface-light);
+  --color-text-muted: var(--palette-surface-muted);
   --color-on-accent: var(--palette-on-primary);
   --color-tertiary: var(--palette-tertiary);
   --color-on-tertiary: var(--palette-on-tertiary);

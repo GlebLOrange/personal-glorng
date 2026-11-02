@@ -36,12 +36,15 @@ const props = withDefaults(
     presentation?: "default" | "public" | "admin";
     /** Optional per-slug chip (demo / yours). Admin omits this. */
     tileChip?: (slug: string) => ToolTileChip | undefined;
+    /** Set false when a parent wrapper already owns the section id (avoids duplicate ids). */
+    sectionIds?: boolean;
   }>(),
   {
     showCategoryHeadings: true,
     categoryHeading: "h2",
     density: "default",
     presentation: "default",
+    sectionIds: true,
   },
 );
 
@@ -115,7 +118,7 @@ function showAdminDemoChip(tool: PlatformService): boolean {
 <template>
   <section
     v-for="section in sections"
-    :id="section.category"
+    :id="sectionIds ? section.category : undefined"
     :key="section.category"
     class="min-w-0"
     :class="sectionClass"
@@ -166,7 +169,7 @@ function showAdminDemoChip(tool: PlatformService): boolean {
               </span>
               <span
                 v-else-if="chipFor(tool)"
-                class="shrink-0 rounded border border-transparent bg-surface-grid px-1.5 py-0.5 text-xs font-medium text-surface-mid"
+                class="shrink-0 rounded border border-transparent bg-surface-grid px-1.5 py-0.5 text-xs font-medium text-text-muted"
               >
                 {{ chipFor(tool) }}
               </span>

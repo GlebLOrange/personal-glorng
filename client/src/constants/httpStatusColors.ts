@@ -211,7 +211,13 @@ export function familyToneClass(
 }
 
 /** Shared shape for toolbar/tab action pills. */
-export const ACTION_PILL_BASE = `inline-flex ${CONTROL_SIZE} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 disabled:opacity-50`;
+/** Pill geometry/typography without a focus ring colour (callers add one). */
+export const ACTION_PILL_SHAPE = `inline-flex ${CONTROL_SIZE} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50`;
+
+/** Shared default focus ring for controls. */
+export const FOCUS_RING_DEFAULT = "focus-visible:ring-accent-coral/50";
+
+export const ACTION_PILL_BASE = `${ACTION_PILL_SHAPE} ${FOCUS_RING_DEFAULT}`;
 
 /** Square icon chrome matching CONTROL_SIZE (overrides pill padding). */
 export const ICON_ACTION_SIZE = CONTROL_SIZE_ICON;

@@ -52,10 +52,7 @@ onBeforeUnmount(() => {
       <div v-if="slots.start" class="min-w-0 flex-1 overflow-hidden">
         <slot name="start" />
       </div>
-      <div
-        class="flex shrink-0 items-center gap-2"
-        :class="slots.start ? 'ml-auto' : undefined"
-      >
+      <div class="flex shrink-0 items-center gap-2" :class="slots.start ? 'ml-auto' : undefined">
         <slot name="actions" />
         <span
           class="relative inline-flex shrink-0"

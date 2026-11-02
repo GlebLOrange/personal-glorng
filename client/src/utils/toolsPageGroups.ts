@@ -1,5 +1,5 @@
 import type { PlatformService } from "@/platform/services";
-import { SMALL_TOOL_TAB_SLUGS } from "@/constants/smallToolTabs";
+import { SMALL_TOOL_TABS, SMALL_TOOL_TAB_SLUGS } from "@/constants/smallToolTabs";
 
 /** Tools-page-only section ids — not PlatformService.category. */
 export const TOOLS_PAGE_GROUP_ORDER = ["utils", "content", "server"] as const;
@@ -60,18 +60,12 @@ const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
   "health-checker": "server",
 };
 
-/** Stable order within each tools-page group. */
+/**
+ * Stable order within each tools-page group. Utils order comes from SMALL_TOOL_TABS
+ * (single source of truth for the pills); content/server are listed here.
+ */
 const SLUG_ORDER: Record<string, number> = {
-  weather: 0,
-  "ai-chat": 1,
-  calculator: 2,
-  "password-generator": 3,
-  "qr-generator": 4,
-  "url-shortener": 5,
-  "file-share": 6,
-  "data-extract": 7,
-  "vid-download": 8,
-  email: 9,
+  ...Object.fromEntries(SMALL_TOOL_TABS.map((tab, index) => [tab.id, index])),
   expenses: 0,
   tasks: 1,
   recipes: 2,

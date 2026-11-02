@@ -168,7 +168,7 @@ describe("BaseModal", () => {
       },
       slots: {
         default: '<p id="feedback-desc">Describe the form.</p>',
-        footer: "<button type=\"button\">send</button>",
+        footer: '<button type="button">send</button>',
       },
     });
     await flushFocus();

@@ -75,12 +75,7 @@ const timezoneOptions = computed((): TimezoneOption[] => {
             {{ zone.label }}
           </option>
         </BaseSelect>
-        <BaseSelect
-          v-model="displayCurrency"
-          compact
-          label="currency"
-          class="w-auto shrink-0"
-        >
+        <BaseSelect v-model="displayCurrency" compact label="currency" class="w-auto shrink-0">
           <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
             {{ code }}
           </option>
