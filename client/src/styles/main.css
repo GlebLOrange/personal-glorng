@@ -206,6 +206,8 @@ html[data-theme="light"] {
 
 @utility page-shell {
   @apply mx-auto w-full px-6;
+  /* Shell width: 1024px. */
+  max-width: 1024px;
   /* Min width: 768px on phones/tablets (scroll horizontally), 1024px from lg (64rem). */
   min-width: 768px;
   @variant lg {
@@ -216,7 +218,7 @@ html[data-theme="light"] {
     padding-right: calc(3.5rem + env(safe-area-inset-right));
   }
   /* Compact tile unit: 3 cards/row at ≥420px each (+ 1rem gaps). */
-  --tile-min: 420px;
+  --tile-min: 768px;
   --tile-gap: 1rem;
   --tile: calc((100% - 2 * var(--tile-gap)) / 3);
   --content: calc(var(--tile) * 2 + var(--tile-gap));
@@ -238,6 +240,7 @@ html[data-theme="light"] {
 
 @utility page-body {
   @apply w-full;
+  min-width: 1024px;
   margin-top: var(--page-chrome-offset);
 }
 

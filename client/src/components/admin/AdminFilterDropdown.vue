@@ -258,6 +258,7 @@ defineExpose({ close });
           <span
             v-if="activeLabel"
             class="col-start-1 row-start-1 truncate whitespace-nowrap text-surface-muted"
+            :class="optionLabels?.length ? 'w-0 min-w-full' : undefined"
           >
             · {{ activeLabel }}
           </span>
@@ -294,7 +295,7 @@ defineExpose({ close });
         tabindex="-1"
         :class="[
           isLocalAnchor
-            ? ['absolute left-0 right-0 top-full z-50 mt-1', TOOLBAR_POPOVER_MAX_WIDTH_CLASS]
+            ? ['absolute left-0 top-full z-50 mt-1', TOOLBAR_POPOVER_PANEL_WIDTH_CLASS]
             : [
                 'fixed z-50',
                 matchTriggerWidth

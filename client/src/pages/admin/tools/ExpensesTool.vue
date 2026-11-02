@@ -302,7 +302,7 @@ function focusAddFromInsights(): void {
           aria-labelledby="expenses-tab-tab-converter"
           :aria-hidden="activeTab !== 'converter'"
           tabindex="0"
-          class="outline-none"
+          class="flex justify-center outline-none"
         >
           <ExpenseCalculatorTab v-if="converterMounted" />
         </section>

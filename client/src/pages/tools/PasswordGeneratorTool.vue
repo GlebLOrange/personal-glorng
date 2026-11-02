@@ -46,17 +46,6 @@ const hasCustomOptions = computed(
     excludeAmbiguous.value,
 );
 
-const optionsActiveLabel = computed(() => {
-  if (!hasCustomOptions.value) return undefined;
-  const parts: string[] = [];
-  if (uppercase.value) parts.push("uppercase");
-  if (lowercase.value) parts.push("lowercase");
-  if (digits.value) parts.push("numbers");
-  if (symbols.value) parts.push("symbols");
-  if (excludeAmbiguous.value) parts.push("exclude ambiguous");
-  return parts.length ? parts.join(" · ") : "none";
-});
-
 const clampedLength = computed(() =>
   Math.min(128, Math.max(PASSWORD_MIN_LENGTH, Number(length.value) || PASSWORD_MIN_LENGTH)),
 );
@@ -129,86 +118,81 @@ onMounted(() => {
   >
     <div class="page-tool-actions">
       <form class="flex w-full min-w-0 flex-col gap-2" @submit.prevent="generatePassword">
-        <div class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5">
-          <AdminFilterDropdown
-            label="options"
-            class="min-w-0 w-full"
-            anchor="local"
-            :match-trigger-width="false"
-            :has-active-filters="hasCustomOptions"
-            :active-label="optionsActiveLabel"
-            @clear="resetState"
-          >
-            <template #chips>
-              <AdminFilterChip
-                label="uppercase"
-                title="uppercase (A-Z)"
-                :active="uppercase"
-                :color-class="familyBadgeClass('1xx')"
-                @click="uppercase = !uppercase"
-              />
-              <AdminFilterChip
-                label="lowercase"
-                title="lowercase (a-z)"
-                :active="lowercase"
-                :color-class="familyBadgeClass('1xx')"
-                @click="lowercase = !lowercase"
-              />
-              <AdminFilterChip
-                label="numbers"
-                title="numbers (0-9)"
-                :active="digits"
-                :color-class="familyBadgeClass('1xx')"
-                @click="digits = !digits"
-              />
-              <AdminFilterChip
-                label="symbols"
-                title="symbols (!@#$…)"
-                :active="symbols"
-                :color-class="familyBadgeClass('1xx')"
-                @click="symbols = !symbols"
-              />
-              <AdminFilterChip
-                label="exclude ambiguous"
-                title="exclude ambiguous (0, O, 1, l, I)"
-                :active="excludeAmbiguous"
-                :color-class="familyBadgeClass('3xx')"
-                @click="excludeAmbiguous = !excludeAmbiguous"
-              />
-            </template>
-          </AdminFilterDropdown>
+        <div class="flex w-full min-w-0 flex-wrap items-end justify-between gap-2">
+          <div class="flex min-w-0 flex-wrap items-end gap-2">
+            <AdminFilterDropdown
+              label="options"
+              anchor="local"
+              :match-trigger-width="false"
+              :has-active-filters="hasCustomOptions"
+              @clear="resetState"
+            >
+              <template #chips>
+                <AdminFilterChip
+                  label="uppercase"
+                  title="uppercase (A-Z)"
+                  :active="uppercase"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="uppercase = !uppercase"
+                />
+                <AdminFilterChip
+                  label="lowercase"
+                  title="lowercase (a-z)"
+                  :active="lowercase"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="lowercase = !lowercase"
+                />
+                <AdminFilterChip
+                  label="numbers"
+                  title="numbers (0-9)"
+                  :active="digits"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="digits = !digits"
+                />
+                <AdminFilterChip
+                  label="symbols"
+                  title="symbols (!@#$…)"
+                  :active="symbols"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="symbols = !symbols"
+                />
+                <AdminFilterChip
+                  label="exclude ambiguous"
+                  title="exclude ambiguous (0, O, 1, l, I)"
+                  :active="excludeAmbiguous"
+                  :color-class="familyBadgeClass('3xx')"
+                  @click="excludeAmbiguous = !excludeAmbiguous"
+                />
+              </template>
+            </AdminFilterDropdown>
 
-          <BaseInput
-            v-model.number="length"
-            type="number"
-            :min="PASSWORD_MIN_LENGTH"
-            :max="128"
-            compact
-            label="length"
-            :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
-            class="w-auto shrink-0"
-            auto-width
-          />
-        </div>
+            <BaseInput
+              v-model.number="length"
+              type="number"
+              :min="PASSWORD_MIN_LENGTH"
+              :max="128"
+              label="length"
+              :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
+              auto-width
+              class="w-24 shrink-0"
+            />
 
-        <div class="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1.5">
-          <IconActionButton
-            action="create"
-            size="field"
-            class="shrink-0"
-            aria-label="reset options and clear generated password"
-            title="reset state & clear password"
-            @click="resetState"
-          >
-            <RefreshIcon class-name="size-3.5" />
-          </IconActionButton>
+            <IconActionButton
+              action="create"
+              class="shrink-0"
+              aria-label="reset options and clear generated password"
+              title="reset state & clear password"
+              @click="resetState"
+            >
+              <RefreshIcon class-name="size-3.5" />
+            </IconActionButton>
+          </div>
 
           <BaseButton
             variant="primary"
             type="submit"
-            size="sm"
             :icon="false"
-            class="!h-9 !min-h-9 min-w-0 w-full gap-1.5 px-3 text-xs"
+            class="shrink-0"
             :disabled="loading || !hasCharset"
           >
             <span class="inline-grid justify-items-center">

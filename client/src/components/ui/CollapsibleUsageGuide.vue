@@ -59,7 +59,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="relative w-full min-w-0 max-w-full">
-    <div class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-2">
+    <div class="mb-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
       <div v-if="slots.start" class="min-w-0 flex-1 overflow-hidden">
         <slot name="start" />
       </div>
@@ -84,6 +84,7 @@ onBeforeUnmount(() => {
             <QuestionIcon class-name="size-3.5" />
           </ToolbarPillButton>
         </span>
+        <slot name="trailing" />
       </div>
     </div>
 

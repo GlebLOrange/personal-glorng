@@ -47,11 +47,15 @@ const displaySegments = computed((): BreadcrumbSegment[] => {
         !-right-6 reaches the shell outer edge (chrome is content-width; nav CB includes px-6).
         top-1/2 centers on this row with the breadcrumbs.
       -->
-      <BackLink
-        v-if="backTo"
-        :to="backTo"
-        class="shell-outside-end !-right-6 top-1/2 -translate-y-1/2"
-      />
+      <!-- Teleported: chrome's backdrop-blur would trap position:fixed. Same fixed rail as ScrollControls,
+           stacked directly above "scroll to next section" (bottom-[8%] + button height + gap). -->
+      <Teleport v-if="backTo" to="body">
+        <div class="pointer-events-none fixed inset-x-0 bottom-[calc(8%+3.5rem)] z-30 print:hidden">
+          <div class="relative mx-auto w-full max-w-5xl px-6">
+            <BackLink :to="backTo" class="scroll-rail-end pointer-events-auto" />
+          </div>
+        </div>
+      </Teleport>
     </div>
 
     <!-- Wrapper owns absolute pins; FieldHelp root is relative for its tip. -->
