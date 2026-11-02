@@ -258,6 +258,7 @@ defineExpose({ close });
           <span
             v-if="activeLabel"
             class="col-start-1 row-start-1 truncate whitespace-nowrap text-surface-muted"
+            :class="optionLabels?.length ? 'w-0 min-w-full' : undefined"
           >
             · {{ activeLabel }}
           </span>

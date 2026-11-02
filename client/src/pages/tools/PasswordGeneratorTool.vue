@@ -46,11 +46,8 @@ const hasCustomOptions = computed(
     excludeAmbiguous.value,
 );
 
-/** Reserve trigger width for the longest possible active label. */
-const OPTIONS_SIZING_LABELS = [
-  "uppercase · lowercase · numbers · symbols · exclude ambiguous",
-  "none",
-];
+/** Trigger width = longest single option ("exclude ambiguous"); longer joined labels truncate. */
+const OPTIONS_SIZING_LABELS = ["exclude ambiguous"];
 
 const optionsActiveLabel = computed(() => {
   if (!hasCustomOptions.value) return undefined;
