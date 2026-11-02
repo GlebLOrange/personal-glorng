@@ -1,3 +1,6 @@
+# Shared ignore rules for ripgrep and local coding tools.
+# Keep this synchronized for consumers that only support a dedicated ignore file.
+
 # Dependencies (symlink-heavy)
 node_modules
 server/.venv
