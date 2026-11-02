@@ -5,7 +5,7 @@
 
 Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Download the raw schema: [openapi.json](/openapi.json).
 
-**153** operations.
+**154** operations.
 
 | Method | Path | Tags | Summary |
 |--------|------|------|---------|
@@ -149,6 +149,7 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/tools/url-shortener` | url-shortener | List short URLs |
 | `POST` | `/api/tools/url-shortener` | url-shortener | Create short URL |
 | `DELETE` | `/api/tools/url-shortener/{url_id}` | url-shortener | Delete short URL |
+| `PATCH` | `/api/tools/url-shortener/{url_id}` | url-shortener | Update short URL |
 | `POST` | `/api/tools/vid-download` | vid-download | Download video via yt-dlp |
 | `GET` | `/api/weather/config` | weather | Get Weather Config |
 | `GET` | `/api/weather/locations` | weather | List Weather Locations |
