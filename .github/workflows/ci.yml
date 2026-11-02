@@ -30,33 +30,15 @@ jobs:
       - uses: actions/checkout@v7
       - name: Communities drift guard
         run: bash scripts/check_communities_drift.sh
+      - name: Verify generated CI path filters
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/generate_ci_path_filters.py --check
       - uses: dorny/paths-filter@v4
         id: filter
         if: github.event_name == 'pull_request'
         with:
-          # ponytail: outside negations duplicate the gate + skip lists.
-          # Upgrade path: generate the three filters from one path manifest.
-          filters: |
-            backend:
-              - 'server/**'
-              - 'shared/**'
-              - 'rabbitmq/**'
-              - 'deploy/**'
-              - 'scripts/**'
-              - 'nginx/**'
-              - 'Makefile'
-              - 'docker-compose*.yml'
-              - '.github/workflows/**'
-              - '.env.example'
-              - '.env.production.example'
-              - '.dockerignore'
-              - '.pre-commit-config.yaml'
-            frontend:
-              - 'client/**'
-              - 'shared/**'
-              - 'nginx/**'
-              - 'docker-compose*.yml'
-              - '.github/workflows/**'
+          # Filters generated from .github/ci-path-manifest.yml
+          filters: .github/generated/ci-path-filters.yml
       - name: Select jobs
         id: select
         run: |
@@ -77,15 +59,14 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           outside=false
+          # shellcheck source=.github/generated/ci-path-outside.sh
+          source .github/generated/ci-path-outside.sh
           while IFS= read -r path; do
-            case "$path" in
-              server/*|shared/*|rabbitmq/*|deploy/*|scripts/*|nginx/*|client/*|docs/*|postman/*|.github/workflows/*|.github/ISSUE_TEMPLATE/*|.github/skills/*|.cursor/*|.agents/*|.devcontainer/*|.vscode/*|.claude/*|.gemini/*|*.md|*.mdc|Makefile|docker-compose*.yml|.env.example|.env.production.example|.dockerignore|.pre-commit-config.yaml|.github/FUNDING.yml|.github/copilot-instructions.md|.github/social-preview.png|.github/dependabot.yml|.editorconfig|.nvmrc|.gitignore|.ignore|.rgignore|.cursorignore|.mcp.json|.gitleaks.toml|AGENTS.md|CLAUDE.md|CODING_STANDARDS.md|CV.md|GEMINI.md|GEMINI.md.bak.*|GEMINI_SAVED_INFO.md|opencode.json|LICENSE)
-                ;;
-              *)
-                echo "::error file=$path::Changed path is outside the CI gate and skip allowlist."
-                outside=true
-                ;;
-            esac
+            if ci_path_is_allowed "$path"; then
+              continue
+            fi
+            echo "::error file=$path::Changed path is outside the CI gate and skip allowlist."
+            outside=true
           done < <(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename')
           echo "outside=$outside" >> "$GITHUB_OUTPUT"
 
