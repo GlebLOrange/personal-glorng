@@ -49,7 +49,7 @@ const {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'ai chat' }]"
     back-to="/tools"
     max-width="5xl"
-    body-width="column"
+    body-width="full"
   >
     <div class="page-tool-actions">
       <AdminTabBar
@@ -65,7 +65,7 @@ const {
       id="ai-chat-panel-chat"
       role="tabpanel"
       aria-labelledby="ai-chat-tab-chat"
-      class="flex h-[65vh] flex-col"
+      class="flex h-[65vh] w-full flex-col"
     >
       <div class="mb-4 flex items-center gap-3 border-b border-surface-border pb-4">
         <span class="text-xs text-surface-mid">
