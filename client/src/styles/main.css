@@ -216,7 +216,7 @@ html[data-theme="light"] {
     padding-right: calc(3.5rem + env(safe-area-inset-right));
   }
   /* Compact tile unit: 3 cards/row at ≥420px each (+ 1rem gaps). */
-  --tile-min: 420px;
+  --tile-min: 768px;
   --tile-gap: 1rem;
   --tile: calc((100% - 2 * var(--tile-gap)) / 3);
   --content: calc(var(--tile) * 2 + var(--tile-gap));
