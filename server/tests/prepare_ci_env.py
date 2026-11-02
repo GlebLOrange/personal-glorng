@@ -7,6 +7,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = Path(__file__).resolve().parent
 TEMPLATE = ROOT / ".env.example"
+TEST_JWT_KEY = "ci-jwt-key-with-more-than-thirty-two-characters"
+TEST_FERNET_KEY = "ci-fernet-key-with-more-than-thirty-two-characters"
+TEST_REDIS_PASSWORD = "ci-test-redis-password-long-enough"
+CI_DEFAULTS = {
+    "JWT_SECRET": TEST_JWT_KEY,
+    "FERNET_SECRET": TEST_FERNET_KEY,
+    "REDIS_PASSWORD": TEST_REDIS_PASSWORD,
+    "REDIS_URL": f"redis://:{TEST_REDIS_PASSWORD}@127.0.0.1:6379/0",
+    "REDIS_CACHE_URL": f"redis://:{TEST_REDIS_PASSWORD}@127.0.0.1:6380/0",
+    "UNTRUSTED_URL_TOOLS_ENABLED": "false",
+    "UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED": "false",
+    "TELEGRAM_ALLOWED_USER_ID": "123456",
+    "APP_LOG_PERSIST_MIN_LEVEL": "INFO",
+    "LOG_REQUESTS": "true",
+}
 
 
 def write_env(path: Path, **overrides: str) -> None:
@@ -16,7 +31,12 @@ def write_env(path: Path, **overrides: str) -> None:
         if stripped and not stripped.startswith("#") and "=" in stripped:
             key, value = stripped.split("=", 1)
             values[key] = value
+    values.update(CI_DEFAULTS)
     values.update(overrides)
+    for key, value in values.items():
+        for reference, replacement in values.items():
+            value = value.replace(f"${{{reference}}}", replacement)
+        values[key] = value
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "\n".join(f"{key}={value}" for key, value in values.items()) + "\n",
@@ -24,21 +44,31 @@ def write_env(path: Path, **overrides: str) -> None:
     )
 
 
-TEST_JWT_KEY = "ci-jwt-key-with-more-than-thirty-two-characters"
-TEST_FERNET_KEY = "ci-fernet-key-with-more-than-thirty-two-characters"
 PRODUCTION_BASE = {
     "APP_ENV": "production",
     "JWT_SECRET": TEST_JWT_KEY,
     "FERNET_SECRET": TEST_FERNET_KEY,
     "MONGODB_PASSWORD": "ci-mongodb-password-long-enough",
     "RABBITMQ_PASSWORD": "ci-rabbitmq-password-long-enough",
-    "REDIS_PASSWORD": "ci-redis-password-long-enough",
-    "REDIS_URL": "redis://:[REDACTED]@127.0.0.1:6379/0",
-    "REDIS_CACHE_URL": "redis://:[REDACTED]@127.0.0.1:6380/0",
+    "REDIS_PASSWORD": TEST_REDIS_PASSWORD,
+    "REDIS_URL": f"redis://:{TEST_REDIS_PASSWORD}@127.0.0.1:6379/0",
+    "REDIS_CACHE_URL": f"redis://:{TEST_REDIS_PASSWORD}@127.0.0.1:6380/0",
     "UNTRUSTED_URL_TOOLS_ENABLED": "false",
 }
 
-write_env(TESTS / ".env.test", USE_SQLITE_TESTS="true")
+write_env(
+    TESTS / ".env.test",
+    USE_SQLITE_TESTS="true",
+    JWT_SECRET=TEST_JWT_KEY,
+    FERNET_SECRET=TEST_FERNET_KEY,
+    REDIS_PASSWORD=TEST_REDIS_PASSWORD,
+    REDIS_URL=f"redis://:{TEST_REDIS_PASSWORD}@127.0.0.1:6379/0",
+    REDIS_CACHE_URL=f"redis://:{TEST_REDIS_PASSWORD}@127.0.0.1:6380/0",
+    TELEGRAM_ALLOWED_USER_ID="123456",
+    UNTRUSTED_URL_TOOLS_ENABLED="true",
+    UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED="true",
+)
+
 
 SCENARIOS: dict[str, dict[str, str]] = {
     "production-csrf.env": PRODUCTION_BASE,
@@ -56,7 +86,7 @@ SCENARIOS: dict[str, dict[str, str]] = {
     "production-weak-redis.env": {
         **PRODUCTION_BASE,
         "REDIS_PASSWORD": "weak",
-        "REDIS_URL": "redis://:[REDACTED]@127.0.0.1:6379/0",
+        "REDIS_URL": "redis://:${REDIS_PASSWORD}@127.0.0.1:6379/0",
     },
     "ai-chat.env": {"AI_CHAT_ENABLED": "true", "GROQ_API_KEY": "ci-test-key"},
     "ai-search.env": {"AI_SEARCH_ENABLED": "true", "GROQ_API_KEY": "ci-test-key"},
