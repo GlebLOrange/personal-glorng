@@ -155,6 +155,7 @@ async def search_app_logs(
     date_to: date | None = None,
     offset: int = 0,
     limit: int = 50,
+    sort: str = "when_desc",
 ) -> tuple[list[AppLog], int] | None:
     if not _app_log_enabled():
         return None
@@ -171,12 +172,13 @@ async def search_app_logs(
         date_from=date_from,
         date_to=date_to,
     )
+    occurred_order = "asc" if sort == "when_asc" else "desc"
     response = await es.search(
         index=_index_name(),
         query=query,
         from_=offset,
         size=limit,
-        sort=[{"occurred_at": "desc"}],
+        sort=[{"occurred_at": occurred_order}],
         track_total_hits=True,
     )
     total = int(response["hits"]["total"]["value"])

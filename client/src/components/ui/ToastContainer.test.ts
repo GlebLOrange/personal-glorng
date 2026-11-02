@@ -55,14 +55,14 @@ describe("ToastContainer", () => {
     const info = mount(ToastContainer, { props: { variant: "overlay" } });
     expect(info.get("[aria-label='notifications'] > *").classes()).toEqual(
       expect.arrayContaining([
-        "!bg-accent-blue/10",
-        "!border-accent-blue/30",
-        "text-accent-blue",
-        "hover:!bg-accent-blue/20",
-        "hover:!border-accent-blue/50",
+        "!bg-accent-coral/10",
+        "!border-accent-coral/30",
+        "text-accent-coral",
+        "hover:!bg-accent-coral/20",
+        "hover:!border-accent-coral/50",
       ]),
     );
-    expect(info.get("[role='status']").classes()).toContain("text-accent-blue");
+    expect(info.get("[role='status']").classes()).toContain("text-accent-coral");
     info.unmount();
   });
 

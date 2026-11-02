@@ -51,7 +51,7 @@ const STATUS_MENU_ITEM_CLASS: Record<TaskStatus, string> = {
   pending: "text-status-warning hover:bg-status-warning/15",
   completed: "text-status-success hover:bg-status-success/15",
   not_completed: "text-status-error hover:bg-status-error/15",
-  postponed: "text-accent-blue hover:bg-accent-blue/15",
+  postponed: "text-accent-coral hover:bg-accent-coral/15",
   cancelled: "text-surface-mid hover:bg-surface-mid/10",
 };
 

@@ -5,10 +5,13 @@ import { useRoute, useRouter } from "vue-router";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
+import PlusIcon from "@/components/icons/PlusIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
+import TasksCalendarPanel from "@/components/tasks/TasksCalendarPanel.vue";
 import TasksIntakesPanel from "@/components/tasks/TasksIntakesPanel.vue";
 import TasksListPanel from "@/components/tasks/TasksListPanel.vue";
 import TasksSyncPanel from "@/components/tasks/TasksSyncPanel.vue";
@@ -21,20 +24,37 @@ import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { useTasks } from "@/composables/useTasks";
 
+import type { AdminTabIcon } from "@/components/admin/AdminTabBar.vue";
 import type { HttpStatusFamily } from "@/constants/httpStatusColors";
 
-type Tab = "queue" | "intakes" | "sync";
+type Tab = "queue" | "calendar" | "intakes" | "sync";
 
 const TASK_TABS: {
   id: Tab;
   label: string;
-  icon?: "sync" | "refresh";
+  icon: AdminTabIcon;
   family?: HttpStatusFamily;
 }[] = [
-  { id: "queue", label: "queue" },
-  { id: "intakes", label: "intakes" },
+  { id: "queue", label: "queue", icon: "queue" },
+  { id: "calendar", label: "calendar", icon: "calendar" },
+  { id: "intakes", label: "intakes", icon: "intakes" },
   { id: "sync", label: "sync", icon: "sync", family: "5xx" },
 ];
+
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function todayDateKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+}
+
+function monthRangeIso(year: number, month: number): { start: string; end: string } {
+  const start = new Date(year, month, 1);
+  const end = new Date(year, month + 1, 1);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
 
 const STATUS_FILTERS = [
   { label: "pending", value: "pending" },
@@ -48,22 +68,34 @@ const route = useRoute();
 const router = useRouter();
 const activeTab = ref<Tab>("queue");
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
+const now = new Date();
+const calendarYear = ref(now.getFullYear());
+const calendarMonth = ref(now.getMonth());
+const selectedDate = ref(todayDateKey());
 
 const { isSuperuser } = usePermissions();
 
 const {
   DEFAULT_FILTER_STATUS,
   tasks,
+  calendarTasks,
+  calendarTruncated,
   syncQueue,
+  syncProcessing,
+  syncAriaSort,
+  toggleSyncSort,
   intakes,
   selectedTask,
   stats,
   filterStatus,
   searchQuery,
+  whenAriaSort,
   page,
   showCreateForm,
   createForm,
+  createErrors,
   listLoading,
+  calendarLoading,
   intakesLoading,
   syncLoading,
   detailLoading,
@@ -85,6 +117,7 @@ const {
   intakeTotal,
   syncTotal,
   loadTasks,
+  loadCalendarMonth,
   loadIntakes,
   loadSyncQueue,
   loadStats,
@@ -92,6 +125,8 @@ const {
   closeDetail,
   retrySync,
   processSyncQueueNow,
+  pingBot,
+  pingingBot,
   updateTaskStatus,
   rescheduleTask,
   openCreate,
@@ -99,6 +134,7 @@ const {
   goToPage,
   goToIntakePage,
   goToSyncPage,
+  toggleWhenSort,
 } = useTasks();
 
 const activeFilterLabel = computed(
@@ -111,12 +147,56 @@ function parseTaskTab(value: unknown): Tab | null {
     : null;
 }
 
+async function reloadCalendar(): Promise<void> {
+  const { start, end } = monthRangeIso(calendarYear.value, calendarMonth.value);
+  await loadCalendarMonth(start, end);
+}
+
 function switchTab(tab: string): void {
   if (!TASK_TABS.some((item) => item.id === tab)) return;
   activeTab.value = tab as Tab;
-  void router.replace({ query: { ...route.query, tab } });
+  const query = { ...route.query, tab } as Record<string, string>;
+  if (tab === "calendar") {
+    query.date = selectedDate.value;
+  }
+  void router.replace({ query });
   if (tab === "intakes") void loadIntakes();
   if (tab === "sync") void loadSyncQueue();
+  if (tab === "calendar") void reloadCalendar();
+}
+
+function selectCalendarDate(date: string): void {
+  selectedDate.value = date;
+  void router.replace({ query: { ...route.query, tab: "calendar", date } });
+  const [y, m] = date.split("-").map(Number);
+  if (y !== calendarYear.value || m - 1 !== calendarMonth.value) {
+    calendarYear.value = y;
+    calendarMonth.value = m - 1;
+    void reloadCalendar();
+  }
+}
+
+function shiftCalendarMonth(delta: number): void {
+  const next = new Date(calendarYear.value, calendarMonth.value + delta, 1);
+  calendarYear.value = next.getFullYear();
+  calendarMonth.value = next.getMonth();
+  selectedDate.value = `${calendarYear.value}-${pad2(calendarMonth.value + 1)}-01`;
+  void router.replace({
+    query: { ...route.query, tab: "calendar", date: selectedDate.value },
+  });
+  void reloadCalendar();
+}
+
+async function onUpdateStatus(status: Parameters<typeof updateTaskStatus>[1]): Promise<void> {
+  if (!selectedTask.value) return;
+  await updateTaskStatus(selectedTask.value.id, status);
+  if (activeTab.value === "calendar") await reloadCalendar();
+}
+
+async function onReschedule(scheduledAtLocal: string): Promise<void> {
+  if (!selectedTask.value) return;
+  await rescheduleTask(selectedTask.value.id, scheduledAtLocal);
+  if (activeTab.value === "calendar") await reloadCalendar();
 }
 
 function setStatusFilter(status: string): void {
@@ -136,6 +216,25 @@ const hasActiveFilters = computed(
     Boolean(effectiveSearchQuery(searchQuery.value)),
 );
 
+/** Calendar create is blocked for local dates before today. */
+const selectedDateIsPast = computed(() => selectedDate.value < todayDateKey());
+
+const createDisabled = computed(() => {
+  if (activeTab.value === "calendar") {
+    return calendarLoading.value || selectedDateIsPast.value;
+  }
+  return listLoading.value;
+});
+
+function onCreateClick(): void {
+  if (activeTab.value === "calendar") {
+    if (selectedDateIsPast.value) return;
+    openCreate(selectedDate.value);
+    return;
+  }
+  openCreate();
+}
+
 function onFailedSyncs(): void {
   filterDropdownRef.value?.close();
   switchTab("sync");
@@ -152,10 +251,18 @@ useScrollListFingerprint(
 
 onMounted(() => {
   const tab = parseTaskTab(route.query.tab);
+  const dateParam = route.query.date;
+  if (typeof dateParam === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+    selectedDate.value = dateParam;
+    const [y, m] = dateParam.split("-").map(Number);
+    calendarYear.value = y;
+    calendarMonth.value = m - 1;
+  }
   if (tab) {
     activeTab.value = tab;
     if (tab === "intakes") void loadIntakes();
     if (tab === "sync") void loadSyncQueue();
+    if (tab === "calendar") void reloadCalendar();
   }
   void loadTasks();
   void loadStats();
@@ -163,13 +270,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="tasks" max-width="5xl" back-to="/tools">
-    <p class="mb-4 text-sm text-surface-mid">
-      Telegram reminders and Google Calendar sync share this queue with the web UI.
-    </p>
-    <div class="min-w-0">
-      <div class="mb-3 space-y-2">
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
+  <PageShell
+    title="tasks"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'tasks' }]"
+    back-to="/tools"
+    body-width="column"
+    description="Telegram reminders and Google Calendar sync share this queue with the web UI."
+  >
+    <div class="w-full min-w-0 self-stretch">
+      <div class="page-tool-actions">
+        <div
+          class="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 md:flex-nowrap"
+        >
           <AdminFilterDropdown
             v-show="activeTab === 'queue'"
             ref="filterDropdown"
@@ -209,7 +321,9 @@ onMounted(() => {
             v-if="activeTab === 'queue'"
             v-model="searchQuery"
             class="min-w-0 flex-1"
+            auto-width
             placeholder="search tasks"
+            collapsible
           />
 
           <AdminTabBar
@@ -221,18 +335,52 @@ onMounted(() => {
           />
 
           <ToolbarPillButton
-            v-if="isSuperuser"
-            v-show="activeTab === 'queue'"
-            action="create"
-            class="ml-auto"
-            :disabled="listLoading"
-            @click="openCreate"
+            v-if="isSuperuser && activeTab === 'sync'"
+            family="5xx"
+            class="w-auto shrink-0 gap-1.5"
+            :disabled="syncLoading || syncProcessing"
+            aria-label="process sync queue now"
+            @click="processSyncQueueNow"
           >
-            + task
+            <SyncIcon class-name="size-3.5 shrink-0" />
+            sync now
+          </ToolbarPillButton>
+
+          <ToolbarPillButton
+            v-if="isSuperuser"
+            family="2xx"
+            class="w-auto shrink-0 gap-1.5"
+            :disabled="pingingBot"
+            title="Ping Telegram todobot (getMe + DM). Does not prove polling is up."
+            @click="pingBot"
+          >
+            <RefreshIcon class-name="size-3.5 shrink-0" />
+            ping bot
+          </ToolbarPillButton>
+
+          <ToolbarPillButton
+            v-if="isSuperuser"
+            v-show="activeTab === 'queue' || activeTab === 'calendar'"
+            action="create"
+            :icon="false"
+            class="ml-auto w-auto shrink-0"
+            :disabled="createDisabled"
+            :title="
+              activeTab === 'calendar' && selectedDateIsPast
+                ? 'Cannot create tasks on past days'
+                : undefined
+            "
+            @click="onCreateClick"
+          >
+            <PlusIcon class-name="size-3.5 shrink-0" />
+            task
           </ToolbarPillButton>
         </div>
 
-        <p v-if="activeTab === 'queue' && !isSuperuser" class="text-xs text-surface-mid">
+        <p
+          v-if="(activeTab === 'queue' || activeTab === 'calendar') && !isSuperuser"
+          class="text-xs text-surface-mid"
+        >
           View only — creating and status changes need superuser.
         </p>
       </div>
@@ -242,6 +390,7 @@ onMounted(() => {
         :tasks="tasks"
         :loading="listLoading"
         :filter-status="filterStatus"
+        :when-aria-sort="whenAriaSort"
         :stats="stats"
         :total="total"
         :page="page"
@@ -249,11 +398,26 @@ onMounted(() => {
         :has-next-page="hasNextPage"
         :has-previous-page="hasPreviousPage"
         @select="openDetail"
+        @sort-when="toggleWhenSort"
         @failed-syncs="switchTab('sync')"
         @first-page="goToPage(1)"
         @prev-page="goToPage(page - 1)"
         @next-page="goToPage(page + 1)"
         @last-page="goToPage(totalPages)"
+      />
+
+      <TasksCalendarPanel
+        v-else-if="activeTab === 'calendar'"
+        :tasks="calendarTasks"
+        :loading="calendarLoading"
+        :truncated="calendarTruncated"
+        :year="calendarYear"
+        :month="calendarMonth"
+        :selected-date="selectedDate"
+        @prev-month="shiftCalendarMonth(-1)"
+        @next-month="shiftCalendarMonth(1)"
+        @select-date="selectCalendarDate"
+        @select-task="openDetail"
       />
 
       <TasksIntakesPanel
@@ -276,13 +440,14 @@ onMounted(() => {
         :items="syncQueue"
         :loading="syncLoading"
         :can-mutate="isSuperuser"
+        :queued-aria-sort="syncAriaSort"
         :total="syncTotal"
         :page="syncPage"
         :total-pages="syncTotalPages"
         :has-next-page="hasNextSyncPage"
         :has-previous-page="hasPreviousSyncPage"
         @retry="retrySync"
-        @sync-now="processSyncQueueNow"
+        @sort-queued="toggleSyncSort"
         @first-page="goToSyncPage(1)"
         @prev-page="goToSyncPage(syncPage - 1)"
         @next-page="goToSyncPage(syncPage + 1)"
@@ -294,6 +459,7 @@ onMounted(() => {
         v-model:form="createForm"
         :open="showCreateForm"
         :saving="saving"
+        :errors="createErrors"
         @submit="createTask"
         @close="showCreateForm = false"
       />
@@ -307,9 +473,9 @@ onMounted(() => {
         :rescheduling="rescheduling"
         @close="closeDetail"
         @retry-sync="retrySync"
-        @update-status="selectedTask && updateTaskStatus(selectedTask.id, $event)"
-        @reschedule="selectedTask && rescheduleTask(selectedTask.id, $event)"
+        @update-status="onUpdateStatus"
+        @reschedule="onReschedule"
       />
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

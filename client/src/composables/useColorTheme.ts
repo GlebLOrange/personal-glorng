@@ -1,4 +1,5 @@
 import { computed, onMounted, ref, type Ref } from "vue";
+import { THEME_COLOR } from "@/constants/themeColors";
 
 /** Persisted color theme (explicit light or dark only). */
 export type ColorThemePreference = "light" | "dark";
@@ -11,11 +12,8 @@ export const COLOR_THEME_STORAGE_KEY = "glorng-color-theme";
 /** Unset / invalid localStorage → dark (FOUC script must match). */
 export const DEFAULT_COLOR_THEME_PREFERENCE: ColorThemePreference = "dark";
 
-const THEME_COLOR_LIGHT = "#e5e7eb";
-const THEME_COLOR_DARK = "#0d1117";
-
 function themeColorFor(theme: ColorThemeResolved): string {
-  return theme === "light" ? THEME_COLOR_LIGHT : THEME_COLOR_DARK;
+  return THEME_COLOR[theme];
 }
 
 const preference: Ref<ColorThemePreference> = ref(readPreference());

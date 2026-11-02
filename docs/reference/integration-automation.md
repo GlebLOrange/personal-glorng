@@ -2,7 +2,7 @@
 
 How to connect external tools (shell scripts, n8n, Huginn, cron) to Gleb.Y without changing application code.
 
-See also [API & tools](/reference/api-tools) for the full endpoint catalog, [Postman](/reference/postman) for OpenAPI import, and [inbound webhooks](#inbound-webhooks) below.
+See also [API & tools](/reference/api-tools) for the full endpoint catalog and OpenAPI, and [inbound webhooks](#inbound-webhooks) below.
 
 ## Discover services
 
@@ -123,6 +123,10 @@ When `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are set:
 - `POST /api/donations/webhook` — Stripe-signed events (`checkout.session.completed` notifies admin via Telegram); 1 MB body limit
 
 PayPal and Patreon support use the configured external links from `GET /api/donations/config`.
+
+Leave `STRIPE_LINK` empty when using Checkout. A non-empty legacy link makes the portfolio open that URL instead of `POST /api/donations/checkout`. After a successful payment, Stripe redirects to `/?donated=1#support` (or `STRIPE_CHECKOUT_SUCCESS_URL`); the support section shows a short thank-you when the success URL includes `donated=1`.
+
+Production webhook: register `https://<your-domain>/api/donations/webhook` in the Stripe Dashboard for `checkout.session.completed` and set `STRIPE_WEBHOOK_SECRET` to that endpoint’s signing secret. Stripe Terminal (in-person readers) is not part of this portfolio donation flow — use Dashboard Tap to Pay or a Payment Link QR if you ever need event payments.
 
 Local testing with [Stripe CLI](https://stripe.com/docs/stripe-cli):
 

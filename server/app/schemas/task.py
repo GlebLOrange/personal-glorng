@@ -39,6 +39,7 @@ class TaskCreate(TaskTextFields):
         description="Task start time (ISO 8601). Naive values are treated as UTC.",
     )
     telegram_user_id: int | None = None
+    # Deprecated: create always schedules 90/60/30 + at-start; value is ignored.
     reminder_minutes: int | None = Field(None, ge=1, le=1440)
 
     model_config = ConfigDict(
@@ -48,7 +49,6 @@ class TaskCreate(TaskTextFields):
                 "description": "Daily sync",
                 "location": "Zoom",
                 "scheduled_at": "2026-06-09T09:00:00Z",
-                "reminder_minutes": 15,
             }
         }
     )
@@ -128,6 +128,16 @@ class TaskStatsResponse(BaseModel):
     completed: int
     total: int
     failed_syncs: int
+
+
+class BotPingResponse(BaseModel):
+    """Telegram todobot token + outbound DM healthcheck result."""
+
+    ok: bool
+    bot_username: str | None = None
+    bot_id: int | None = None
+    message_sent: bool = False
+    detail: str
 
 
 class TaskListResponse(PaginatedResponse[TaskResponse]):

@@ -2,17 +2,25 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import ClockIcon from "@/components/icons/ClockIcon.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
+import PlusIcon from "@/components/icons/PlusIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import type { TaskCreateForm } from "@/composables/useTasks";
+import TaskReminderScheduleInfo from "@/components/tasks/TaskReminderScheduleInfo.vue";
+import type { TaskCreateErrors, TaskCreateForm } from "@/composables/useTasks";
 
-defineProps<{
-  open: boolean;
-  saving: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    open: boolean;
+    saving: boolean;
+    errors?: TaskCreateErrors;
+  }>(),
+  {
+    errors: () => ({}),
+  },
+);
 
 const form = defineModel<TaskCreateForm>("form", { required: true });
 
@@ -22,26 +30,24 @@ const emit = defineEmits<{ submit: []; close: [] }>();
 <template>
   <BaseDrawer :open="open" title="new task" max-width="md" @close="emit('close')">
     <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
-      <BaseInput v-model="form.title" placeholder="title" />
-      <BaseInput v-model="form.scheduled_at" type="datetime-local" aria-label="scheduled at" />
-      <BaseSelect v-model="form.reminder_minutes" label="reminder" aria-label="reminder minutes">
-        <option value="">no reminder</option>
-        <option value="15">15 min before</option>
-        <option value="30">30 min before</option>
-        <option value="60">1 hour before</option>
-        <option value="180">3 hours before</option>
-      </BaseSelect>
-      <BaseInput v-model="form.location" placeholder="(optional)" aria-label="location">
+      <BaseInput v-model="form.title" label="title" :error="errors.title" />
+      <BaseInput
+        v-model="form.scheduled_at"
+        type="datetime-local"
+        label="scheduled at"
+        :error="errors.scheduled_at"
+      >
+        <template #prefix>
+          <ClockIcon class-name="size-4 shrink-0" />
+        </template>
+      </BaseInput>
+      <TaskReminderScheduleInfo />
+      <BaseInput v-model="form.location" label="location" placeholder="(optional)">
         <template #prefix>
           <LocationIcon class-name="size-4 shrink-0" />
         </template>
       </BaseInput>
-      <BaseTextarea
-        v-model="form.description"
-        :rows="3"
-        placeholder="notes (optional)"
-        aria-label="notes"
-      />
+      <BaseTextarea v-model="form.description" label="notes" :rows="3" placeholder="(optional)" />
     </form>
 
     <template #footer>
@@ -54,8 +60,11 @@ const emit = defineEmits<{ submit: []; close: [] }>();
             type="submit"
             form="task-create-drawer-form"
             action="create"
+            :icon="false"
+            class="gap-1.5"
             :disabled="saving"
           >
+            <PlusIcon class-name="size-3.5 shrink-0" />
             {{ saving ? "creating…" : "create" }}
           </ToolbarPillButton>
         </template>

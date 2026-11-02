@@ -127,7 +127,9 @@ async def test_qr_library_forbidden_for_other_user(
             headers=headers,
         )
     ).status_code == 403
-    assert (await client.delete(f"{_LIBRARY}/{qr_id}", headers=headers)).status_code == 403
+    assert (
+        await client.delete(f"{_LIBRARY}/{qr_id}", headers=headers)
+    ).status_code == 403
 
 
 @pytest.mark.asyncio
@@ -137,7 +139,9 @@ async def test_qr_library_list_scoped_to_owner(
     registry,
 ) -> None:
     """List returns only the caller's codes (url-shortener owner scope)."""
-    mine = await auth_client.post(_LIBRARY, json={"content": "owner-payload", "label": "mine"})
+    mine = await auth_client.post(
+        _LIBRARY, json={"content": "owner-payload", "label": "mine"}
+    )
     assert mine.status_code == 201
 
     other = await create_user(

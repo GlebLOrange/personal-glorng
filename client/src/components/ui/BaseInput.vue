@@ -32,6 +32,8 @@ const props = withDefaults(
     type?: string;
     /** In-bar overlay tip (decorative); shown only when empty. Not the accessible name. */
     placeholder?: string;
+    /** Explicit overlay tip; preferred over `placeholder` when both are set. */
+    tip?: string;
     /** Optional left-side field name inside the control. */
     prefix?: string;
     label?: string;
@@ -40,16 +42,23 @@ const props = withDefaults(
     /** Border tone when there is no error message (validation UI). */
     tone?: "error" | "success";
     compact?: boolean;
+    /** When false, hide the trailing clear control (default true). */
+    clearable?: boolean;
     /** Render the label inside the input bar instead of the outer border notch. */
     labelInside?: boolean;
     /**
-     * When not labelInside: `start` = border notch; `end` = inside trailing (before clear).
+     * When not labelInside: `end` = no visible name (sr-only / aria; default);
+     * `start` = border notch (opt-in).
      */
     labelAlign?: "start" | "end";
+    /** Shrink shell/input to content (tool action panels) instead of w-full. */
+    autoWidth?: boolean;
   }>(),
   {
     labelInside: false,
     labelAlign: "end",
+    clearable: true,
+    autoWidth: false,
   },
 );
 
@@ -61,7 +70,7 @@ const inputId = computed(() => props.id ?? `base-input-${fallbackId}`);
 const hintId = computed(() => `${inputId.value}-hint`);
 const errorId = computed(() => `${inputId.value}-error`);
 const tipId = computed(() => `${inputId.value}-tip`);
-const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder));
+const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder, props.tip));
 const hasSuffix = computed(() => Boolean(slots.suffix));
 const hasPrefixSlot = computed(() => Boolean(slots.prefix));
 const hasPrefix = computed(() => Boolean(props.prefix) || hasPrefixSlot.value);
@@ -76,17 +85,17 @@ const isInlineEnd = computed(() => props.labelAlign === "end" && !props.labelIns
 const useShell = computed(() =>
   Boolean(
     hasPrefix.value ||
-      fieldCopy.value.tip ||
-      props.placeholder ||
-      hasSuffix.value ||
-      props.labelInside ||
-      props.label ||
-      isInlineEnd.value,
+    fieldCopy.value.tip ||
+    props.placeholder ||
+    hasSuffix.value ||
+    props.labelInside ||
+    props.label ||
+    isInlineEnd.value,
   ),
 );
-const showClear = computed(() => useShell.value && hasClearableValue.value);
+const showClear = computed(() => props.clearable && useShell.value && hasClearableValue.value);
 /** Reserve clear width whenever shell is clearable so tip/value never jump. */
-const reserveClear = computed(() => useShell.value && isClearableType.value);
+const reserveClear = computed(() => props.clearable && useShell.value && isClearableType.value);
 /** Inside-label overlay mirrors tip: visible only while empty, then clear takes over. */
 const showInsideLabel = computed(
   () => Boolean(props.labelInside && props.label) && !hasTypedValue.value,
@@ -96,13 +105,20 @@ const showTip = computed(
 );
 /** Error replaces label on the border notch; hint rides beside the label when present. */
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
-/** Persistent sr-only label when labelInside so naming survives hide-on-type. */
+/** Border-notch / labelInside / end-mode sr-only — all count as a named control. */
 const hasVisibleLabel = computed(
-  () => showLabelNotch.value || Boolean(props.label && props.labelInside),
+  () =>
+    showLabelNotch.value ||
+    Boolean(props.label && props.labelInside) ||
+    (isInlineEnd.value && Boolean(props.label) && !props.error),
 );
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
-const showInlineEndLabel = computed(() => isInlineEnd.value && showLabelRow.value);
+/** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
+const showInlineEndLabel = computed(() => isInlineEnd.value && Boolean(props.hint && !props.error));
 const showNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
+const showSrOnlyLabel = computed(
+  () => Boolean(props.label) && (props.labelInside || (isInlineEnd.value && !props.error)),
+);
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const tipInsetClass = computed(() => [
   hasPrefix.value ? "left-10" : "left-3",
@@ -135,24 +151,27 @@ const toneShellRingClass = computed(() => {
   if (borderTone.value === "success") {
     return "ring-1 ring-inset ring-status-success focus-within:ring-status-success";
   }
-  return "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-blue/50";
+  return "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50";
 });
 const bareInputClass = computed(() => [
   props.compact ? FIELD_INPUT_CLASS_COMPACT : FIELD_INPUT_CLASS,
+  props.autoWidth && "!w-auto max-w-full",
   props.type === "number" && "font-data",
   toneBorderClass.value,
 ]);
 const shellClass = computed(() => [
   // Inset ring (not border) — content height matches CONTROL_SIZE / icon buttons.
   // Overflow visible when trailing help can open above the shell (top-right tip).
-  "relative flex w-full items-center rounded-lg bg-surface-dark transition-colors",
+  "relative flex items-center rounded-lg bg-surface-dark transition-colors",
+  props.autoWidth ? "w-auto max-w-full" : "w-full",
   showInlineEndLabel.value && props.hint ? "overflow-visible" : "overflow-hidden",
-  props.compact ? "box-border h-9" : CONTROL_SIZE,
+  CONTROL_SIZE, // compact only tightens padding — height always matches BaseButton
   toneShellRingClass.value,
 ]);
 const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top" : "bottom"));
 const shellInputClass = computed(() => [
-  "relative z-10 h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent px-3 text-left text-sm leading-none text-surface-light outline-none",
+  // overflow-x-auto: long emails/URLs stay readable at ~375px (scroll within field).
+  "relative z-10 h-full min-h-0 min-w-0 flex-1 overflow-x-auto border-0 bg-transparent px-3 text-left text-sm leading-none text-surface-light outline-none",
   props.type === "number" && "font-data",
   props.type === "search" && "base-input-search",
 ]);
@@ -166,7 +185,8 @@ const inputAttrs = computed(() => {
 });
 /** Avoid UA size=20; prefer tip length so shrink-wrapped panels fit tips. */
 const shellTextAttrs = computed(() => {
-  const customSize = typeof inputAttrs.value.size === "number" ? inputAttrs.value.size : undefined;
+  const attrsRecord = inputAttrs.value as Record<string, unknown>;
+  const customSize = typeof attrsRecord.size === "number" ? attrsRecord.size : undefined;
   const tipLen = fieldCopy.value.tip?.length ?? props.placeholder?.length ?? 1;
   return {
     ...inputAttrs.value,
@@ -179,6 +199,7 @@ const accessibleName = computed(() =>
     hasVisibleLabel: hasVisibleLabel.value,
     label: props.label,
     prefix: props.prefix,
+    placeholder: props.placeholder,
   }),
 );
 /**
@@ -215,8 +236,8 @@ defineExpose({ focus });
       >
         <slot name="prefix" />
       </span>
-      <!-- sr-only keeps for/id naming always; visual label mirrors tip overlay when empty -->
-      <label v-if="props.labelInside && props.label" :for="inputId" class="sr-only">
+      <!-- sr-only keeps for/id naming; labelInside also draws a tip-style overlay while empty -->
+      <label v-if="showSrOnlyLabel" :for="inputId" class="sr-only">
         {{ props.label }}
       </label>
       <input
@@ -268,24 +289,12 @@ defineExpose({ focus });
         v-if="reserveClear || hasSuffix || showInlineEndLabel"
         class="relative z-10 flex shrink-0 items-center gap-0.5 self-stretch pr-2"
       >
-        <div
-          v-if="showInlineEndLabel"
-          class="flex max-w-[11rem] items-center gap-1 bg-transparent"
-        >
-          <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-          <label
-            v-if="showLabelNotch"
-            :for="inputId"
-            :class="['truncate', FIELD_LABEL_TEXT_CLASS]"
-          >
-            {{ label }}
-          </label>
+        <div v-if="showInlineEndLabel" class="flex max-w-[11rem] items-center gap-1 bg-transparent">
           <FieldHelp
-            v-if="hint"
             size="sm"
             :align="helpAlign"
             :placement="helpPlacement"
-            :text="hint"
+            :text="hint ?? ''"
             :content-id="hintId"
           />
         </div>
@@ -338,13 +347,7 @@ defineExpose({ focus });
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp
-          v-if="hint"
-          size="sm"
-          :align="helpAlign"
-          :text="hint"
-          :content-id="hintId"
-        />
+        <FieldHelp v-if="hint" size="sm" :align="helpAlign" :text="hint" :content-id="hintId" />
       </span>
     </div>
     <p

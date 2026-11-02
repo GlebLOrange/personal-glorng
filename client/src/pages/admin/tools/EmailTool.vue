@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
@@ -69,59 +69,79 @@ async function preview(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" title="email" back-to="/admin">
-    <AdminListToolbar>
-      <template #start>
-        <div class="flex w-full min-w-0 items-center justify-between gap-2">
-          <ToolbarPillButton action="create" :disabled="!subject || !body || loading" @click="preview">
-            preview
-          </ToolbarPillButton>
-          <ToolbarPillButton
-            action="save"
-            type="button"
-            :disabled="!canSend || loading"
-            @click="send"
-          >
-            {{ loading ? "sending…" : "send" }}
-          </ToolbarPillButton>
-        </div>
-      </template>
-    </AdminListToolbar>
+  <PageShell
+    title="send email"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'send email' }]"
+    back-to="/tools"
+    body-width="column"
+  >
+    <div class="page-tool-actions">
+      <AdminListToolbar>
+        <template #start>
+          <div class="flex w-full items-center justify-between gap-2">
+            <ToolbarPillButton
+              action="create"
+              :disabled="!subject || !body || loading"
+              @click="preview"
+            >
+              preview
+            </ToolbarPillButton>
+            <ToolbarPillButton
+              action="save"
+              type="button"
+              :disabled="!canSend || loading"
+              @click="send"
+            >
+              {{ loading ? "sending…" : "send" }}
+            </ToolbarPillButton>
+          </div>
+        </template>
+      </AdminListToolbar>
 
-    <form class="space-y-3 mb-8" @submit.prevent="send">
-      <BaseInput
-        id="email-to"
-        v-model="to"
-        type="email"
-        placeholder="to"
-        aria-label="to"
-        autocomplete="email"
-        spellcheck="false"
-      />
-      <BaseInput
-        id="email-subject"
-        v-model="subject"
-        placeholder="subject"
-        aria-label="subject"
-        autocomplete="off"
-      />
-      <BaseTextarea
-        id="email-body"
-        v-model="body"
-        :rows="6"
-        placeholder="body"
-        aria-label="body"
-        autocomplete="off"
-      />
-    </form>
+      <form class="flex w-full flex-col gap-3" @submit.prevent="send">
+        <BaseInput
+          id="email-to"
+          v-model="to"
+          type="email"
+          label="to"
+          tip="one recipient address, e.g. name@example.com"
+          autocomplete="email"
+          spellcheck="false"
+          class="w-full"
+        />
+        <BaseInput
+          id="email-subject"
+          v-model="subject"
+          label="subject"
+          tip="plain text, one line, max 255 chars"
+          autocomplete="off"
+          class="w-full"
+        />
+        <BaseTextarea
+          id="email-body"
+          v-model="body"
+          :rows="6"
+          label="body"
+          tip="plain text, max 5000 chars; sent with your signature"
+          autocomplete="off"
+          class="w-full"
+        />
+      </form>
+    </div>
 
-    <div v-if="previewHtml" class="space-y-2" role="status" aria-live="polite">
+    <div
+      v-if="previewHtml"
+      class="w-full min-w-0 self-stretch space-y-2"
+      role="status"
+      aria-live="polite"
+    >
       <h3 class="text-sm text-surface-mid">preview</h3>
-      <!-- eslint-disable-next-line vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
+      <!-- eslint-disable vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
       <div
         class="border border-surface-border rounded-lg p-4 bg-white"
         v-html="sanitizedPreviewHtml"
       />
+      <!-- eslint-enable vue/no-v-html -->
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

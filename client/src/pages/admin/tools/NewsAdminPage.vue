@@ -3,7 +3,7 @@ import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import NewsAdminArticleList from "@/components/news/NewsAdminArticleList.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -50,46 +50,63 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" title="manage news" max-width="5xl" back-to="/admin">
-    <AdminListToolbar v-if="!listLoading && !listError">
-      <template #actions>
-        <AdminFilterDropdown
-          ref="filterDropdown"
-          :has-active-filters="hasActiveFilters"
-          :active-label="activeFilterLabel"
-          :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
-          @clear="clearFilters"
-        >
-          <template #chips>
-            <AdminFilterChip
-              v-for="chip in STATUS_FILTERS"
-              :key="chip.value"
-              :label="chip.label"
-              :title="newsStatusDescription(chip.value)"
-              :active="statusFilter === chip.value"
-              :color-class="newsStatusClass(chip.value)"
-              @click="setStatusFilter(chip.value)"
-            />
+  <PageShell
+    title="manage news"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'manage news' }]"
+    back-to="/tools"
+    body-width="column"
+  >
+    <div v-if="!listLoading && !listError" class="page-tool-actions">
+      <AdminListToolbar>
+        <template #actions>
+          <AdminFilterDropdown
+            ref="filterDropdown"
+            :has-active-filters="hasActiveFilters"
+            :active-label="activeFilterLabel"
+            :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
+            @clear="clearFilters"
+          >
+            <template #chips>
+              <AdminFilterChip
+                v-for="chip in STATUS_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :title="newsStatusDescription(chip.value)"
+                :active="statusFilter === chip.value"
+                :color-class="newsStatusClass(chip.value)"
+                @click="setStatusFilter(chip.value)"
+              />
+            </template>
+          </AdminFilterDropdown>
+          <template v-if="canWrite">
+            <ToolbarPillButton
+              action="edit"
+              class="w-auto"
+              :disabled="actionLoading"
+              @click="runIngest"
+            >
+              run ingest
+            </ToolbarPillButton>
           </template>
-        </AdminFilterDropdown>
-        <template v-if="canWrite">
-          <ToolbarPillButton action="edit" :disabled="actionLoading" @click="runIngest">
-            run ingest
-          </ToolbarPillButton>
         </template>
-      </template>
-      <ToolbarPillButton
-        v-if="canWrite"
-        action="create"
-        class="ml-auto"
-        :disabled="actionLoading"
-        @click="openCreate"
-      >
-        + article
-      </ToolbarPillButton>
-    </AdminListToolbar>
+        <ToolbarPillButton
+          v-if="canWrite"
+          action="create"
+          class="w-auto"
+          :disabled="actionLoading"
+          @click="openCreate"
+        >
+          article
+        </ToolbarPillButton>
+      </AdminListToolbar>
+    </div>
 
-    <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="loading news">
+    <section
+      v-if="listLoading"
+      class="w-full min-w-0 space-y-3 self-stretch"
+      aria-busy="true"
+      aria-label="loading news"
+    >
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
     </section>
 
@@ -111,22 +128,6 @@ const {
       :description="emptyFilterDescription"
     />
 
-    <AdminListFooter
-      v-if="!listLoading && !listError"
-      :total="total"
-      :page="page"
-      :total-pages="totalPages"
-      :has-next-page="hasNextPage"
-      :has-previous-page="hasPreviousPage"
-      :loading="listLoading"
-      item-label="articles"
-      aria-label="news pagination"
-      @first="goToPage(1)"
-      @prev="goToPage(page - 1)"
-      @next="goToPage(page + 1)"
-      @last="goToPage(totalPages)"
-    />
-
     <NewsArticleDrawer
       v-if="canWrite"
       :open="drawerOpen"
@@ -139,5 +140,22 @@ const {
       @delete="deleteDrawerArticle"
       @save="saveDrawer"
     />
-  </AdminPageLayout>
+    <template #footer>
+      <AdminListFooter
+        v-if="!listLoading && !listError"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="listLoading"
+        item-label="articles"
+        aria-label="news pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </template>
+  </PageShell>
 </template>

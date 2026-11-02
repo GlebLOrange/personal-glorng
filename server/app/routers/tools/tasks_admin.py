@@ -1,5 +1,6 @@
 """Todobot task admin API. Default: `tasks:read`; mutations require superuser."""
 
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -14,11 +15,13 @@ from app.core.deps import (
 )
 from app.core.exceptions import ValidationError
 from app.core.rate_limit import rate_limit_api
+from app.core.telegram import ping_todobot
 from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.task import (
+    BotPingResponse,
     ReminderResponse,
     SyncQueueListResponse,
     TaskCreate,
@@ -65,7 +68,6 @@ async def create_task(
         scheduled_at=data.scheduled_at,
         description=data.description,
         location=data.location,
-        reminder_minutes=data.reminder_minutes,
         source=AuditSource.WEB_ADMIN,
         actor_type=AuditActorType.USER,
         actor_id=user.id,
@@ -86,8 +88,19 @@ async def list_tasks(
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
     status: str | None = None,
     q: Annotated[str | None, Query(min_length=3, max_length=200)] = None,
+    sort: Annotated[str | None, Query(pattern=r"^(when_desc|when_asc)$")] = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
 ) -> TaskListResponse:
-    return await svc.list_tasks(page=page, per_page=per_page, status=status, q=q)
+    return await svc.list_tasks(
+        page=page,
+        per_page=per_page,
+        status=status,
+        q=q,
+        sort=sort,
+        start=start,
+        end=end,
+    )
 
 
 @router.get(
@@ -129,8 +142,9 @@ async def list_sync_queue(
     user: AuthorizedUser,  # noqa: ARG001
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
+    sort: Annotated[str | None, Query(pattern=r"^(queued_desc|queued_asc)$")] = None,
 ) -> SyncQueueListResponse:
-    return await svc.list_sync_queue(page=page, per_page=per_page)
+    return await svc.list_sync_queue(page=page, per_page=per_page, sort=sort)
 
 
 @router.post(
@@ -146,6 +160,26 @@ async def process_sync_queue_now(
     count = await svc.process_sync_queue_now()
     return MessageResponse(
         message=f"Sync drain kicked for {count} pending entries",
+    )
+
+
+@router.post(
+    "/bot-ping",
+    response_model=BotPingResponse,
+    summary="Ping Telegram todobot",
+    description=(
+        "Requires platform superuser. Calls Telegram getMe with the todobot "
+        "token and DMs TELEGRAM_ALLOWED_USER_ID. Does not prove polling is up."
+    ),
+)
+async def bot_ping(_user: AdminUser) -> BotPingResponse:
+    result = await ping_todobot()
+    return BotPingResponse(
+        ok=result.ok,
+        bot_username=result.bot_username,
+        bot_id=result.bot_id,
+        message_sent=result.message_sent,
+        detail=result.detail,
     )
 
 

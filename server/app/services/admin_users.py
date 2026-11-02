@@ -41,13 +41,13 @@ async def list_users_paginated(
             offset=offset,
             limit=limit,
             search=search,
-            role=role,  # type: ignore[arg-type]
-            status=status,  # type: ignore[arg-type]
+            role=role,
+            status=status,
         ),
         registry.users.count_admin(  # type: ignore[union-attr]
             search=search,
-            role=role,  # type: ignore[arg-type]
-            status=status,  # type: ignore[arg-type]
+            role=role,
+            status=status,
         ),
     )
     items = [AdminUserSummary.model_validate(user) for user in users]
@@ -57,6 +57,7 @@ async def list_users_paginated(
         total=total,
         page=safe_page,
         per_page=limit,
+        response_cls=AdminUserListResponse,
     )
 
 

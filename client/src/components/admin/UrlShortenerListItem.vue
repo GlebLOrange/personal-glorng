@@ -1,148 +1,70 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, ref } from "vue";
 
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
-import AdminListRow from "@/components/admin/AdminListRow.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconCopyButton from "@/components/ui/IconCopyButton.vue";
-import IconEditButton from "@/components/ui/IconEditButton.vue";
+import {
+  ADMIN_ACTIONS_CLASS,
+  ADMIN_TD_ACTIONS_CLASS,
+  ADMIN_TH_ROW_CLASS,
+  ADMIN_TR_CLASS,
+} from "@/constants/adminDataTable";
 import type { UrlItem } from "@/types";
 import { publicUrl } from "@/utils/publicLinks";
 
-const props = defineProps<{
-  url: UrlItem;
-  canWrite: boolean;
-  saving?: boolean;
-  deleting?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    url: UrlItem;
+    canWrite: boolean;
+    deleting?: boolean;
+    /** Guest localStorage row — code is not a live /s/{code} redirect. */
+    localRow?: boolean;
+  }>(),
+  { localRow: false },
+);
 
 const emit = defineEmits<{
   copy: [];
   delete: [];
-  save: [title: string | null];
 }>();
 
-const editing = ref(false);
-const draftTitle = ref("");
 const showDeleteConfirm = ref(false);
-const titleInput = ref<{ focus: () => void } | null>(null);
 
 const shortLink = computed(() => publicUrl("s", props.url.code));
-const displayTitle = computed(() => props.url.title || props.url.original_url);
-
-watch(
-  () => props.url.id,
-  () => {
-    editing.value = false;
-  },
-);
-
-watch(
-  () => props.saving,
-  (isSaving, wasSaving) => {
-    if (wasSaving && !isSaving) {
-      const trimmed = draftTitle.value.trim() || null;
-      if (props.url.title === trimmed) {
-        editing.value = false;
-      }
-    }
-  },
-);
-
-async function startEdit(): Promise<void> {
-  draftTitle.value = props.url.title ?? "";
-  editing.value = true;
-  await nextTick();
-  titleInput.value?.focus();
-}
-
-function cancelEdit(): void {
-  editing.value = false;
-  draftTitle.value = props.url.title ?? "";
-}
-
-function saveEdit(): void {
-  emit("save", draftTitle.value.trim() || null);
-}
-
-function onTitleKeydown(event: KeyboardEvent): void {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    saveEdit();
-  }
-  if (event.key === "Escape") {
-    cancelEdit();
-  }
-}
+const copyAriaLabel = computed(() => (props.localRow ? "copy original URL" : "copy short link"));
 
 function confirmDelete(): void {
   showDeleteConfirm.value = false;
   emit("delete");
 }
+
 </script>
 
 <template>
-  <div
-    v-if="editing"
-    class="relative flex w-full min-w-0 items-stretch gap-1 after:pointer-events-none after:absolute after:bottom-0 after:left-2 after:right-2 after:z-[1] after:h-px after:bg-surface-border/60 after:content-[''] last:after:hidden"
-  >
-    <BaseInput
-      ref="titleInput"
-      v-model="draftTitle"
-      class="min-w-0 flex-1"
-      placeholder="title (optional)"
-      @keydown="onTitleKeydown"
-    />
-    <BaseButton
-      variant="cancel"
-      size="sm"
-      class="shrink-0"
-      :disabled="saving"
-      @click="cancelEdit"
-    >
-      cancel
-    </BaseButton>
-    <BaseButton variant="save" size="sm" class="shrink-0" :disabled="saving" @click="saveEdit">
-      {{ saving ? "…" : "save" }}
-    </BaseButton>
-  </div>
-
-  <AdminListRow
-    v-else
-    :interactive="canWrite"
-    :nested-interactive="canWrite"
-    hoverable
-    center-meta
-    reveal-actions-on-hover
-    @click="startEdit"
-  >
-    <template #primary>
-      <span :title="displayTitle">{{ displayTitle }}</span>
-    </template>
-    <template #meta>
+  <tr :class="ADMIN_TR_CLASS">
+    <th :class="ADMIN_TH_ROW_CLASS" scope="row">
       <a
-        :href="shortLink"
-        :title="`${url.original_url} · ${shortLink}`"
+        :href="url.original_url"
+        :title="url.original_url"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-accent-blue underline-offset-2 hover:underline"
-        @click.stop
+        class="text-link block w-full truncate text-xs font-normal"
       >
-        {{ shortLink }}
+        {{ url.original_url }}
       </a>
-    </template>
-    <template #actions>
-      <IconEditButton v-if="canWrite" aria-label="edit title" @click="startEdit" />
-      <IconCopyButton aria-label="copy short link" @click="emit('copy')" />
-      <IconCloseButton
-        v-if="canWrite"
-        aria-label="delete short URL"
-        @click="showDeleteConfirm = true"
-      />
-    </template>
-  </AdminListRow>
+    </th>
+    <td :class="ADMIN_TD_ACTIONS_CLASS" data-admin-row-stop @click.stop @keydown.stop>
+      <div :class="ADMIN_ACTIONS_CLASS">
+        <IconCopyButton :aria-label="copyAriaLabel" @click="emit('copy')" />
+        <IconCloseButton
+          v-if="canWrite"
+          aria-label="delete short URL"
+          @click="showDeleteConfirm = true"
+        />
+      </div>
+    </td>
+  </tr>
 
   <ConfirmDialog
     :open="showDeleteConfirm"
@@ -156,14 +78,16 @@ function confirmDelete(): void {
     <p>
       delete
       <a
+        v-if="!localRow"
         :href="shortLink"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-accent-blue underline-offset-2"
+        class="text-link"
         @click.stop
       >
         {{ shortLink }}
       </a>
+      <span v-else class="font-medium text-surface-light">{{ url.code }}</span>
       ? this cannot be undone
     </p>
   </ConfirmDialog>

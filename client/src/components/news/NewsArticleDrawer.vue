@@ -6,11 +6,11 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { newsStatusClass } from "@/constants/filterColors";
-import { SELECT_CLASS } from "@/constants/formClasses";
 import {
   NEWS_STATUSES,
   NEWS_TAG_LIMIT,
@@ -101,40 +101,40 @@ function onTagsToggle(event: Event): void {
   >
     <form class="space-y-6" @submit.prevent="emit('save')">
       <section class="space-y-4">
-        <select
-          :value="form.source_id ?? ''"
-          aria-label="source"
-          :class="SELECT_CLASS"
-          @change="patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })"
+        <BaseSelect
+          :model-value="form.source_id ?? ''"
+          label="source"
+          @update:model-value="patch({ source_id: toSourceId(toStringValue($event)) })"
         >
           <option value="">auto from URL host</option>
           <option v-for="source in sources" :key="source.id" :value="source.id">
             {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
           </option>
-        </select>
+        </BaseSelect>
         <BaseInput
           :model-value="form.source_url"
-          placeholder="article url (example.com or https://…)"
-          aria-label="article url (example.com or https://…)"
+          label="article url"
+          tip="example.com or https://…"
           type="url"
           @update:model-value="patch({ source_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_name"
-          placeholder="source name (e.g. DW)"
+          label="source name"
+          tip="e.g. DW"
           @update:model-value="patch({ source_name: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_feed_url"
-          placeholder="source feed/home url (example.com or https://…)"
-          aria-label="source feed/home url (example.com or https://…)"
+          label="feed url"
+          tip="example.com or https://…"
           type="url"
           @update:model-value="patch({ source_feed_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_published_at"
           type="datetime-local"
-          aria-label="source published at"
+          label="published at"
           @update:model-value="patch({ source_published_at: toStringValue($event) })"
         />
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="status">
@@ -156,23 +156,24 @@ function onTagsToggle(event: Event): void {
         <BaseInput
           v-if="mode === 'edit'"
           :model-value="form.slug"
-          placeholder="slug (article-url-slug)"
+          label="slug"
+          tip="article-url-slug"
           @update:model-value="patch({ slug: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.title"
-          placeholder="title"
+          label="title"
           @update:model-value="patch({ title: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.original_title"
-          placeholder="original title"
+          label="original title"
           @update:model-value="patch({ original_title: toStringValue($event) })"
         />
         <BaseTextarea
           :model-value="form.summary"
           :rows="4"
-          placeholder="summary"
+          label="summary"
           @update:model-value="patch({ summary: toStringValue($event) })"
         />
         <details class="rounded border border-surface-border px-3 py-2" @toggle="onTagsToggle">
@@ -190,7 +191,7 @@ function onTagsToggle(event: Event): void {
               :for="`news-drawer-tag-${tag}`"
               class="inline-flex cursor-pointer items-center rounded px-2.5 py-1 text-xs lowercase transition-colors"
               :class="{
-                'bg-accent-blue/10 text-accent-blue': tagIsSelected(tag),
+                'bg-accent-coral/10 text-accent-coral': tagIsSelected(tag),
                 'text-surface-mid hover:bg-surface-mid/10': !tagIsSelected(tag),
                 'opacity-50': !tagIsSelected(tag) && selectedTags.length >= NEWS_TAG_LIMIT,
               }"
@@ -215,6 +216,7 @@ function onTagsToggle(event: Event): void {
         <template #start>
           <BaseButton
             v-if="mode === 'edit'"
+            variant="delete"
             danger
             type="button"
             :disabled="loading"

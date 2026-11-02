@@ -168,6 +168,7 @@ class AuditService:
         date_to: date | None = None,
         offset: int = 0,
         limit: int = 50,
+        sort: str = "when_desc",
     ) -> tuple[list[AuditEvent], int]:
         return await self._audit_repo().list_events(
             category=category,
@@ -180,4 +181,5 @@ class AuditService:
             date_to=date_to,
             offset=offset,
             limit=limit,
+            sort=sort,
         )

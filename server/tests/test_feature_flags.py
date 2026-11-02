@@ -140,6 +140,9 @@ def test_postgres_mirror_requires_both_flags(
         scenario_env(
             tmp_path,
             ENABLE_POSTGRES="true",
+            DATABASE_URL="postgresql+asyncpg://glorng:glorng@localhost:5432/glorng",
+            POSTGRES_USER="glorng",
+            POSTGRES_DB="glorng",
             POSTGRES_MIRROR_ENABLED="false",
         ),
     )
@@ -153,6 +156,9 @@ def test_postgres_mirror_requires_both_flags(
         scenario_env(
             tmp_path,
             ENABLE_POSTGRES="true",
+            DATABASE_URL="postgresql+asyncpg://glorng:glorng@localhost:5432/glorng",
+            POSTGRES_USER="glorng",
+            POSTGRES_DB="glorng",
             POSTGRES_MIRROR_ENABLED="true",
         ),
     )

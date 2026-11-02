@@ -25,9 +25,7 @@ type QuickAddProps = {
   "onUpdate:amountError": (value: string | null) => void;
 };
 
-function mountQuickAdd(
-  overrides: Partial<QuickAddProps> = {},
-): VueWrapper {
+function mountQuickAdd(overrides: Partial<QuickAddProps> = {}): VueWrapper {
   return mount(ExpenseQuickAdd, {
     props: {
       loading: false,
@@ -55,6 +53,18 @@ function mountQuickAdd(
 }
 
 describe("ExpenseQuickAdd", () => {
+  it("puts amount before name for amount-first entry", () => {
+    const wrapper = mountQuickAdd();
+    const amount = wrapper.find("#expense-quick-amount");
+    const name = wrapper.find("#expense-quick-name");
+    expect(amount.exists()).toBe(true);
+    expect(name.exists()).toBe(true);
+    const amountIdx = wrapper.html().indexOf('id="expense-quick-amount"');
+    const nameIdx = wrapper.html().indexOf('id="expense-quick-name"');
+    expect(amountIdx).toBeGreaterThan(-1);
+    expect(nameIdx).toBeGreaterThan(amountIdx);
+  });
+
   it("exposes name, amount, optional category, and date fields", () => {
     const wrapper = mountQuickAdd();
 

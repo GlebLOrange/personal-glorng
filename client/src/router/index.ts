@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
 import { WEATHER_ROUTE_NAME } from "@/constants/weather";
-import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
@@ -18,6 +17,15 @@ const routes: RouteRecordRaw[] = [
       title: "Python Backend / FastAPI Engineer",
       description:
         "Gleb.Y — Python/FastAPI backend engineer. Production platforms: APIs, auth, workers, data stores, and CI/CD. Full-stack capable.",
+    },
+  },
+  {
+    path: "/profile",
+    name: "profile",
+    component: () => import("@/pages/ProfilePage.vue"),
+    meta: {
+      title: "Shared profile",
+      description: "Filtered portfolio profile — skills, projects, and experience.",
     },
   },
   {
@@ -97,12 +105,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, title: "Search", noindex: true },
   },
   {
-    path: "/admin/ai-chat",
-    name: "tool-ai-chat",
-    component: () => import("@/pages/admin/tools/AiChatTool.vue"),
-    meta: { requiresAuth: true, requiresSuperuser: true, title: "AI chat", noindex: true },
-  },
-  {
     path: "/admin/db-maintenance",
     name: "tool-db-maintenance",
     component: () => import("@/pages/admin/tools/DbMaintenanceTool.vue"),
@@ -115,9 +117,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/admin/send-email",
-    name: "tool-email",
-    component: () => import("@/pages/admin/tools/EmailTool.vue"),
-    meta: { requiresAuth: true, title: "Send email", noindex: true },
+    redirect: { name: "tool-email" },
   },
   {
     path: "/admin/news",
@@ -211,15 +211,12 @@ const routes: RouteRecordRaw[] = [
       description: "Curated news summary with source attribution.",
     },
   },
+  // Utils tools — standalone PageShell pages (not the old compact /_small-tools window).
   {
     path: "/calculator",
     name: "calculator",
     component: () => import("@/pages/tools/CalculatorTool.vue"),
     meta: { title: "Calculator", description: "Quick math calculations.", noindex: true },
-  },
-  {
-    path: "/expense-calculator",
-    redirect: { name: "tool-expenses" },
   },
   {
     path: "/password-generator",
@@ -242,13 +239,13 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/recipes",
-    name: "recipes",
-    component: () => import("@/pages/tools/RecipesPage.vue"),
+    path: "/weather",
+    name: WEATHER_ROUTE_NAME,
+    component: () => import("@/pages/WeatherPage.vue"),
     meta: {
-      scrollRestore: "volatile",
-      title: "Recipes",
-      description: "Personal recipe book and food notes.",
+      scrollRestore: "live",
+      title: "Weather",
+      description: "Weather lookup, saved locations, and local time.",
       noindex: true,
     },
   },
@@ -257,6 +254,18 @@ const routes: RouteRecordRaw[] = [
     name: "shortener",
     component: () => import("@/pages/tools/UrlShortenerTool.vue"),
     meta: { title: "URL shortener", description: "Create and manage short URLs.", noindex: true },
+  },
+  {
+    path: "/file-share",
+    name: "tool-file-share",
+    component: () => import("@/pages/admin/tools/FileShareTool.vue"),
+    meta: { requiresAuth: true, title: "File share", noindex: true },
+  },
+  {
+    path: "/data-extract",
+    name: "tool-data-extract",
+    component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
+    meta: { requiresAuth: true, title: "Data extract", noindex: true },
   },
   {
     path: "/vid-download",
@@ -270,10 +279,36 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/file-share",
-    name: "tool-file-share",
-    component: () => import("@/pages/admin/tools/FileShareTool.vue"),
-    meta: { requiresAuth: true, title: "File share", noindex: true },
+    path: "/tools/send-email",
+    name: "tool-email",
+    component: () => import("@/pages/admin/tools/EmailTool.vue"),
+    meta: { requiresAuth: true, title: "Send email", noindex: true },
+  },
+  {
+    path: "/admin/ai-chat",
+    name: "tool-ai-chat",
+    component: () => import("@/pages/admin/tools/AiChatTool.vue"),
+    meta: { requiresAuth: true, requiresSuperuser: true, title: "AI chat", noindex: true },
+  },
+  // Alias used by some tool catalogs / history; keep the real page at /calculator.
+  {
+    path: "/tools/calculator",
+    redirect: { name: "calculator" },
+  },
+  {
+    path: "/expense-calculator",
+    redirect: { name: "tool-expenses" },
+  },
+  {
+    path: "/recipes",
+    name: "recipes",
+    component: () => import("@/pages/tools/RecipesPage.vue"),
+    meta: {
+      scrollRestore: "volatile",
+      title: "Recipes",
+      description: "Personal recipe book and food notes.",
+      noindex: true,
+    },
   },
   {
     path: "/tasks",
@@ -286,12 +321,6 @@ const routes: RouteRecordRaw[] = [
     name: "tool-expenses",
     component: () => import("@/pages/admin/tools/ExpensesTool.vue"),
     meta: { requiresAuth: true, scrollRestore: "volatile", title: "Expenses", noindex: true },
-  },
-  {
-    path: "/data-extract",
-    name: "tool-data-extract",
-    component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
-    meta: { requiresAuth: true, title: "Data extract", noindex: true },
   },
   {
     path: "/health-checker",
@@ -309,17 +338,6 @@ const routes: RouteRecordRaw[] = [
     name: "oauth-callback",
     component: () => import("@/pages/CallbackPage.vue"),
     meta: { requiresAuth: true, title: "GitHub callback", noindex: true },
-  },
-  {
-    path: "/weather",
-    name: WEATHER_ROUTE_NAME,
-    component: () => import("@/pages/WeatherPage.vue"),
-    meta: {
-      scrollRestore: "live",
-      title: "Weather",
-      description: "Weather lookup, saved locations, and local time.",
-      noindex: true,
-    },
   },
   {
     path: "/time-date-weather-location",
@@ -379,17 +397,26 @@ router.beforeEach(async (to, _from) => {
     return { name: "admin-news", replace: true };
   }
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
-    return { name: "admin", query: { aichat: "off" }, replace: true };
+    return { name: "tools", query: { aichat: "off" }, replace: true };
   }
   if (!isExpensesEnabled() && to.name === "tool-expenses") {
     return { name: "tools", query: { expenses: "off" }, replace: true };
   }
-  const auth = useAuthStore();
   const shouldResolveSession =
     to.name === "login" ||
     Boolean(to.meta.resolveSession) ||
     Boolean(to.meta.requiresAuth) ||
     Boolean(to.meta.requiresSuperuser);
+  const needsAuthState =
+    shouldResolveSession ||
+    Boolean(to.meta.requiresAuth) ||
+    Boolean(to.meta.requiresSuperuser) ||
+    (typeof to.name === "string" && to.name in TOOL_ROUTE_SLUGS);
+  if (!needsAuthState) {
+    return;
+  }
+  const { useAuthStore } = await import("@/stores/auth");
+  const auth = useAuthStore();
   if (shouldResolveSession && !auth.sessionResolved) {
     try {
       await auth.resolveSession();
@@ -410,14 +437,14 @@ router.beforeEach(async (to, _from) => {
   if (to.meta.requiresSuperuser && auth.isAuthenticated) {
     const { isSuperuser } = usePermissions();
     if (!isSuperuser.value) {
-      return { name: "admin", query: { access: "denied" }, replace: true };
+      return { name: "tools", query: { access: "denied" }, replace: true };
     }
   }
   const toolSlug = typeof to.name === "string" ? TOOL_ROUTE_SLUGS[to.name] : undefined;
   if (toolSlug && auth.isAuthenticated) {
     const { canAccess } = usePermissions();
     if (!canAccess(toolSlug)) {
-      return { name: "admin", query: { access: "denied" }, replace: true };
+      return { name: "tools", query: { access: "denied" }, replace: true };
     }
   }
 });

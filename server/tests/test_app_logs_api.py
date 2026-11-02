@@ -124,6 +124,70 @@ async def test_app_logs_filter_by_date_range(
 
 
 @pytest.mark.asyncio
+async def test_app_logs_sorts_by_occurred_at(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    assert registry.app_logs is not None
+    await registry.app_logs.insert_many(
+        [
+            AppLog(
+                id=0,
+                level="info",
+                message="Older log",
+                logger="glorng",
+                occurred_at=datetime(2026, 1, 10, 12, 0, tzinfo=UTC),
+                request_id="sort-when-logs",
+            ),
+            AppLog(
+                id=0,
+                level="info",
+                message="Newer log",
+                logger="glorng",
+                occurred_at=datetime(2026, 6, 10, 12, 0, tzinfo=UTC),
+                request_id="sort-when-logs",
+            ),
+        ],
+    )
+
+    default = await auth_client.get(
+        "/api/tools/app-logs",
+        params={"request_id": "sort-when-logs"},
+    )
+    assert default.status_code == 200
+    assert [item["message"] for item in default.json()["items"]] == [
+        "Newer log",
+        "Older log",
+    ]
+
+    asc = await auth_client.get(
+        "/api/tools/app-logs",
+        params={"request_id": "sort-when-logs", "sort": "when_asc"},
+    )
+    assert asc.status_code == 200
+    assert [item["message"] for item in asc.json()["items"]] == [
+        "Older log",
+        "Newer log",
+    ]
+
+    desc = await auth_client.get(
+        "/api/tools/app-logs",
+        params={"request_id": "sort-when-logs", "sort": "when_desc"},
+    )
+    assert desc.status_code == 200
+    assert [item["message"] for item in desc.json()["items"]] == [
+        "Newer log",
+        "Older log",
+    ]
+
+    invalid = await auth_client.get(
+        "/api/tools/app-logs",
+        params={"sort": "created_desc"},
+    )
+    assert invalid.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_app_logs_pagination(
     auth_client: AsyncClient,
     registry: DatabaseRegistry,

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import type { SyncQueueItem } from "@/types";
 
 defineProps<{
@@ -14,12 +12,12 @@ defineProps<{
   totalPages: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
-  processing?: boolean;
+  queuedAriaSort: "ascending" | "descending" | "none";
 }>();
 
 const emit = defineEmits<{
   retry: [taskId: number];
-  syncNow: [];
+  sortQueued: [];
   firstPage: [];
   prevPage: [];
   nextPage: [];
@@ -35,30 +33,9 @@ const emit = defineEmits<{
     tabindex="0"
     class="outline-none"
   >
-    <div
-      v-if="canMutate"
-      class="mb-3 flex justify-end"
-    >
-      <BaseButton
-        variant="ghost"
-        size="sm"
-        class="gap-1.5"
-        :disabled="loading || processing"
-        aria-label="process sync queue now"
-        @click="emit('syncNow')"
-      >
-        <SyncIcon class-name="size-3.5" />
-        Sync now
-      </BaseButton>
-    </div>
-    <TaskSyncQueue
-      :items="items"
-      :loading="loading"
-      :can-mutate="canMutate"
-      @retry="emit('retry', $event)"
-    />
     <AdminListFooter
       v-if="!loading"
+      class="!mt-0 mb-4"
       :total="total"
       :page="page"
       :total-pages="totalPages"
@@ -71,6 +48,14 @@ const emit = defineEmits<{
       @prev="emit('prevPage')"
       @next="emit('nextPage')"
       @last="emit('lastPage')"
+    />
+    <TaskSyncQueue
+      :items="items"
+      :loading="loading"
+      :can-mutate="canMutate"
+      :queued-aria-sort="queuedAriaSort"
+      @retry="emit('retry', $event)"
+      @sort-queued="emit('sortQueued')"
     />
   </section>
 </template>

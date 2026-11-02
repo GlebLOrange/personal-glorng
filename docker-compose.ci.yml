@@ -18,3 +18,4 @@ services:
     volumes:
       - server_media:/app/media
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro

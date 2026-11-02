@@ -7,12 +7,16 @@ alwaysApply: true
 
 Use Gortex MCP tools for indexed code when they are available.
 
-1. Start every coding task with **explore** using `operation: "task"` and the user's task text.
-2. Use **search**, **read**, **relations**, and **trace** instead of text search or whole-file source reads.
-3. Before mutation, call **change** with `operation: "impact"`; for a signature change, also call operation `verify` with the proposed signature.
-4. Mutate only with **edit** or **refactor**. After mutation, call **change** operations `detect`, `tests`, `guards`, and `contract`.
-5. Call **capabilities** with `domain`, `operation`, and `detail: "schema"` when exact arguments are not visible.
+1. Start coding tasks with `explore` (`operation: "task"`) and the user's task text.
+2. Prefer `search`, `read`, `relations`, and `trace` over whole-file reads or repo-wide text search.
+3. Before mutation, call `change` with `operation: "impact"`; for signature changes, also `verify` with the proposed signature.
+4. Mutate with `edit` or `refactor`. After mutation, call `change` operations `detect`, `tests`, `guards`, and `contract`.
+5. Call `capabilities` with `domain`, `operation`, and `detail: "schema"` when arguments are unclear.
 
-If the configured Gortex tools are missing from the callable MCP tools: report a Gortex MCP integration failure once, then continue with Read / Grep / Glob. Do not start a daemon, and do not use a CLI/shell fallback as a substitute graph. Do not invent Gortex impact, verify, detect, tests, guards, or contract results when the tools are unavailable.
+If Gortex tools are missing or return `repo_not_tracked`: report once, then use Read/Grep/normal edits. Do not invent graph results. Do not run `gortex track` or start a daemon unless the user asks.
 
-Use **recall** before editing known code and **remember** for durable decisions or invariants.
+Use `recall` before editing known code and `remember` for durable decisions.
+
+Code-area map: `analyze(operation:"communities")`, [`.cursor/references/gortex-communities.md`](../references/gortex-communities.md), or offloaded skills under [`.cursor/references/gortex-skills/`](../references/gortex-skills/).
+
+Worktree / branch graph routing (rare): [`.cursor/references/gortex-worktree-routing.md`](../references/gortex-worktree-routing.md).

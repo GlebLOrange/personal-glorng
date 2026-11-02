@@ -1,0 +1,10 @@
+{
+  "session-init": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "./.cursor/hooks/session-start.sh antigravity"
+      }
+    ]
+  }
+}

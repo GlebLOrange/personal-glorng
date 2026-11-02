@@ -1,6 +1,0 @@
----
-description: Verify packages exist before adding imports or dependencies
-alwaysApply: true
----
-
-When this rule applies, follow the `dependencies` skill: read `.cursor/skills/dependencies/SKILL.md` and apply it.

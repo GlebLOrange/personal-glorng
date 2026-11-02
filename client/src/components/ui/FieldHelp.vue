@@ -24,15 +24,15 @@ const props = withDefaults(
     placement?: "bottom" | "top";
     /** `sm` fits the border-notch label row; `md` is the standalone hit target. */
     size?: "md" | "sm";
+    /** When false, tip shows only while hovered (no click pin / focus open). */
+    interactive?: boolean;
   }>(),
-  { align: "start", placement: "bottom", size: "md" },
+  { align: "start", placement: "bottom", size: "md", interactive: true },
 );
 
-const buttonClass = computed(() =>
-  props.size === "sm"
-    ? "inline-flex size-4 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-    : "inline-flex h-10 w-10 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
-);
+/** Hit box ≥44×44; `iconClass` keeps the glyph visually small for `sm`. */
+const buttonClass =
+  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50";
 
 const iconClass = computed(() => (props.size === "sm" ? "size-3" : "size-3.5"));
 
@@ -123,11 +123,13 @@ function hide(): void {
 }
 
 function onFocus(): void {
+  if (!props.interactive) return;
   suppressClickToggle = true;
   void show();
 }
 
 function toggle(): void {
+  if (!props.interactive) return;
   if (suppressClickToggle) {
     suppressClickToggle = false;
     return;
@@ -209,7 +211,7 @@ watch(
       <span
         v-if="open"
         role="tooltip"
-        class="pointer-events-none fixed z-50 w-max max-w-[min(100vw-2rem,18rem)] rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
+        class="pointer-events-none fixed z-50 w-max max-w-[min(100vw-2rem,18rem)] whitespace-pre-line rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
         :style="panelStyle"
         @mouseenter="show"
         @mouseleave="scheduleHide"

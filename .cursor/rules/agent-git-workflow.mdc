@@ -1,6 +1,0 @@
----
-description: Create a cursor/* branch before agent code changes; keep main clean
-alwaysApply: true
----
-
-When this rule applies, follow the `agent-git-workflow` skill: read `.cursor/skills/agent-git-workflow/SKILL.md` and apply it.

@@ -5,6 +5,8 @@ import hashlib
 
 from cryptography.fernet import Fernet, InvalidToken
 
+from app.settings import get_settings
+
 _ENCRYPTED_PREFIX = "enc:"
 
 
@@ -44,3 +46,18 @@ def decrypt_secret(
             last_error = exc
     msg = "Failed to decrypt stored secret"
     raise ValueError(msg) from last_error
+
+
+def store_secret_at_rest(plaintext: str) -> str:
+    """Encrypt a secret using the configured Fernet key before persisting."""
+    return encrypt_secret(plaintext, get_settings().resolved_fernet_secret())
+
+
+def read_secret_at_rest(stored: str) -> str:
+    """Decrypt a stored secret; fall back to JWT_SECRET when FERNET_SECRET is set."""
+    settings = get_settings()
+    primary = settings.resolved_fernet_secret()
+    fallback: tuple[str, ...] = ()
+    if settings.FERNET_SECRET.strip() and primary != settings.JWT_SECRET:
+        fallback = (settings.JWT_SECRET,)
+    return decrypt_secret(stored, primary, fallback_secrets=fallback)

@@ -11,6 +11,7 @@ import {
 } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import CloseIcon from "@/components/icons/CloseIcon.vue";
 import FilterIcon from "@/components/icons/FilterIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import {
@@ -101,7 +102,9 @@ const bareTriggerClass = computed(() => {
   const active = open.value;
   return [
     "!bg-transparent hover:enabled:!bg-transparent",
-    active ? "!border-accent-blue/40" : "!border-transparent hover:enabled:!border-accent-blue/40",
+    active
+      ? "!border-accent-coral/40"
+      : "!border-transparent hover:enabled:!border-accent-coral/40",
   ];
 });
 
@@ -227,6 +230,7 @@ defineExpose({ close });
     <ToolbarPillButton
       ref="trigger"
       action="create"
+      :icon="false"
       :class="[
         TOOLBAR_POPOVER_MAX_WIDTH_CLASS,
         '!justify-between',
@@ -254,12 +258,13 @@ defineExpose({ close });
           <span
             v-if="activeLabel"
             class="col-start-1 row-start-1 truncate whitespace-nowrap text-surface-muted"
+            :class="optionLabels?.length ? 'w-0 min-w-full' : undefined"
           >
             · {{ activeLabel }}
           </span>
         </span>
       </span>
-<ChevronIcon :open="open" class-name="size-3.5 shrink-0" />
+      <ChevronIcon :open="open" class-name="size-3.5 shrink-0" />
     </ToolbarPillButton>
 
     <!-- Probe: natural width of dropdown lines (not stretched). CSS max-w still caps the trigger. -->
@@ -290,7 +295,7 @@ defineExpose({ close });
         tabindex="-1"
         :class="[
           isLocalAnchor
-            ? ['absolute left-0 right-0 top-full z-50 mt-1', TOOLBAR_POPOVER_MAX_WIDTH_CLASS]
+            ? ['absolute left-0 top-full z-50 mt-1', TOOLBAR_POPOVER_PANEL_WIDTH_CLASS]
             : [
                 'fixed z-50',
                 matchTriggerWidth
@@ -319,6 +324,7 @@ defineExpose({ close });
             :disabled="!hasActiveFilters"
             @click="onClear"
           >
+            <CloseIcon class-name="size-3.5 shrink-0" />
             clear
           </button>
         </div>

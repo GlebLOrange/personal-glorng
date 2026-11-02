@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import SearchIndexServiceDep
 from app.core.rate_limit import RateLimiter
+from app.core.text import sanitize_text
 from app.db.documents.search import SearchVisibility
 from app.schemas.search import SearchHit, SearchQueryResponse
 from app.services.search_index import SearchIndexService
@@ -23,8 +24,9 @@ async def search_documents(
     search_svc: SearchIndexServiceDep,
     q: str = Query(min_length=3, max_length=500),
 ) -> SearchQueryResponse:
+    cleaned = sanitize_text(q, max_length=500)
     results = await search_svc.search(
-        q,
+        cleaned,
         visibilities=[SearchVisibility.PUBLIC],
     )
     hits = [
@@ -38,4 +40,4 @@ async def search_documents(
         )
         for hit in results
     ]
-    return SearchQueryResponse(query=q, hits=hits)
+    return SearchQueryResponse(query=cleaned, hits=hits)

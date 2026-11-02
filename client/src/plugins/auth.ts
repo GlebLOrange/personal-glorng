@@ -1,6 +1,5 @@
-import { useAuthStore } from "@/stores/auth";
-
 export async function restoreAuth(): Promise<void> {
+  const { useAuthStore } = await import("@/stores/auth");
   const auth = useAuthStore();
   if (auth.sessionResolved) return;
   try {

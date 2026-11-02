@@ -20,7 +20,7 @@ vi.mock("@/composables/useNotify", () => ({
   useNotify: () => ({ toast: toastMock }),
 }));
 
-vi.mock("@/components/layout/AdminPageLayout.vue", () => ({
+vi.mock("@/components/layout/PageShell.vue", () => ({
   default: { template: "<div><slot /></div>" },
 }));
 

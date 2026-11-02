@@ -2,7 +2,7 @@
 
 All JSON routes live under **`/api`**. Platform tools mount at **`/api/tools/<slug>`** ([`server/app/routers/tools/__init__.py`](../../server/app/routers/tools/__init__.py)). The canonical catalog is in [`server/app/platform/registry.py`](../../server/app/platform/registry.py) and exposed at **`GET /api/platform/services`** (no auth required).
 
-**Interactive docs:** Swagger UI at **`/api/docs`** only when `APP_ENV=development` ([`server/app/main.py`](../../server/app/main.py)). **Static OpenAPI:** download [openapi.json](/openapi.json) (from `make docs-generate`). **Endpoint table:** [API endpoints (generated)](/generated/api-endpoints). **Postman:** [Postman guide](/reference/postman).
+**Interactive docs:** Swagger UI at **`/api/docs`** only when `APP_ENV=development` ([`server/app/main.py`](../../server/app/main.py)). **Static OpenAPI:** download [openapi.json](/openapi.json) (from `make docs-generate`). **Endpoint table:** [API endpoints (generated)](/generated/api-endpoints).
 
 **Auth model:** Admin tool routes require JWT (cookie or `Authorization: Bearer`) plus a capability like `expenses:read`. The bootstrap admin gets `platform:superuser` (all capabilities). New registered users start with **zero** tool permissions ([Security](/reference/security)).
 
@@ -45,7 +45,7 @@ Regenerate after router or registry changes: `make docs-generate`.
 
 - **Public tools** appear on **`/tools`** ([`ToolsPage.vue`](../../client/src/pages/ToolsPage.vue)) and are rate-limited. Capability gates still apply on write paths where noted in OpenAPI summaries.
 - **QR generator:** public `POST /api/tools/qr-generator` (ephemeral inline SVG). Owner library at `/api/tools/qr-generator/library` (`GET` list preview-only, `POST`/`PATCH`/`DELETE`, `GET /{id}`, `GET /{id}/svg`) requires `qr-generator:read` / `write`.
-- **Admin hub** lives under **`/admin/*`** (feedback, audit-logs, app-logs, search, ai-chat, send-email, api docs, users). Capability tools use top-level paths (`/tasks`, `/expenses`, `/news`, …). API prefix is usually **`/api/tools/<slug>`** (feedback uses **`/api/feedback`**; news sources are **`/api/tools/news/sources`**).
+- **Admin hub** lives under **`/admin/*`** (feedback, audit-logs, app-logs, search, ai-chat, api docs, users). Send email is **`/tools/send-email`** (old `/admin/send-email` redirects). Capability tools use top-level paths (`/tasks`, `/expenses`, `/news`, …). API prefix is usually **`/api/tools/<slug>`** (feedback uses **`/api/feedback`**; news sources are **`/api/tools/news/sources`**).
 - **AI chat** requires `platform:superuser` plus `AI_CHAT_ENABLED` + `GROQ_API_KEY`.
 
 See the [architecture inventory](/generated/architecture-inventory) for slug, capability, and route columns.
@@ -62,8 +62,10 @@ Permissions are assigned only via admin user management (`/api/admin/users` — 
 
 These reuse the same service layer but are not REST “site API tools”:
 
-- **Telegram todobot** — tasks, reminders, quick expenses (`/spend`, `/expenses`)
-- **Celery worker/beat** — reminders, calendar sync, cleanup
+- **Telegram todobot** — tasks, reminders, Google Calendar OAuth, quick expenses (`/spend`, `/expenses`)
+- **Celery worker/beat** — reminders, calendar sync queue drain, cleanup
+
+Flow detail: [Telegram + tasks + calendar sync](/guide/telegram-tasks-calendar). Admin task sync endpoints: `GET/POST /api/tools/tasks/sync-queue`, `POST /api/tools/tasks/{id}/retry-sync`.
 
 ## Discover what is enabled on your deploy
 

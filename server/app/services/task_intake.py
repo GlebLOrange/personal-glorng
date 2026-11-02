@@ -29,7 +29,7 @@ from app.schemas.task_intake import (
     TaskIntakeResponse,
 )
 from app.services.llm_json import complete_json, groq_api_key
-from app.services.task import TaskService
+from app.services.task import STATIC_REMINDER_LABEL, TaskService
 from app.settings import get_settings
 from app.todobot.utils.nlp import parse_task_input
 
@@ -43,7 +43,6 @@ Return JSON with this exact shape:
     "scheduled_time": "HH:MM"|null,
     "description": string|null,
     "location": string|null,
-    "reminder_minutes": integer|null,
     "assignee_hint": string|null
   },
   "confidence": {
@@ -51,8 +50,7 @@ Return JSON with this exact shape:
     "scheduled_date": 0.0-1.0,
     "scheduled_time": 0.0-1.0,
     "description": 0.0-1.0,
-    "location": 0.0-1.0,
-    "reminder_minutes": 0.0-1.0
+    "location": 0.0-1.0
   },
   "questions": [{"field": string, "question": string}]
 }
@@ -62,7 +60,7 @@ Rules:
 - If a rule-based hint is provided, prefer it when consistent with the message.
 - Add questions only for required fields (title, scheduled_date, scheduled_time)
   where value is missing or confidence is below 0.7.
-- reminder_minutes: common values 15, 30, 60, or null if unknown.
+- Do not set or ask about reminder timing; reminders are fixed by the app.
 - Keep questions short and conversational.
 """
 
@@ -209,11 +207,14 @@ class TaskIntakeService:
         result = await self.run_extraction(intake)
 
         if result.questions and intake.clarification_rounds >= MAX_CLARIFICATION_ROUNDS:
-            result = self._force_ready(result)
-            intake.draft_json = result.draft.model_dump()
-            intake.confidence_json = result.confidence.model_dump()
-            intake.status = IntakeStatus.READY
+            # Proposed: cancel + suggest Guided instead of force-ready defaults.
+            intake.status = IntakeStatus.CANCELLED
             await self._tasks().update_intake(intake)
+            return ExtractionResult(
+                draft=result.draft,
+                confidence=result.confidence,
+                questions=[],
+            )
 
         return result
 
@@ -226,17 +227,18 @@ class TaskIntakeService:
         return result.questions[0]
 
     def build_confirmation_summary(self, draft: TaskDraft) -> str:
-        lines = [f"*Task:* {draft.title or '—'}"]
+        from app.todobot.utils.markdown import escape_md
+
+        lines = [f"*Task:* {escape_md(draft.title) or '—'}"]
         if draft.scheduled_date:
             lines.append(f"*Date:* {format_display_date(draft.scheduled_date)}")
         if draft.scheduled_time:
             lines.append(f"*Time:* {draft.scheduled_time}")
         if draft.location:
-            lines.append(f"*Location:* {draft.location}")
+            lines.append(f"*Location:* {escape_md(draft.location)}")
         if draft.description:
-            lines.append(f"*Notes:* {draft.description}")
-        if draft.reminder_minutes is not None:
-            lines.append(f"*Reminder:* {draft.reminder_minutes} min before")
+            lines.append(f"*Notes:* {escape_md(draft.description)}")
+        lines.append(f"*{STATIC_REMINDER_LABEL}*")
         return "\n".join(lines)
 
     def draft_from_intake(self, intake: TaskIntake) -> TaskDraft:
@@ -258,6 +260,8 @@ class TaskIntakeService:
         telegram_user_id: int,
         reminder_minutes: int | None = None,
     ) -> Task:
+        # reminder_minutes kept for call-site compat; create_with_sync uses static offsets.
+        _ = reminder_minutes
         intake = await self.get_intake(intake_id)
         if intake.status == IntakeStatus.CONFIRMED and intake.task_id:
             task = await self._task_svc.get_task(task_id=intake.task_id)
@@ -271,9 +275,6 @@ class TaskIntakeService:
             raise ValidationError("Task date and time are required")
 
         scheduled_at = self.scheduled_at_from_draft(draft)
-        mins = (
-            reminder_minutes if reminder_minutes is not None else draft.reminder_minutes
-        )
 
         task = await self._task_svc.create_with_sync(
             telegram_user_id=telegram_user_id,
@@ -281,7 +282,6 @@ class TaskIntakeService:
             scheduled_at=scheduled_at,
             description=draft.description,
             location=draft.location,
-            reminder_minutes=int(mins) if mins else None,
             intake_id=intake.id,
         )
 
@@ -326,6 +326,7 @@ class TaskIntakeService:
             total=total,
             page=safe_page,
             per_page=limit,
+            response_cls=TaskIntakeListResponse,
         )
 
     async def _load_inbound(self, intake: TaskIntake) -> TelegramInboundMessage:
@@ -366,6 +367,7 @@ class TaskIntakeService:
             model=self.settings.GROQ_CHAT_MODEL,
             system_prompt=EXTRACTION_SYSTEM_PROMPT,
             user_content=json.dumps(user_payload),
+            task="intake",
             api_base_url=self.settings.GROQ_API_BASE_URL,
         )
         return self._parse_extraction_payload(raw)
@@ -420,9 +422,9 @@ class TaskIntakeService:
     ) -> list[ClarificationQuestion]:
         threshold = threshold or self.settings.TASK_INTAKE_CONFIDENCE_THRESHOLD
         prompts = {
-            "title": "What should I call this task?",
-            "scheduled_date": "What date should I schedule this for?",
-            "scheduled_time": "What time should I remind you?",
+            "title": "What should I call this?",
+            "scheduled_date": "Which day?",
+            "scheduled_time": "What time?",
         }
         questions: list[ClarificationQuestion] = []
         for field in REQUIRED_FIELDS:

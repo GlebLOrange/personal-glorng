@@ -110,3 +110,26 @@ def audit_date_filter(
         date_to=date_to,
     )
     return result  # type: ignore[return-value]
+
+
+class NewsDateFilter(DateRangeFilter):
+    """Public news list date filters on source_published_at."""
+
+
+def news_date_filter(
+    date_from: Annotated[
+        date | None,
+        Query(description="Inclusive start date (YYYY-MM-DD)."),
+    ] = None,
+    date_to: Annotated[
+        date | None,
+        Query(description="Inclusive end date (YYYY-MM-DD)."),
+    ] = None,
+) -> NewsDateFilter:
+    """Build validated news date filters from query params."""
+    result = _parse_filter(
+        NewsDateFilter,
+        date_from=date_from,
+        date_to=date_to,
+    )
+    return result  # type: ignore[return-value]

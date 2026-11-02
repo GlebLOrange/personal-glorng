@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { nextTick, watch } from "vue";
 
-import AdminListRow from "@/components/admin/AdminListRow.vue";
+import AdminDataRow from "@/components/admin/AdminDataRow.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import {
+  ADMIN_TD_CLASS,
+  ADMIN_TH_CLASS,
+  ADMIN_TH_ROW_CLASS,
+  ADMIN_TR_CLASS,
+} from "@/constants/adminDataTable";
 import type { ExpenseCategory } from "@/types";
 
 const props = defineProps<{
@@ -29,7 +36,8 @@ watch(
   async (id) => {
     if (id == null) return;
     await nextTick();
-    document.getElementById(`cat-name-${id}`)?.focus();
+    const el = document.getElementById(`cat-name-table-${id}`);
+    if (el instanceof HTMLElement) el.focus();
   },
 );
 
@@ -40,52 +48,59 @@ function onCategoryRowClick(category: ExpenseCategory): void {
 </script>
 
 <template>
-  <EmptyState
-    v-if="expenseCategories.length === 0"
-    description="no categories yet"
-  />
+  <EmptyState v-if="expenseCategories.length === 0" description="no categories yet" />
 
   <div v-else class="mt-1 min-w-0">
-    <AdminListRow
-      v-for="category in expenseCategories"
-      :key="category.id"
-      interactive
-      nested-interactive
-      reveal-actions-on-hover
-      status-class="accent-blue"
-      :expanded="editingCategoryId === category.id"
-      @click="onCategoryRowClick(category)"
-    >
-      <template v-if="editingCategoryId === category.id" #primary>
-        <div class="flex min-w-0 flex-1 flex-wrap items-end gap-2" @click.stop>
-          <BaseInput
-            :id="`cat-name-${category.id}`"
-            v-model="editingCategoryName"
-            label="name"
-            class="min-w-[8rem] flex-1"
-            @keyup.enter="emit('saveCategoryRename')"
-          />
-          <ToolbarPillButton action="save" class="shrink-0" @click="emit('saveCategoryRename')">
-            save
-          </ToolbarPillButton>
-          <BaseButton variant="cancel" class="h-10 shrink-0" @click="emit('cancelEditCategory')">
-            cancel
-          </BaseButton>
-        </div>
+    <AdminDataTable table-label="expense categories">
+      <template #header>
+        <th :class="ADMIN_TH_CLASS" scope="col">name</th>
+        <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
       </template>
-      <template v-else #primary>
-        <span :title="category.name">{{ category.name }}</span>
+
+      <template v-for="category in expenseCategories" :key="category.id">
+        <tr v-if="editingCategoryId === category.id" :class="ADMIN_TR_CLASS">
+          <td :class="ADMIN_TD_CLASS" colspan="2">
+            <div class="flex min-w-0 flex-wrap items-end gap-2 py-1">
+              <BaseInput
+                :id="`cat-name-table-${category.id}`"
+                v-model="editingCategoryName"
+                label="name"
+                class="min-w-[8rem] flex-1"
+                @keyup.enter="emit('saveCategoryRename')"
+              />
+              <BaseButton variant="cancel" class="shrink-0" @click="emit('cancelEditCategory')">
+                cancel
+              </BaseButton>
+              <ToolbarPillButton action="save" class="shrink-0" @click="emit('saveCategoryRename')">
+                save
+              </ToolbarPillButton>
+            </div>
+          </td>
+        </tr>
+        <AdminDataRow
+          v-else
+          interactive
+          nested-interactive
+          :col-span="2"
+          @click="onCategoryRowClick(category)"
+        >
+          <th :class="ADMIN_TH_ROW_CLASS" scope="row">
+            <p class="truncate text-sm text-surface-light" :title="category.name">
+              {{ category.name }}
+            </p>
+          </th>
+          <template #actions>
+            <IconEditButton
+              :aria-label="`rename ${category.name}`"
+              @click="emit('startEditCategory', category)"
+            />
+            <IconCloseButton
+              :aria-label="`delete ${category.name}`"
+              @click="emit('removeCategory', category)"
+            />
+          </template>
+        </AdminDataRow>
       </template>
-      <template v-if="editingCategoryId !== category.id" #actions>
-        <IconEditButton
-          :aria-label="`rename ${category.name}`"
-          @click="emit('startEditCategory', category)"
-        />
-        <IconCloseButton
-          :aria-label="`delete ${category.name}`"
-          @click="emit('removeCategory', category)"
-        />
-      </template>
-    </AdminListRow>
+    </AdminDataTable>
   </div>
 </template>

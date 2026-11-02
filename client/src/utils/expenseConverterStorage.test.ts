@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  sanitizeConverterSnapshot,
-} from "@/utils/expenseConverterStorage";
+import { sanitizeConverterSnapshot } from "@/utils/expenseConverterStorage";
 
 describe("sanitizeConverterSnapshot", () => {
   it("keeps a valid amount and currency pair", () => {

@@ -2,10 +2,12 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import SiteLogo from "@/components/brand/SiteLogo.vue";
+import CloseIcon from "@/components/icons/CloseIcon.vue";
+import MenuIcon from "@/components/icons/MenuIcon.vue";
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import { useColorTheme } from "@/composables/useColorTheme";
-import { usePermissions } from "@/composables/usePermissions";
 import { useScrollDirection } from "@/composables/useScrollDirection";
 import { iconActionClass } from "@/constants/httpStatusColors";
 import { useAuthStore } from "@/stores/auth";
@@ -17,19 +19,12 @@ const menuToggleButton = ref<HTMLButtonElement | null>(null);
 /* Reserve chrome height before ResizeObserver to reduce CLS */
 const headerSpacerHeight = ref(72);
 let resizeObserver: ResizeObserver | null = null;
-let mobileNavMq: MediaQueryList | null = null;
-let syncMobileNav: (() => void) | null = null;
 
 const auth = useAuthStore();
-const { canUseAdminHub } = usePermissions();
 const { preference: colorThemePreference, cyclePreference } = useColorTheme();
 const router = useRouter();
 const route = useRoute();
 const mobileOpen = ref(false);
-const isMobileNav = ref(false);
-const isPortfolioHome = computed(
-  () => route.path === "/" || route.name === "home" || route.name === "portfolio",
-);
 const navSection = computed(() => resolveNavSection(route.path));
 const menuToggleClass = computed(() =>
   ["md:hidden self-center", iconActionClass("1xx", mobileOpen.value)].join(" "),
@@ -42,8 +37,10 @@ const themeToggleLabel = computed(() => {
   return "color theme: dark. click for light.";
 });
 
+// Hide on scroll everywhere except while the mobile menu is open so fixed chrome
+// cannot steal taps on hero CTAs (esp. ~375px portfolio after scroll).
 const { isHidden: isHeaderHidden, show: showHeader } = useScrollDirection({
-  disabled: () => mobileOpen.value || isMobileNav.value || isPortfolioHome.value,
+  disabled: () => mobileOpen.value,
 });
 
 function setPageInert(open: boolean): void {
@@ -69,13 +66,6 @@ watch(mobileOpen, async (open) => {
 });
 
 onMounted(() => {
-  mobileNavMq = window.matchMedia("(max-width: 767px)");
-  syncMobileNav = (): void => {
-    isMobileNav.value = mobileNavMq?.matches ?? false;
-  };
-  syncMobileNav();
-  mobileNavMq.addEventListener("change", syncMobileNav);
-
   if (typeof ResizeObserver !== "undefined") {
     resizeObserver = new ResizeObserver(() => {
       headerSpacerHeight.value = headerEl.value?.offsetHeight ?? 0;
@@ -87,11 +77,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (mobileNavMq && syncMobileNav) {
-    mobileNavMq.removeEventListener("change", syncMobileNav);
-  }
-  mobileNavMq = null;
-  syncMobileNav = null;
   resizeObserver?.disconnect();
   resizeObserver = null;
   setPageInert(false);
@@ -125,7 +110,7 @@ async function handleGoHome(): Promise<void> {
       id="site-header"
       ref="headerEl"
       class="fixed left-0 right-0 top-0 z-40 bg-surface-dark/80 backdrop-blur-md transition-transform duration-200 pt-[env(safe-area-inset-top)]"
-      :class="isHeaderHidden ? '-translate-y-full' : 'translate-y-0'"
+      :class="isHeaderHidden ? '-translate-y-full pointer-events-none' : 'translate-y-0'"
     >
       <nav aria-label="main navigation" class="border-b border-surface-border">
         <div
@@ -133,29 +118,30 @@ async function handleGoHome(): Promise<void> {
         >
           <RouterLink
             to="/"
-            class="text-xl font-bold text-surface-light"
+            class="inline-flex min-h-11 min-w-11 items-center justify-center text-surface-light"
             aria-label="gleb.y home"
             @click.prevent="handleGoHome"
           >
-            Gleb.Y
+            <SiteLogo class-name="h-9 w-auto" />
           </RouterLink>
 
-          <div class="hidden md:flex items-center gap-2 text-base shrink-0">
+          <div class="hidden md:flex nav-menu items-center text-base shrink-0">
             <RouterLink
               to="/"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              :class="{ 'text-accent-blue': navSection === 'portfolio' }"
-              :aria-current-value="false"
+              class="nav-link-accent nav-item font-medium"
+              :class="{ 'text-accent-coral': navSection === 'portfolio' }"
               :aria-current="navSection === 'portfolio' ? 'page' : undefined"
               @click.prevent="handleGoHome"
             >
               portfolio
             </RouterLink>
+
+            <span class="mx-1 h-4 w-px bg-surface-border" aria-hidden="true" />
+
             <RouterLink
               to="/news"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              :class="{ 'text-accent-blue': navSection === 'news' }"
-              :aria-current-value="false"
+              class="nav-link-quiet nav-item"
+              :class="{ 'text-accent-coral': navSection === 'news' }"
               :aria-current="navSection === 'news' ? 'page' : undefined"
             >
               news
@@ -163,30 +149,18 @@ async function handleGoHome(): Promise<void> {
 
             <RouterLink
               to="/tools"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              :class="{ 'text-accent-blue': navSection === 'tools' }"
-              :aria-current-value="false"
+              class="nav-link-quiet nav-item"
+              :class="{ 'text-accent-coral': navSection === 'tools' }"
               :aria-current="navSection === 'tools' ? 'page' : undefined"
             >
               tools
-            </RouterLink>
-            <RouterLink
-              v-if="canUseAdminHub"
-              to="/admin"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              :class="{ 'text-accent-blue': navSection === 'admin' }"
-              :aria-current-value="false"
-              :aria-current="navSection === 'admin' ? 'page' : undefined"
-            >
-              admin
             </RouterLink>
 
             <RouterLink
               v-if="auth.isAuthenticated"
               to="/settings"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              :class="{ 'text-accent-blue': navSection === 'settings' }"
-              :aria-current-value="false"
+              class="nav-link-quiet nav-item"
+              :class="{ 'text-accent-coral': navSection === 'settings' }"
               :aria-current="navSection === 'settings' ? 'page' : undefined"
             >
               settings
@@ -195,21 +169,12 @@ async function handleGoHome(): Promise<void> {
             <button
               v-if="auth.isAuthenticated"
               type="button"
-              class="nav-link text-status-error inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-quiet text-status-error nav-item"
               @click="handleLogout"
             >
+              <CloseIcon class-name="size-3.5 shrink-0" />
               logout
             </button>
-            <RouterLink
-              v-else
-              to="/login"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              :class="{ 'text-accent-blue': navSection === 'login' }"
-              :aria-current-value="false"
-              :aria-current="navSection === 'login' ? 'page' : undefined"
-            >
-              login
-            </RouterLink>
           </div>
 
           <IconActionButton
@@ -303,18 +268,7 @@ async function handleGoHome(): Promise<void> {
               aria-label="toggle navigation menu"
               @click="toggleMobileMenu"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="size-4"
-                aria-hidden="true"
-              >
-                <path v-if="!mobileOpen" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-                <path v-else stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
-              </svg>
+              <MenuIcon :open="mobileOpen" class-name="size-4" />
             </button>
           </div>
         </div>

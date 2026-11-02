@@ -104,7 +104,9 @@ describe("useCachedApi", () => {
     const second = useCachedApi<{ n: number }>(url, 60_000);
 
     const pending = Promise.all([first.fetch(), second.fetch()]);
-    expect(api.get).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => {
+      expect(api.get).toHaveBeenCalledTimes(1);
+    });
 
     resolveGet({ data: { n: 42 } });
     await pending;

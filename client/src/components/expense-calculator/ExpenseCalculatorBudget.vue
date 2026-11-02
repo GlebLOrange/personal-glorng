@@ -73,7 +73,7 @@ function onAddBudgetLine(): void {
         <p class="text-xs text-surface-mid">remaining</p>
         <p
           class="text-2xl font-bold font-data mt-1"
-          :class="budgetSummary.overBudget ? 'text-status-error' : 'text-accent-blue'"
+          :class="budgetSummary.overBudget ? 'text-status-error' : 'text-accent-coral'"
         >
           {{ formatMoney(budgetSummary.remaining, displayCurrency) }}
         </p>
@@ -86,7 +86,7 @@ function onAddBudgetLine(): void {
 
     <Card class="space-y-4">
       <div class="flex items-center justify-end gap-3">
-        <BaseButton variant="add" size="sm" @click="onAddBudgetLine">+ budget line</BaseButton>
+        <BaseButton variant="add" size="sm" @click="onAddBudgetLine">budget line</BaseButton>
       </div>
 
       <ul role="list" class="space-y-4">
@@ -96,20 +96,22 @@ function onAddBudgetLine(): void {
           class="space-y-2 border-b border-surface-border pb-4 last:border-0 last:pb-0"
         >
           <div class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end">
-            <BaseInput v-model="row.name" data-budget-name placeholder="name (food, transport…)" />
+            <BaseInput v-model="row.name" data-budget-name label="name" tip="food, transport…" />
             <BaseInput
               v-model="row.budget"
               type="number"
               step="0.01"
               min="0"
-              placeholder="budget (0.00)"
+              label="budget"
+              tip="0.00"
             />
             <BaseInput
               v-model="row.spent"
               type="number"
               step="0.01"
               min="0"
-              placeholder="spent (0.00)"
+              label="spent"
+              tip="0.00"
             />
             <IconCloseButton
               :aria-label="`remove ${row.name || 'budget line'}`"
@@ -130,7 +132,7 @@ function onAddBudgetLine(): void {
               <div class="h-1.5 bg-surface-border rounded-full overflow-hidden">
                 <div
                   class="h-full rounded-full motion-reduce:transition-none transition-[width] duration-200"
-                  :class="view.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
+                  :class="view.overBudget ? 'bg-status-error' : 'bg-accent-coral'"
                   :style="{ width: `${Math.min(view.percent, 100)}%` }"
                 />
               </div>

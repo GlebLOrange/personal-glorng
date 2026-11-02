@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Card } from "@/components/ui/card";
+import { PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
 import type { PublicGitHubRepo } from "@/types";
 
 defineProps<{
@@ -17,7 +18,7 @@ defineProps<{
         :href="profileUrl"
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex min-h-11 items-center text-sm text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        class="text-link inline-flex min-h-11 items-center text-sm"
       >
         view profile
         <span class="sr-only">(opens in new tab)</span>
@@ -32,6 +33,7 @@ defineProps<{
         target="_blank"
         rel="noopener noreferrer"
         hoverable
+        :class="PORTFOLIO_CV_TILE_CLASS"
       >
         <h3 class="card-title">
           {{ repo.name }}

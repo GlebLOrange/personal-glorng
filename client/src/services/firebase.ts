@@ -1,13 +1,11 @@
 import type { FirebaseApp } from "firebase/app";
 import type { Analytics } from "firebase/analytics";
-import type { Auth, UserCredential } from "firebase/auth";
 import type { Router } from "vue-router";
 
 import { isFirebaseAnalyticsEnabled, isFirebaseEnabled } from "@/constants/firebase";
 import { scrubSensitivePath } from "@/utils/sensitiveUrl";
 
 let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
 let analytics: Analytics | null = null;
 let removeAnalyticsRouteHook: (() => void) | null = null;
 
@@ -28,19 +26,6 @@ async function getFirebaseApp(): Promise<FirebaseApp> {
   const { initializeApp } = await import("firebase/app");
   app ??= initializeApp(firebaseConfig());
   return app;
-}
-
-export async function getFirebaseAuth(): Promise<Auth> {
-  const { getAuth } = await import("firebase/auth");
-  auth ??= getAuth(await getFirebaseApp());
-  return auth;
-}
-
-export async function signInWithGooglePopup(): Promise<UserCredential> {
-  const { GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: "select_account" });
-  return signInWithPopup(await getFirebaseAuth(), provider);
 }
 
 export async function initFirebaseAnalytics(router: Router): Promise<void> {

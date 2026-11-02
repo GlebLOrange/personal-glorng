@@ -51,31 +51,32 @@ function toStringValue(value: string | number | null | undefined): string {
     <form id="news-source-form" class="space-y-4" @submit.prevent="emit('save')">
       <BaseInput
         :model-value="form.feed_url"
-        placeholder="feed url"
+        label="feed url"
+        tip="https://…"
         type="url"
         required
         @update:model-value="patch({ feed_url: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.name"
-        placeholder="title"
+        label="title"
         required
         @update:model-value="patch({ name: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.category"
-        placeholder="category"
+        label="category"
         required
         @update:model-value="patch({ category: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.region"
-        placeholder="region"
+        label="region"
         required
         @update:model-value="patch({ region: toStringValue($event) })"
       />
       <label
-        class="flex cursor-pointer items-center rounded-md px-2.5 py-1.5 text-sm has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent-blue/50"
+        class="flex cursor-pointer items-center rounded-md px-2.5 py-1.5 text-sm has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent-coral/50"
         :class="newsSourceEnabledClass(form.enabled)"
       >
         <input
@@ -94,7 +95,12 @@ function toStringValue(value: string | number | null | undefined): string {
           <BaseButton type="button" variant="cancel" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
-          <ToolbarPillButton type="submit" form="news-source-form" action="save" :disabled="loading">
+          <ToolbarPillButton
+            type="submit"
+            form="news-source-form"
+            action="save"
+            :disabled="loading"
+          >
             {{ loading ? "saving…" : "save" }}
           </ToolbarPillButton>
         </template>

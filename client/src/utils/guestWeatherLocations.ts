@@ -2,6 +2,7 @@ import {
   MAX_SAVED_WEATHER_LOCATIONS,
   MAX_WEATHER_LOCATION_QUERY_LENGTH,
 } from "@/constants/weather";
+import { trimField } from "@/utils/guestStorage";
 import { isValidWeatherLocationQuery } from "@/utils/weather";
 
 export interface GuestWeatherLocation {
@@ -9,13 +10,6 @@ export interface GuestWeatherLocation {
   query: string;
   sort_order: number;
   is_default?: boolean;
-}
-
-function trimField(value: unknown, maxLength: number): string {
-  if (typeof value !== "string") {
-    return "";
-  }
-  return value.trim().slice(0, maxLength);
 }
 
 function isGuestLocation(value: unknown): value is GuestWeatherLocation {

@@ -53,8 +53,8 @@ def test_shared_redis_cache_warns_in_staging(
         scenario_env(
             tmp_path,
             APP_ENV="staging",
-            REDIS_URL="redis://:local@127.0.0.1:6379/0",
             REDIS_CACHE_URL="",
+            UNTRUSTED_URL_TOOLS_ENABLED="false",
         ),
     )
 

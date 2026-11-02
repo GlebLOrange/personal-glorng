@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="GY monogram">
+  <rect width="96" height="96" rx="16" fill="#0d1117"/>
+  <rect x="2" y="2" width="92" height="92" rx="14" fill="none" stroke="#58a6ff" stroke-width="2"/>
+  <text x="48" y="62" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="36" font-weight="700" fill="#e6edf3">GY</text>
+</svg>

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AuthorizedUser, SearchIndexServiceDep, require_capability
 from app.core.rate_limit import RateLimiter
+from app.core.text import sanitize_text
 from app.db.documents.search import SearchVisibility
 from app.schemas.search import SearchHit, SearchQueryResponse
 from app.services.search_index import SearchIndexService
@@ -47,8 +48,9 @@ async def search_admin_documents(
         source_types = [source_type.value]
     else:
         source_types = [t.value for t in ADMIN_SOURCE_TYPES]
+    cleaned = sanitize_text(q, max_length=500)
     results = await search_svc.search(
-        q,
+        cleaned,
         visibilities=[SearchVisibility.ADMIN],
         limit=ADMIN_SEARCH_LIMIT,
         source_types=source_types,
@@ -64,4 +66,4 @@ async def search_admin_documents(
         )
         for hit in results
     ]
-    return SearchQueryResponse(query=q, hits=hits)
+    return SearchQueryResponse(query=cleaned, hits=hits)

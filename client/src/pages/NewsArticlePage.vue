@@ -48,7 +48,7 @@ watch(
     applyPageSeo({
       title: value.title,
       description: value.summary || undefined,
-      path: route.fullPath,
+      path: `/news/${value.slug}`,
     });
   },
   { immediate: true },
@@ -60,7 +60,7 @@ watch(
     :title="articleTitle"
     :breadcrumbs="breadcrumbs"
     back-to="/news"
-    :narrow="false"
+    body-width="full"
     omit-heading
   >
     <Card
@@ -79,32 +79,40 @@ watch(
 
     <article v-else-if="article" class="min-w-0 w-full">
       <header class="mb-8 min-w-0">
-        <h1 class="mb-4 text-2xl font-semibold text-surface-light text-balance break-words md:text-3xl">
+        <h1
+          class="mb-4 text-2xl font-semibold text-surface-light text-balance break-words md:text-3xl"
+        >
           {{ article.title }}
         </h1>
         <div
-          class="mb-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-2 text-xs text-surface-muted"
+          class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-xs text-surface-muted"
         >
-          <time class="shrink-0 text-left" :datetime="newsArticleDisplayDate(article)">
-            {{ formatNewsDate(newsArticleDisplayDate(article)) }}
-          </time>
-          <div class="flex shrink-0 items-center gap-2">
+          <div class="flex min-w-0 flex-wrap items-center gap-2">
             <a
               v-if="safeNavigationHref(article.source_url)"
               :href="safeNavigationHref(article.source_url) ?? '#'"
               target="_blank"
               rel="noopener noreferrer"
               title="source"
-              class="text-accent-blue hover:underline"
+              class="text-link shrink-0"
             >
               {{ article.source_name }}
             </a>
-            <span v-else class="text-accent-blue">{{ article.source_name }}</span>
+            <span v-else class="shrink-0 text-accent-coral">{{ article.source_name }}</span>
+            <time class="shrink-0 text-left" :datetime="newsArticleDisplayDate(article)">
+              {{ formatNewsDate(newsArticleDisplayDate(article)) }}
+            </time>
             <FieldHelp
-              align="end"
               :text="`this is a curated summary — read the original article from ${article.source_name} for full context`"
             />
           </div>
+          <ul
+            v-if="article.tags.length"
+            class="m-0 ml-auto flex list-none flex-row-reverse flex-wrap justify-end gap-2 p-0"
+            aria-label="tags"
+          >
+            <li v-for="tag in article.tags" :key="tag" class="news-tag-chip">#{{ tag }}</li>
+          </ul>
         </div>
         <p class="text-body break-words">{{ article.summary }}</p>
       </header>
@@ -115,22 +123,9 @@ watch(
           <li
             v-for="bullet in keyPoints"
             :key="bullet"
-            class="break-words border-l-2 border-accent-blue/40 pl-3 text-body"
+            class="break-words border-l-2 border-accent-coral/40 pl-3 text-body"
           >
             {{ formatEmbeddedDates(bullet) }}
-          </li>
-        </ul>
-      </section>
-
-      <section v-if="article.tags.length" class="mb-8 min-w-0">
-        <h2 class="card-title mb-4">tags</h2>
-        <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
-          <li
-            v-for="tag in article.tags"
-            :key="tag"
-            class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
-          >
-            #{{ tag }}
           </li>
         </ul>
       </section>

@@ -2,6 +2,8 @@
 
 Day-to-day workflow, dev modes, ports, and quality checks.
 
+First-time setup (`.env`, seed, minimum secrets): [Getting started](/guide/getting-started).
+
 ## Recommended workflow
 
 ```bash
@@ -90,14 +92,28 @@ UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
 
 ```bash
 cd client
-npm ci
+npm ci               # TypeScript ~5.9.x (typescript-eslint 8 peer range)
 npm run dev          # dev server
 npm run lint
 npm run test
-npm run build:check  # typecheck + production build
+# Production build needs a public HTTPS origin (not localhost):
+VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
 ```
 
 Host Vite uses `client/.env.development` (`VITE_API_PROXY_TARGET=http://127.0.0.1:8000` by default) and also applies `VITE_*` from repo-root `.env`.
+
+- **2026-10-31:** Cursor does not expand `${workspaceFolder}` in MCP `env` (literal string); set `CURSOR_WORKSPACE` and `mcp --proxy --index` to the same absolute repo path (project [`.cursor/mcp.json`](../../.cursor/mcp.json) → [`.agents/mcp_config.json`](../../.agents/mcp_config.json), or `~/.cursor/mcp.json`). Tilde session roots (`~/projects/...`) fail against absolute tracks — reconnect MCP after edits; do not `gortex track` `$HOME`.
+- **2026-10-30:** Superseded 2026-10-31 — Cursor Gortex MCP inactive for `$HOME` while `portfolio-glorng` is tracked means the MCP process cwd is home — set `CURSOR_WORKSPACE=${workspaceFolder}` (and `mcp --proxy`) in mcp.json; do not `gortex track` home.
+- **2026-10-26:** Worktree UI checks must hit that worktree’s Vite (e.g. `:3001`) with API healthy on `:8000`; `http://localhost` nginx serves the primary checkout’s client, so `/api` 502 there is a down proxy target, not an app auth bug.
+
+### Public route loading (perf / Lighthouse)
+
+| Route | Without API | Notes |
+|-------|-------------|--------|
+| `/` (portfolio) | Renders from `RESUME_FALLBACK` immediately | Live `/resume` sync is non-blocking; failed sync shows a banner |
+| `/news` | List skeleton until `loadNews()` resolves | Needs the API for article rows |
+
+Do not treat a blank Lighthouse FCP on `vite preview` as “portfolio waits on the API” — check entry JS/CSS first (`npm run build:check` includes a no-chart-on-entry preload guard).
 
 ## Telegram todobot
 
@@ -105,19 +121,26 @@ With `make dev-bot` and `TELEGRAM_BOT_TO_DO_TOKEN` set:
 
 | Command | Example |
 |---------|---------|
+| `/new` | Quick-create a task (also menu Quick / Guided) |
+| `/tasks` | List pending tasks |
+| `/connect_calendar` | Link Google Calendar |
 | `/spend <text>` | `/spend 89.50 biedronka` |
-| `/spend` | Guided flow |
+| `/spend` | Guided expense flow |
 | `/expenses` | This month's total and recent entries |
 
 Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN`.
+
+How tasks, Telegram reminders, and Google Calendar sync connect: [Telegram + tasks + calendar sync](/guide/telegram-tasks-calendar).
 
 **2026-09-23 — Google Keep:** `notes.create` is Workspace-only; a personal Gmail account cannot create Keep notes via API. A Create menu (Note vs Event; one Telegram message → Keep note, no task/calendar) was designed but is not in this tree. Do not plan Keep again unless the operator has Workspace.
 
 ## Quality checks
 
 ```bash
-make lint-check
-cd client && npm ci && npm run lint && npm run format:check && npm run build:check
+make lint-check type-check
+cd client && npm ci && npm run lint && npm run format:check
+cd client && npm audit --package-lock-only --audit-level=high
+VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
 make check   # local backend + frontend gate (CI also: coverage, postgres, e2e, docs)
 ```
 
@@ -129,7 +152,7 @@ cd client && npm run build:check && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 
 cd client && npm run e2e
 ```
 
-Git hooks: `pip install pre-commit && pre-commit install`
+Git hooks: `pip install pre-commit && pre-commit install` — includes the staged-file token limit (see [Contributing → Pre-commit](/guide/contributing#pre-commit)). Verify with `sh scripts/test_check_staged_token_limit.sh`.
 
 Testing tiers and markers: [Testing](/reference/testing).
 

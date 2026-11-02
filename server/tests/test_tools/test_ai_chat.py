@@ -154,7 +154,7 @@ async def limited_auth_client(
     user = await create_user(
         registry,
         email="reader@example.com",
-        permissions=["ai-chat:read", "ai-chat:write"],
+        permissions=[],
     )
     token = create_access_token(str(user.public_id))
     client.headers["Authorization"] = f"Bearer {token}"

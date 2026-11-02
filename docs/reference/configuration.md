@@ -47,10 +47,16 @@ How to retain and browse app logs vs audit events: [Logging](/operations/logging
 
 ## MongoDB
 
-| Variable | Purpose |
-|----------|---------|
-| `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_DB` | Credentials and database name |
-| `MONGODB_URL` | Connection string (Docker host `mongodb`) |
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_DB` | — | Credentials and database name |
+| `MONGODB_URL` | — | Connection string (Docker host `mongodb`) |
+| `MONGODB_MAX_POOL_SIZE` | `10` | Motor `maxPoolSize` |
+| `MONGODB_MIN_POOL_SIZE` | `0` | Motor `minPoolSize` |
+| `MONGODB_MAX_IDLE_TIME_MS` | `60000` | Motor `maxIdleTimeMS` |
+| `MONGODB_WAIT_QUEUE_TIMEOUT_MS` | `5000` | Motor `waitQueueTimeoutMS` |
+| `MONGODB_CONNECT_TIMEOUT_MS` | `10000` | Motor `connectTimeoutMS` |
+| `MONGODB_SERVER_SELECTION_TIMEOUT_MS` | `5000` | Motor `serverSelectionTimeoutMS` |
 
 ## PostgreSQL (optional)
 
@@ -66,7 +72,9 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `ELASTICSEARCH_URL` | empty | Leave empty for dev-lite; set for `make dev-search` |
-| `ELASTICSEARCH_INDEX` | `search_documents` | Index name |
+| `ELASTICSEARCH_INDEX` | `search_documents` | Search documents index |
+| `ELASTICSEARCH_APP_LOGS_INDEX` | `app_logs` | App-log index when ES log shipping is on |
+| `APP_LOG_ES_ENABLED` | `true` | Ship app logs to Elasticsearch when `ELASTICSEARCH_URL` is set |
 
 ## Redis
 
@@ -93,9 +101,6 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token TTL |
 | `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | `7` | Refresh token TTL |
 | `JWT_ALGORITHM` | `HS256` | Signing algorithm |
-| `FIREBASE_AUTH_ENABLED` | `false` | Google sign-in via Firebase |
-| `FIREBASE_PROJECT_ID` | | Firebase project |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | | Service account JSON (prefer `GOOGLE_APPLICATION_CREDENTIALS` in deploy) |
 
 ## Email
 
@@ -116,7 +121,7 @@ Client: `VITE_SENTRY_ENABLED=false` in `client/.env.development` (Vite DEV needs
 
 ## EDOT OpenTelemetry (opt-in)
 
-Zero-code instrumentation via `elastic-opentelemetry` + `opentelemetry-instrument`. Core auto-instrumentation packages (FastAPI, httpx, Redis, Celery, Motor/pymongo, etc.) are locked in `server/pyproject.toml`. The Docker entrypoint wraps uvicorn/Celery only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (from process env or `GLORNG_ENV_FILE`), and runs `edot-bootstrap` for any extra instrumentations. Leave the endpoint empty for local lite (no overhead).
+Zero-code instrumentation via `elastic-opentelemetry` + `opentelemetry-instrument`. Core auto-instrumentation packages (FastAPI, httpx, Redis, Celery, Motor/pymongo, etc.) are locked in `server/pyproject.toml`. Elasticsearch client instrumentation is not bundled while its upstream package lags the coordinated OpenTelemetry release; Elasticsearch queries still work without spans. The Docker entrypoint wraps uvicorn/Celery only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (from process env or `GLORNG_ENV_FILE`), and runs `edot-bootstrap` for any extra instrumentations. Leave the endpoint empty for local lite (no overhead).
 
 | Variable | Purpose |
 |----------|---------|
@@ -163,6 +168,7 @@ Smoke check: set endpoint + headers, hit `/api/health`, confirm the service appe
 | `AI_SEARCH_ENABLED` | `true` | Public search chat |
 | `EXPENSES_ENABLED` | `false` | Expenses ledger + public calculator |
 | `UNTRUSTED_URL_TOOLS_ENABLED` | `false` | Mount yt-dlp, file-share, outbound health-checker |
+| `UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED` | `false` | Required acknowledgement in production/staging when untrusted tools are enabled |
 
 Client mirrors: `VITE_AI_CHAT_ENABLED`, `VITE_AI_SEARCH_ENABLED`.
 
@@ -240,8 +246,12 @@ Used by [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh). Always d
 | `BACKUP_TIMEZONE` | `Europe/Warsaw` | Cron timezone |
 | `BACKUP_OFFSITE_CMD` | | Shell command after verify (e.g. rsync without `--delete`); failure fails the run |
 | `BACKUP_REQUIRE_OFFSITE` | `false` | When `true`, fail if `BACKUP_OFFSITE_CMD` is empty (prod) |
+| `DB_MAINTENANCE_ENABLED` | `false` | Allow admin **backup** / **stale** to spawn the host script |
+| `DB_MAINTENANCE_SCRIPT` | | Absolute path to `scripts/db_maintenance.sh` |
+| `MAINTENANCE_SEED_ENABLED` | `false` | Allow admin **seed** when `APP_ENV=production` |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | | Required for the admin maintenance panel |
 
-See [Backup & restore](/operations/backup-restore).
+Admin jobs (`backup`, `stale`, `sync`, `cleanup`, `seed`) email `ALLOWED_EMAIL` on completion. See [Backup & restore](/operations/backup-restore) and `/maintain`.
 
 ## Prod → dev pull
 

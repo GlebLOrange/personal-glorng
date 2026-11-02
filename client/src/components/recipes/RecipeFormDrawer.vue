@@ -45,17 +45,20 @@ function toNullableNumber(value: string | number | null | undefined): number | n
 <template>
   <BaseDrawer :open="open" :title="formTitle" max-width="lg" @close="emit('close')">
     <form id="recipe-form-drawer-form" class="space-y-3" @submit.prevent="emit('save')">
-      <div class="space-y-2">
+      <div class="space-y-3">
         <BaseInput
           compact
+          label="title"
           :model-value="form.title"
-          placeholder="enter title"
+          placeholder="e.g. tomato soup"
+          required
           @update:model-value="patch({ title: toStringValue($event) })"
         />
         <BaseInput
           compact
+          label="image url"
           :model-value="form.image_url"
-          placeholder="image url"
+          placeholder="https://…"
           @update:model-value="patch({ image_url: toStringValue($event) })"
         />
         <BaseImage
@@ -68,23 +71,29 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         <div class="grid grid-cols-3 gap-2">
           <BaseInput
             compact
+            label="prep (min)"
             :model-value="form.prep_time"
             type="number"
-            placeholder="prep · min"
+            min="0"
+            placeholder="0"
             @update:model-value="patch({ prep_time: toNullableNumber($event) })"
           />
           <BaseInput
             compact
+            label="cook (min)"
             :model-value="form.cook_time"
             type="number"
-            placeholder="cook · min"
+            min="0"
+            placeholder="0"
             @update:model-value="patch({ cook_time: toNullableNumber($event) })"
           />
           <BaseInput
             compact
+            label="servings"
             :model-value="form.servings"
             type="number"
-            placeholder="servings"
+            min="0"
+            placeholder="0"
             @update:model-value="patch({ servings: toNullableNumber($event) })"
           />
         </div>
@@ -106,9 +115,10 @@ function toNullableNumber(value: string | number | null | undefined): number | n
 
       <BaseTextarea
         compact
+        label="notes"
         :model-value="form.notes"
         :rows="3"
-        placeholder="notes · tips, variations"
+        placeholder="tips, variations, substitutions…"
         @update:model-value="patch({ notes: String($event ?? '') })"
       />
     </form>

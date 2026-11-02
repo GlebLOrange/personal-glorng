@@ -12,16 +12,12 @@ async def test_create_url_unauthenticated(client: AsyncClient) -> None:
         "/api/tools/url-shortener",
         json={"original_url": "https://example.com"},
     )
-    assert resp.status_code == 201
-    data = resp.json()
-    assert data["original_url"] == "https://example.com/"
-    assert "code" in data
-    assert len(data["code"]) == 8
+    assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_create_url_blocks_private_host(client: AsyncClient) -> None:
-    resp = await client.post(
+async def test_create_url_blocks_private_host(auth_client: AsyncClient) -> None:
+    resp = await auth_client.post(
         "/api/tools/url-shortener",
         json={"original_url": "http://127.0.0.1/internal"},
     )
@@ -43,8 +39,10 @@ async def test_create_url(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_url_prepends_https_for_schemeless_host(client: AsyncClient) -> None:
-    resp = await client.post(
+async def test_create_url_prepends_https_for_schemeless_host(
+    auth_client: AsyncClient,
+) -> None:
+    resp = await auth_client.post(
         "/api/tools/url-shortener",
         json={"original_url": "example.com/path"},
     )
@@ -53,8 +51,8 @@ async def test_create_url_prepends_https_for_schemeless_host(client: AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_create_url_does_not_invent_www(client: AsyncClient) -> None:
-    resp = await client.post(
+async def test_create_url_does_not_invent_www(auth_client: AsyncClient) -> None:
+    resp = await auth_client.post(
         "/api/tools/url-shortener",
         json={"original_url": "example.com"},
     )
@@ -83,7 +81,7 @@ async def test_list_urls_empty(auth_client: AsyncClient) -> None:
     assert resp.status_code == 200
     data = resp.json()
     assert data["items"] == []
-    assert data["per_page"] == 9
+    assert data["per_page"] == 25
 
 
 @pytest.mark.asyncio
@@ -109,66 +107,6 @@ async def test_list_urls_scoped_to_owner(
     data = resp.json()
     assert len(data["items"]) == 1
     assert data["items"][0]["title"] == "Other link"
-
-
-@pytest.mark.asyncio
-async def test_update_url_title(auth_client: AsyncClient) -> None:
-    create_resp = await auth_client.post(
-        "/api/tools/url-shortener",
-        json={"original_url": "https://example.com", "title": "Before"},
-    )
-    url_id = create_resp.json()["id"]
-    resp = await auth_client.patch(
-        f"/api/tools/url-shortener/{url_id}",
-        json={"title": "After"},
-    )
-    assert resp.status_code == 200
-    assert resp.json()["title"] == "After"
-
-
-@pytest.mark.asyncio
-async def test_update_url_clear_title(auth_client: AsyncClient) -> None:
-    create_resp = await auth_client.post(
-        "/api/tools/url-shortener",
-        json={"original_url": "https://example.com", "title": "To clear"},
-    )
-    url_id = create_resp.json()["id"]
-    resp = await auth_client.patch(
-        f"/api/tools/url-shortener/{url_id}",
-        json={"title": None},
-    )
-    assert resp.status_code == 200
-    assert resp.json()["title"] is None
-
-
-@pytest.mark.asyncio
-async def test_update_other_users_url_forbidden(
-    client: AsyncClient,
-    registry: DatabaseRegistry,
-    admin_user: object,
-) -> None:
-    url = await create_short_url(registry, created_by=admin_user.id, title="Admin link")  # type: ignore[union-attr]
-    other_user = await create_user(
-        registry,
-        email="updater@glorng.dev",
-        permissions=["url-shortener:read", "url-shortener:write"],
-    )
-    other_token = create_access_token(str(other_user.public_id), user_id=other_user.id)
-    resp = await client.patch(
-        f"/api/tools/url-shortener/{url.id}",
-        json={"title": "Hijacked"},
-        headers={"Authorization": f"Bearer {other_token}"},
-    )
-    assert resp.status_code == 403
-
-
-@pytest.mark.asyncio
-async def test_update_nonexistent_url(auth_client: AsyncClient) -> None:
-    resp = await auth_client.patch(
-        "/api/tools/url-shortener/99999",
-        json={"title": "Nope"},
-    )
-    assert resp.status_code == 404
 
 
 @pytest.mark.asyncio

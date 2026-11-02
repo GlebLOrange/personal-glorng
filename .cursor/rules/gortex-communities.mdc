@@ -1,0 +1,6 @@
+---
+description: Gortex community code-area map (pointer only)
+alwaysApply: true
+---
+
+Code areas: call `analyze(operation:"communities")`, or read [`.cursor/references/gortex-communities.md`](../references/gortex-communities.md). Offloaded community skill bodies: [`.cursor/references/gortex-skills/`](../references/gortex-skills/).

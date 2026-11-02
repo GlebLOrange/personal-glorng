@@ -3,11 +3,10 @@ import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import AuthPageShell from "@/components/auth/AuthPageShell.vue";
-import GoogleMarkIcon from "@/components/icons/GoogleMarkIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import { isFirebaseEnabled } from "@/constants/firebase";
 import { useNotify } from "@/composables/useNotify";
+import { EMAIL_FORMAT_HINT, isValidEmail } from "@/constants/contactMeta";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
 import { focusAfterPaint } from "@/utils/focusField";
@@ -21,11 +20,25 @@ const { toast } = useNotify();
 const email = ref("");
 const password = ref("");
 const loading = ref(false);
-const googleLoading = ref(false);
 const formError = ref("");
 const formErrorEl = useTemplateRef<HTMLElement>("formErrorAlert");
 
-const canSubmit = computed(() => !!email.value.trim() && !!password.value && !loading.value);
+const emailTone = computed<"error" | undefined>(() => {
+  if (!email.value.trim()) return undefined;
+  return isValidEmail(email.value) ? undefined : "error";
+});
+
+const emailError = computed(() => (emailTone.value === "error" ? EMAIL_FORMAT_HINT : undefined));
+
+const canSubmit = computed(() => isValidEmail(email.value) && !!password.value && !loading.value);
+
+/** Map opaque reserved-TLD / special-use API detail into a clear login hint. */
+function friendlyLoginError(raw: string): string {
+  if (/special-use|reserved\s+name|reserved\s+TLD|\.test\b/i.test(raw)) {
+    return "That email domain can't be used for sign-in. Use a real inbox address.";
+  }
+  return raw;
+}
 
 async function handleLogin(): Promise<void> {
   if (!canSubmit.value) return;
@@ -37,28 +50,11 @@ async function handleLogin(): Promise<void> {
     router.push(safeRedirectPath(route.query.redirect));
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
-    formError.value = getApiErrorMessage(err, "Invalid email or password");
+    formError.value = friendlyLoginError(getApiErrorMessage(err, "Invalid email or password"));
     toast(formError.value, "error");
     await focusAfterPaint(() => formErrorEl.value);
   } finally {
     loading.value = false;
-  }
-}
-
-async function handleGoogleLogin(): Promise<void> {
-  googleLoading.value = true;
-  formError.value = "";
-  try {
-    await auth.loginWithGoogle();
-    toast("Logged in successfully", "success");
-    router.push(safeRedirectPath(route.query.redirect));
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    formError.value = getApiErrorMessage(err, "Google login failed");
-    toast(formError.value, "error");
-    await focusAfterPaint(() => formErrorEl.value);
-  } finally {
-    googleLoading.value = false;
   }
 }
 </script>
@@ -76,7 +72,9 @@ async function handleGoogleLogin(): Promise<void> {
         name="email"
         autocomplete="email"
         label="email"
-        placeholder="you@example.com"
+        placeholder="email@example.com"
+        :tone="emailTone"
+        :error="emailError"
         required
       />
       <BaseInput
@@ -85,6 +83,7 @@ async function handleGoogleLogin(): Promise<void> {
         name="password"
         autocomplete="current-password"
         label="password"
+        placeholder="password"
         required
       />
       <p
@@ -106,24 +105,6 @@ async function handleGoogleLogin(): Promise<void> {
         {{ loading ? "signing in…" : "login" }}
       </BaseButton>
     </form>
-
-    <div v-if="isFirebaseEnabled" class="mt-5">
-      <div class="flex items-center gap-3 text-xs text-surface-mid mb-4">
-        <span class="h-px flex-1 bg-surface-border" />
-        <span>or</span>
-        <span class="h-px flex-1 bg-surface-border" />
-      </div>
-      <BaseButton
-        type="button"
-        variant="secondary"
-        class="w-full gap-2"
-        :loading="googleLoading"
-        @click="handleGoogleLogin"
-      >
-        <GoogleMarkIcon class-name="size-4" />
-        {{ googleLoading ? "connecting…" : "continue with Google" }}
-      </BaseButton>
-    </div>
 
     <p class="text-center text-xs text-surface-mid mt-4">
       <RouterLink to="/forgot-password" class="nav-link underline-offset-4">

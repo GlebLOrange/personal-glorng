@@ -5,7 +5,7 @@ import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { ACTIVE_WEATHER_QUERY_KEY } from "@/constants/weather";
 
-/** Active city shown in pinned weather tile on tool pages; localStorage with saved-city fallback. */
+/** Active city selected on the weather page; localStorage with saved-city fallback. */
 export function useActiveWeatherQuery(): {
   activeQuery: ComputedRef<string>;
   setActiveQuery: (query: string) => void;

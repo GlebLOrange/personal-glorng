@@ -1,11 +1,15 @@
 """Unit tests for health checker probe helpers and uptime math."""
 
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from app.core.url_safety import PublicFetchResult
 from app.services.health_checker import (
+    PROBE_TIMEOUT_SECONDS,
     ProbeOutcome,
+    _ssl_expiry,
     compute_uptime_percent,
     probe_url,
 )
@@ -37,6 +41,12 @@ async def test_probe_url_success() -> None:
     mock_response.status_code = 200
     mock_response.aclose = AsyncMock()
 
+    fetch_result = PublicFetchResult(
+        response=mock_response,
+        url="https://example.com/",
+        resolved_ip="93.184.216.34",
+    )
+
     mock_client = MagicMock()
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
@@ -48,7 +58,7 @@ async def test_probe_url_success() -> None:
         ),
         patch(
             "app.services.health_checker.get_public_http_url",
-            new=AsyncMock(return_value=mock_response),
+            new=AsyncMock(return_value=fetch_result),
         ),
         patch(
             "app.services.health_checker.httpx.AsyncClient",
@@ -61,11 +71,40 @@ async def test_probe_url_success() -> None:
         patch(
             "app.services.health_checker._ssl_expiry",
             return_value=None,
-        ),
+        ) as ssl_expiry,
     ):
         outcome = await probe_url("https://example.com/")
 
+    ssl_expiry.assert_called_once_with("example.com", "93.184.216.34", 443)
     assert isinstance(outcome, ProbeOutcome)
     assert outcome.ok is True
     assert outcome.status_code == 200
     assert outcome.response_ms is not None
+
+
+def test_ssl_expiry_connects_to_pinned_ip() -> None:
+    """TLS expiry uses the HTTP probe's resolved IP, never a second DNS answer."""
+    sock = MagicMock()
+    ssock = MagicMock()
+    ssock.getpeercert.return_value = {"notAfter": "Sep 23 12:00:00 2027 GMT"}
+    context = MagicMock()
+    context.wrap_socket.return_value.__enter__.return_value = ssock
+
+    with (
+        patch(
+            "app.services.health_checker.socket.create_connection",
+        ) as create_connection,
+        patch(
+            "app.services.health_checker.ssl.create_default_context",
+            return_value=context,
+        ),
+    ):
+        create_connection.return_value.__enter__.return_value = sock
+        expiry = _ssl_expiry("example.com", "93.184.216.34", 8443)
+
+    create_connection.assert_called_once_with(
+        ("93.184.216.34", 8443),
+        timeout=PROBE_TIMEOUT_SECONDS,
+    )
+    context.wrap_socket.assert_called_once_with(sock, server_hostname="example.com")
+    assert expiry == datetime(2027, 9, 23, 12, 0, tzinfo=UTC)

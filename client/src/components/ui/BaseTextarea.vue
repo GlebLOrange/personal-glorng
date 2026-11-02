@@ -29,6 +29,8 @@ const props = withDefaults(
     id?: string;
     /** Faint tip drawn behind the value (full-width textarea). */
     placeholder?: string;
+    /** Explicit overlay tip; preferred over `placeholder` when both are set. */
+    tip?: string;
     /** Optional left-side field name inside the control. */
     prefix?: string;
     label?: string;
@@ -39,13 +41,17 @@ const props = withDefaults(
     /** Render the label inside the control instead of the trailing / notch title. */
     labelInside?: boolean;
     /**
-     * When not labelInside: `start` = border notch; `end` = inside trailing (before clear).
+     * When not labelInside: `end` = no visible name (sr-only / aria; default);
+     * `start` = border notch (opt-in).
      */
     labelAlign?: "start" | "end";
+    /** Shrink shell/textarea to content (tool action panels) instead of w-full. */
+    autoWidth?: boolean;
   }>(),
   {
     labelInside: false,
     labelAlign: "end",
+    autoWidth: false,
   },
 );
 
@@ -55,17 +61,17 @@ const textareaId = computed(() => props.id ?? `base-textarea-${fallbackId}`);
 const hintId = computed(() => `${textareaId.value}-hint`);
 const errorId = computed(() => `${textareaId.value}-error`);
 const tipId = computed(() => `${textareaId.value}-tip`);
-const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder));
+const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder, props.tip));
 const hasClearableValue = computed(() => Boolean(model.value?.length));
 const isInlineEnd = computed(() => props.labelAlign === "end" && !props.labelInside);
 const useShell = computed(() =>
   Boolean(
     props.prefix ||
-      fieldCopy.value.tip ||
-      props.placeholder ||
-      props.labelInside ||
-      props.label ||
-      isInlineEnd.value,
+    fieldCopy.value.tip ||
+    props.placeholder ||
+    props.labelInside ||
+    props.label ||
+    isInlineEnd.value,
   ),
 );
 /** Reserve clear width whenever shell is active so tip never jumps vs BaseInput. */
@@ -79,14 +85,25 @@ const showInsideLabel = computed(
 const showTip = computed(
   () => Boolean(fieldCopy.value.tip) && !hasClearableValue.value && !showInsideLabel.value,
 );
-const tipInsetClass = computed(() => ["left-3", reserveClear.value || isInlineEnd.value ? "right-10" : "right-3"]);
+const tipInsetClass = computed(() => [
+  "left-3",
+  reserveClear.value || isInlineEnd.value ? "right-10" : "right-3",
+]);
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
+/** Border-notch / labelInside / end-mode sr-only — all count as a named control. */
 const hasVisibleLabel = computed(
-  () => showLabelNotch.value || Boolean(props.label && props.labelInside),
+  () =>
+    showLabelNotch.value ||
+    Boolean(props.label && props.labelInside) ||
+    (isInlineEnd.value && Boolean(props.label) && !props.error),
 );
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
-const showInlineEndLabel = computed(() => isInlineEnd.value && showLabelRow.value);
+/** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
+const showInlineEndLabel = computed(() => isInlineEnd.value && Boolean(props.hint && !props.error));
 const showNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
+const showSrOnlyLabel = computed(
+  () => Boolean(props.label) && (props.labelInside || (isInlineEnd.value && !props.error)),
+);
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const describedBy = computed(() =>
   buildFieldDescribedBy({
@@ -99,18 +116,22 @@ const describedBy = computed(() =>
 );
 const bareClass = computed(() => [
   props.compact ? TEXTAREA_CLASS_COMPACT : TEXTAREA_CLASS,
+  props.autoWidth && "!w-auto max-w-full",
   props.error && "border-status-error",
 ]);
 const shellClass = computed(() => [
-  "relative flex w-full items-start rounded-lg border bg-surface-dark transition-colors",
+  // Inset ring (not border) — matches BaseInput field chrome.
+  "relative flex items-start rounded-lg bg-surface-dark transition-colors",
+  props.autoWidth ? "w-auto max-w-full" : "w-full",
+  showInlineEndLabel.value && props.hint ? "overflow-visible" : "overflow-hidden",
   props.error
-    ? "border-status-error"
-    : "border-surface-border focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50",
+    ? "ring-1 ring-inset ring-status-error focus-within:ring-status-error"
+    : "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50",
 ]);
 const shellTextareaClass = computed(() =>
   [
     "relative z-10 min-w-0 flex-1 resize-y border-0 bg-transparent px-3 text-left text-sm text-surface-light outline-none disabled:opacity-60",
-    props.compact ? "min-h-9 py-1.5" : "min-h-10 py-2",
+    "min-h-11 py-2", // compact matches CONTROL_SIZE height
   ].join(" "),
 );
 const textareaAttrs = computed(() => {
@@ -127,6 +148,7 @@ const accessibleName = computed(() =>
     hasVisibleLabel: hasVisibleLabel.value,
     label: props.label,
     prefix: props.prefix,
+    placeholder: props.placeholder,
   }),
 );
 const notchBgClass = FIELD_NOTCH_BG_CLASS;
@@ -151,7 +173,7 @@ function clear(): void {
       >
         {{ prefix }}
       </span>
-      <label v-if="props.labelInside && props.label" :for="textareaId" class="sr-only">
+      <label v-if="showSrOnlyLabel" :for="textareaId" class="sr-only">
         {{ props.label }}
       </label>
       <textarea
@@ -183,32 +205,20 @@ function clear(): void {
       </span>
       <div
         v-if="reserveClear || showInlineEndLabel"
-        class="absolute right-0 top-0 z-10 flex h-10 items-center gap-0.5 pr-2"
+        class="absolute right-0 top-0 z-10 flex h-11 items-center gap-0.5 pr-2"
       >
-        <div
-          v-if="showInlineEndLabel"
-          class="flex max-w-[11rem] items-center gap-1 bg-transparent"
-        >
-          <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-          <label
-            v-if="showLabelNotch"
-            :for="textareaId"
-            :class="['truncate', FIELD_LABEL_TEXT_CLASS]"
-          >
-            {{ label }}
-          </label>
+        <div v-if="showInlineEndLabel" class="flex max-w-[11rem] items-center gap-1 bg-transparent">
           <FieldHelp
-            v-if="hint"
             size="sm"
             :align="helpAlign"
             :placement="helpPlacement"
-            :text="hint"
+            :text="hint ?? ''"
             :content-id="hintId"
           />
         </div>
         <div
           v-if="reserveClear"
-          class="flex h-10 w-10 items-center justify-center"
+          class="flex h-11 w-11 items-center justify-center"
           :class="showClear ? undefined : FIELD_CLEAR_HIDDEN_CLASS"
         >
           <IconCloseButton v-if="showClear" size="field" aria-label="clear" @click="clear" />
@@ -239,13 +249,7 @@ function clear(): void {
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp
-          v-if="hint"
-          size="sm"
-          :align="helpAlign"
-          :text="hint"
-          :content-id="hintId"
-        />
+        <FieldHelp v-if="hint" size="sm" :align="helpAlign" :text="hint" :content-id="hintId" />
       </span>
     </div>
     <p

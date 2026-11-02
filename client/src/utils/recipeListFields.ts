@@ -30,11 +30,7 @@ export function insertBlankAfter(items: string[], index: number): string[] {
   return next;
 }
 
-export function replaceWithPasteLines(
-  items: string[],
-  index: number,
-  lines: string[],
-): string[] {
+export function replaceWithPasteLines(items: string[], index: number, lines: string[]): string[] {
   const next = [...items];
   next.splice(index, 1, ...lines);
   return next;

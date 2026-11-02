@@ -1,18 +1,26 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
+import { useRoute } from "vue-router";
 
 import NavBar from "@/components/layout/NavBar.vue";
 import FooterBar from "@/components/layout/FooterBar.vue";
 import ScrollControls from "@/components/layout/ScrollControls.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
-import DevApiStatusBadge from "@/components/dev/DevApiStatusBadge.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
 const { sessionError } = storeToRefs(auth);
-/** Template cannot parse import.meta — expose DEV for the badge gate. */
-const isDev = import.meta.env.DEV;
+const route = useRoute();
+
+/** Hide raw session errors on public portfolio pages; keep retry on login/admin. */
+const showSessionError = computed(() => {
+  if (!sessionError.value) return false;
+  if (route.meta.requiresAuth === true) return true;
+  const path = route.path;
+  return path === "/login" || path.startsWith("/admin") || path.startsWith("/settings");
+});
 
 async function retrySession(): Promise<void> {
   try {
@@ -28,19 +36,18 @@ async function retrySession(): Promise<void> {
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <NavBar />
     <main id="main-content" class="flex-1" tabindex="-1">
-      <div v-if="sessionError" class="mx-auto max-w-lg px-4 pt-6">
+      <div v-if="showSessionError" class="mx-auto max-w-lg px-4 pt-6">
         <ErrorState
-          :message="sessionError"
+          :message="sessionError ?? ''"
           show-retry
           retry-label="retry session"
           @retry="retrySession"
         />
       </div>
       <RouterView />
-      <ScrollControls />
     </main>
+    <ScrollControls />
     <FooterBar />
     <ToastContainer variant="overlay" />
-    <DevApiStatusBadge v-if="isDev" />
   </div>
 </template>

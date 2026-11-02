@@ -187,7 +187,7 @@ SHORT_URL_TARGETS = (
 )
 
 NEWS_SOURCE_FIXTURES: tuple[tuple[str, str, str], ...] = (
-    ("DW", "dw.com", "https://www.dw.com/"),
+    ("DW", "dw.com", "https://rss.dw.com/xml/rss-en-all"),
     ("BBC News", "bbc.com", "https://www.bbc.com/"),
     ("Reuters", "reuters.com", "https://www.reuters.com/"),
     ("The Guardian", "theguardian.com", "https://www.theguardian.com/"),
@@ -403,7 +403,7 @@ def build_demo_news_sources(count: int = 20) -> list[NewsSource]:
                 host=host,
                 category="world",
                 region="global",
-                enabled=True,
+                enabled=name == "DW",
             )
         )
     return rows
@@ -422,7 +422,7 @@ def build_demo_news_articles(
         rows.append(
             NewsArticle(
                 slug=slug,
-                status="published",
+                status="draft",
                 source_id=source.id,
                 source_name=source.name,
                 source_url=f"{source.feed_url.rstrip('/')}/demo/{slug}",
@@ -442,7 +442,7 @@ def build_demo_news_articles(
                 ),
                 tags=json.dumps(["world", "tech"] if index % 3 == 0 else ["world"]),
                 language="en",
-                published_at=published_at,
+                published_at=None,
                 ai_model="demo",
                 ai_input_hash=f"demo-news-{index + 1:02d}",
             )

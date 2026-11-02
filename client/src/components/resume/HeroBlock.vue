@@ -1,160 +1,165 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import DownloadIcon from "@/components/icons/DownloadIcon.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
-import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
-import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
-import { getApiErrorMessageFromBlob } from "@/types/api";
+import { downloadResumeExport, resumeDownloadErrorMessage } from "@/utils/resumeDownload";
 
-const CV_FILENAME = "gleb.y.cv.pdf";
-const HANDBOOK_URL = "https://gleblorange.github.io/personal-glorng/";
-
-const props = defineProps<{
-  name: string;
-  title: string;
-  tagline?: string;
-  location?: string;
-  availability?: string;
-  bio: string;
-  githubUrl?: string;
-  repoUrl?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    name: string;
+    title: string;
+    tagline?: string;
+    location?: string;
+    availability?: string;
+    /** Quiet third meta chip for the public status-rail hero. */
+    sampleNote?: string;
+    /** `status-rail` = public CV type scale + sample note; both layouts are centered. */
+    layout?: "centered" | "status-rail";
+  }>(),
+  { layout: "centered" },
+);
 
 const emit = defineEmits<{ inquire: [] }>();
 
-const isDownloadingCv = ref(false);
-const { toast } = useNotify();
+const isStatusRail = computed(() => props.layout === "status-rail");
+const showMeta = computed(() =>
+  Boolean(props.location || props.availability || false),
+);
 
-const proofLinks = computed(() => {
-  const links: Array<{ href: string; label: string; external: boolean }> = [
-    { href: HANDBOOK_URL, label: "architecture docs", external: true },
-  ];
-  if (props.repoUrl) {
-    links.unshift({ href: props.repoUrl, label: "source repo", external: true });
-  } else if (props.githubUrl) {
-    links.unshift({ href: props.githubUrl, label: "github", external: true });
-  }
-  return links;
-});
+const isDownloadingCv = ref(false);
+const showPrintFallback = ref(false);
+const { toast } = useNotify();
 
 async function downloadCv(): Promise<void> {
   if (isDownloadingCv.value) return;
   isDownloadingCv.value = true;
+  showPrintFallback.value = false;
   try {
-    const response = await api.get<Blob>("/resume/pdf", {
-      responseType: "blob",
-      headers: { Accept: "application/pdf" },
-    });
-    const contentType = String(
-      response.headers["content-type"] ?? response.data.type ?? "",
-    ).toLowerCase();
-    if (!contentType.includes("application/pdf")) {
-      throw new Error("CV download did not return a PDF");
-    }
-
-    const url = URL.createObjectURL(response.data);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = CV_FILENAME;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
+    await downloadResumeExport("pdf");
   } catch (err) {
-    const message = await getApiErrorMessageFromBlob(err, "Failed to download CV");
-    // ponytail: no static PDF asset — print stylesheet is the offline fallback
-    toast(`${message}. Opening print dialog as a fallback.`, "error");
-    window.print();
+    const message = await resumeDownloadErrorMessage(err, "Failed to download CV");
+    // ponytail: no static PDF — offer print only when the user chooses it
+    toast(message, "error");
+    showPrintFallback.value = true;
   } finally {
     isDownloadingCv.value = false;
   }
 }
+
+function printPage(): void {
+  window.print();
+}
 </script>
 
 <template>
-  <div class="py-12 md:py-16">
-    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 text-balance">
-      <span class="accent-gradient">{{ name }}</span>
+  <div class="py-12 md:py-16 text-center">
+    <h1
+      class="mb-2 text-balance font-bold tracking-tight text-surface-light"
+      :class="
+        isStatusRail ? 'font-mono text-3xl sm:text-4xl md:text-5xl' : 'text-2xl sm:text-3xl md:text-4xl'
+      "
+    >
+      {{ name }}
     </h1>
-    <p class="text-2xl md:text-3xl text-surface-sage mb-2">{{ title }}</p>
-    <p v-if="tagline" class="text-lg text-accent-blue mb-3 text-pretty max-w-2xl">
+    <p
+      class="mb-3 text-balance font-medium tracking-tight text-surface-light"
+      :class="isStatusRail ? 'text-xl sm:text-2xl md:text-3xl' : 'text-xl sm:text-2xl'"
+    >
+      {{ title }}
+    </p>
+    <p
+      v-if="tagline"
+      class="text-surface-sage mb-3 text-pretty max-w-2xl mx-auto"
+      :class="isStatusRail ? 'text-base line-clamp-2' : 'text-lg'"
+    >
       {{ tagline }}
     </p>
     <p
-      v-if="location || availability"
-      class="text-meta mb-4 flex flex-wrap items-center gap-x-3 gap-y-1"
+      v-if="isStatusRail && sampleNote"
+      class="mx-auto mb-4 max-w-2xl font-mono text-sm text-pretty text-surface-light"
+    >
+      {{ sampleNote }}
+    </p>
+    <p
+      v-if="showMeta && isStatusRail"
+      class="text-meta mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
+    >
+      <a
+        v-if="availability"
+        href="#contacts"
+        class="inline-flex min-h-11 items-center px-1 text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
+      >
+        {{ availability }}
+      </a>
+      <span
+        v-if="availability && location"
+        class="hidden sm:inline-flex min-h-11 items-center"
+        aria-hidden="true"
+        >·</span
+      >
+      <span v-if="location" class="inline-flex min-h-11 items-center gap-1.5">
+        <LocationIcon class-name="size-3.5 shrink-0" />
+        {{ location }}
+      </span>
+    </p>
+    <p
+      v-else-if="showMeta"
+      class="text-meta mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
     >
       <span v-if="location" class="inline-flex min-h-11 items-center gap-1.5">
         <LocationIcon class-name="size-3.5 shrink-0" />
         {{ location }}
       </span>
-      <span v-if="location && availability" class="inline-flex min-h-11 items-center" aria-hidden="true"
+      <span
+        v-if="location && availability"
+        class="hidden sm:inline-flex min-h-11 items-center"
+        aria-hidden="true"
         >·</span
       >
       <a
         v-if="availability"
         href="#contacts"
-        class="inline-flex min-h-11 items-center px-1 text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        class="inline-flex min-h-11 items-center px-1 text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
       >
         {{ availability }}
       </a>
     </p>
-    <p class="text-lg md:text-xl max-w-2xl text-surface-sage leading-relaxed text-pretty">
-      {{ bio }}
-    </p>
 
-    <div class="mt-6 flex flex-col sm:flex-row flex-wrap gap-2 print:hidden">
-      <button type="button" class="cta-primary" @click="emit('inquire')">get in touch</button>
+    <div
+      class="relative z-[45] mt-6 flex flex-col flex-wrap items-center justify-center gap-2 sm:flex-row print:hidden"
+    >
       <button
         type="button"
-        class="cta-secondary"
+        class="cta-hero inline-flex items-center gap-1.5"
+        @click="emit('inquire')"
+      >
+        <ChevronIcon class-name="size-3.5 shrink-0" />
+        get in touch
+      </button>
+      <button
+        type="button"
+        class="cta-secondary inline-flex items-center gap-1.5"
         :disabled="isDownloadingCv"
         @click="downloadCv"
       >
+        <DownloadIcon class-name="size-3.5 shrink-0" />
         {{ isDownloadingCv ? "downloading…" : "download cv" }}
       </button>
     </div>
 
-    <!-- Jump + proof: middot lists, no eyebrows (labels live in aria-label). -->
-    <div class="portfolio-link-rail mt-5 flex flex-col gap-1 print:hidden">
-      <nav aria-label="On this page">
-        <ul class="m-0 flex list-none flex-wrap items-center gap-y-1 p-0">
-          <li
-            v-for="(link, i) in PORTFOLIO_SECTION_LINKS"
-            :key="link.href"
-            class="inline-flex items-center"
-          >
-            <span v-if="i > 0" class="px-1.5 text-surface-muted" aria-hidden="true">·</span>
-            <a
-              :href="link.href"
-              class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg"
-            >
-              {{ link.label }}
-            </a>
-          </li>
-        </ul>
-      </nav>
-      <nav aria-label="site proof">
-        <ul class="m-0 flex list-none flex-wrap items-center gap-y-1 p-0 text-sm">
-          <li
-            v-for="(link, i) in proofLinks"
-            :key="link.href"
-            class="inline-flex items-center"
-          >
-            <span v-if="i > 0" class="px-1.5 text-surface-muted" aria-hidden="true">·</span>
-            <a
-              :href="link.href"
-              :target="link.external ? '_blank' : undefined"
-              :rel="link.external ? 'noopener noreferrer' : undefined"
-              class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg text-surface-mid"
-            >
-              {{ link.label }}
-              <span v-if="link.external" class="sr-only">(opens in new tab)</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </div>
+    <p v-if="showPrintFallback" class="mt-3 text-meta print:hidden" role="status">
+      PDF unavailable.
+      <button
+        type="button"
+        class="ml-1 inline-flex items-center gap-1 underline underline-offset-4 text-accent-coral hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
+        @click="printPage"
+      >
+        <DownloadIcon class-name="size-3.5 shrink-0" />
+        print page instead
+      </button>
+    </p>
   </div>
 </template>

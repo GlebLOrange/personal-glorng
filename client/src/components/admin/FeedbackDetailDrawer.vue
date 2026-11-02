@@ -50,7 +50,7 @@ function displayMessage(message: string): string {
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton danger size="sm" @click="emit('close')"> close </BaseButton>
+          <BaseButton variant="cancel" danger size="sm" @click="emit('close')"> close </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton action="save" @click="emit('reply')">reply</ToolbarPillButton>

@@ -10,6 +10,7 @@ import {
   monthDateBounds,
   monthValueLocal,
   parseDatetimeLocalToIso,
+  daysAgoIsoDate,
   yesterdayIsoDate,
 } from "@/utils/dates";
 
@@ -29,6 +30,10 @@ describe("dates", () => {
 
   it("yesterdayIsoDate is the previous local calendar day", () => {
     expect(yesterdayIsoDate()).toBe("2025-06-06");
+  });
+
+  it("daysAgoIsoDate subtracts N local calendar days", () => {
+    expect(daysAgoIsoDate(7)).toBe("2025-05-31");
   });
 
   it("datetimeLocalValue uses local wall clock", () => {

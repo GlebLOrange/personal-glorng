@@ -2,16 +2,20 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
-import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import DownloadIcon from "@/components/icons/DownloadIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
+import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useQrLibrary } from "@/composables/useQrLibrary";
@@ -26,11 +30,14 @@ const editingId = ref<number | null>(null);
 const deletingId = ref<number | null>(null);
 
 const {
+  isLocalMode,
   canReadLibrary,
   canWriteLibrary,
+  guestLimitLabel,
   loadOne,
   loadList,
   remove,
+  saveLocal,
   items,
   page,
   total,
@@ -45,12 +52,27 @@ const {
 
 const { loading: creating, run: runCreate } = useApiAction();
 const { loading: savingLibrary, run: runSaveLibrary } = useApiAction();
+const saveError = ref("");
 
 const canCreate = computed(() => Boolean(content.value.trim()) && !creating.value);
 const canSaveLibrary = computed(
-  () => canWriteLibrary.value && Boolean(content.value.trim()) && !savingLibrary.value,
+  () =>
+    canWriteLibrary.value &&
+    Boolean(content.value.trim()) &&
+    !savingLibrary.value &&
+    !creating.value,
 );
 const isEditing = computed(() => editingId.value != null);
+const pageDescription = computed(() => {
+  const base =
+    "Quick generate does not store anything on the server — download the SVG if you need it later.";
+  if (isLocalMode.value) {
+    return `${base} Saved codes stay in this browser.`;
+  }
+  return canWriteLibrary.value
+    ? `${base} Save to your library to reuse codes (your list only).`
+    : base;
+});
 
 function payloadBody() {
   return {
@@ -110,9 +132,58 @@ async function createQr(): Promise<void> {
   }
 }
 
+async function ensureGeneratedSvg(): Promise<string | null> {
+  if (generated.value?.svg) {
+    return generated.value.svg;
+  }
+  if (!content.value.trim()) return null;
+  const result = await runCreate(
+    () => api.post<QrGenerateResponse>("/tools/qr-generator", payloadBody()),
+    { errorFallback: "Failed to generate QR code" },
+  );
+  if (!result) return null;
+  generated.value = result.data;
+  return result.data.svg;
+}
+
 async function saveToLibrary(): Promise<void> {
   if (!canWriteLibrary.value || !content.value.trim()) return;
+  saveError.value = "";
   const isUpdate = editingId.value != null;
+
+  if (isLocalMode.value) {
+    const svg = await ensureGeneratedSvg();
+    if (!svg) {
+      saveError.value = "Generate a QR code before saving";
+      return;
+    }
+    const result = await runSaveLibrary(
+      async () => {
+        const local = saveLocal({
+          id: editingId.value,
+          content: content.value.trim(),
+          label: label.value.trim() || null,
+          error_level: errorLevel.value,
+          svg,
+        });
+        if (!local.ok) {
+          throw new Error(local.error);
+        }
+        return { data: local.item };
+      },
+      {
+        successMessage: isUpdate ? "Saved QR updated" : "QR saved to library",
+        errorFallback: "Failed to save QR code",
+      },
+    );
+    if (result) {
+      applyStored(result.data, result.data.svg);
+    } else {
+      saveError.value = "Failed to save QR code";
+    }
+    return;
+  }
+
   const result = await runSaveLibrary(
     () =>
       isUpdate
@@ -178,115 +249,156 @@ onMounted(() => {
     title="qr generator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'qr generator' }]"
     back-to="/tools"
-    max-width="5xl"
-    :narrow="false"
+    body-width="column"
   >
-    <p class="mb-4 text-sm text-surface-mid">
-      Quick generate does not store anything on the server — download the SVG if you need it later.
-      <span v-if="canWriteLibrary">
-        Save to your library to reuse codes (your list only).
-      </span>
-      <span v-else> Sign in to save codes to your library. </span>
-    </p>
-
-    <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
-      <Card variant="ghost" class="min-w-0 lg:order-2">
-        <form class="space-y-3" @submit.prevent="createQr">
-          <div class="flex flex-wrap gap-2">
-            <BaseButton variant="primary" type="submit" :disabled="!canCreate">
-              {{ creating ? "generating…" : "generate qr" }}
-            </BaseButton>
-            <BaseButton
-              v-if="canWriteLibrary"
-              variant="save"
-              type="button"
-              :disabled="!canSaveLibrary"
-              @click="saveToLibrary"
-            >
-              {{
-                savingLibrary
-                  ? "saving…"
-                  : isEditing
-                    ? "update saved qr"
-                    : "save to library"
-              }}
-            </BaseButton>
-            <BaseButton
-              v-if="isEditing"
-              variant="cancel"
-              type="button"
-              @click="clearEditSession"
-            >
-              new / discard
-            </BaseButton>
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <BaseInput
-              v-model="label"
-              label="label (optional)"
-              placeholder="My link"
-              class="min-w-0 flex-1"
-              maxlength="120"
-            />
-            <BaseSelect v-model="errorLevel" label="error correction" class="min-w-[10rem]">
-              <option value="L">L (~7%)</option>
-              <option value="M">M (~15%)</option>
-              <option value="Q">Q (~25%)</option>
-              <option value="H">H (~30%)</option>
-            </BaseSelect>
-          </div>
-          <BaseTextarea
-            v-model="content"
-            label="payload"
-            :rows="4"
-            maxlength="2000"
-            placeholder="URL, text, Wi‑Fi string, etc."
-          />
-          <p v-if="detailLoading" class="text-xs text-surface-mid">Loading saved code…</p>
-        </form>
-      </Card>
-
-      <Card
-        variant="ghost"
-        class="flex min-h-[280px] flex-col items-center justify-center gap-3 p-4 lg:order-1"
-      >
-        <p v-if="!previewUrl" class="text-center text-sm text-surface-mid">
-          Generate a code to preview it here.
-        </p>
-        <div v-else class="flex w-full max-w-64 flex-col items-center gap-3">
-          <img
-            :src="previewUrl"
-            :alt="previewAlt"
-            width="256"
-            height="256"
-            class="h-auto w-full rounded-md bg-white p-2"
-          />
-          <BaseButton variant="ghost" type="button" class="w-full" @click="downloadSvg">
-            download svg
-          </BaseButton>
+    <div class="flex w-full min-w-0 flex-col gap-6 self-stretch">
+      <p class="text-xs text-surface-mid">{{ pageDescription }}</p>
+      <div class="grid min-w-0 gap-4 lg:grid-cols-2">
+        <div class="page-tool-actions mb-0">
+          <Card variant="ghost" class="min-w-0 w-auto max-w-full">
+            <form id="qr-generator-form" class="space-y-2" @submit.prevent="createQr">
+              <div class="flex flex-wrap gap-2">
+                <BaseInput
+                  v-model="label"
+                  label="label (optional)"
+                  placeholder="My link"
+                  class="min-w-0"
+                  maxlength="120"
+                  compact
+                  auto-width
+                />
+                <BaseSelect
+                  v-model="errorLevel"
+                  label="error correction"
+                  class="min-w-[10rem] w-auto"
+                  compact
+                >
+                  <option value="L">L (~7%)</option>
+                  <option value="M">M (~15%)</option>
+                  <option value="Q">Q (~25%)</option>
+                  <option value="H">H (~30%)</option>
+                </BaseSelect>
+              </div>
+              <BaseTextarea
+                v-model="content"
+                label="payload"
+                :rows="2"
+                maxlength="2000"
+                placeholder="URL, text, Wi‑Fi string, etc."
+                compact
+                auto-width
+              />
+              <div class="flex flex-wrap items-center gap-2">
+                <BaseButton
+                  v-if="isEditing"
+                  variant="cancel"
+                  type="button"
+                  class="w-auto"
+                  @click="clearEditSession"
+                >
+                  new / discard
+                </BaseButton>
+                <BaseButton
+                  v-if="canWriteLibrary"
+                  variant="save"
+                  type="button"
+                  class="w-auto"
+                  :disabled="!canSaveLibrary"
+                  @click="saveToLibrary"
+                >
+                  {{
+                    savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library"
+                  }}
+                </BaseButton>
+                <BaseButton
+                  v-if="previewUrl"
+                  variant="ghost"
+                  type="button"
+                  class="w-auto gap-1.5"
+                  @click="downloadSvg"
+                >
+                  <DownloadIcon class-name="size-3.5 shrink-0" />
+                  download svg
+                </BaseButton>
+                <BaseButton
+                  variant="primary"
+                  type="submit"
+                  :icon="false"
+                  class="w-auto gap-1.5"
+                  :disabled="!canCreate"
+                >
+                  <RefreshIcon class-name="size-3.5 shrink-0" />
+                  {{ creating ? "generating…" : "generate qr" }}
+                </BaseButton>
+              </div>
+              <p v-if="detailLoading" class="text-xs text-surface-mid">Loading saved code…</p>
+              <p v-if="saveError" class="text-xs text-status-error" role="alert">{{ saveError }}</p>
+            </form>
+          </Card>
         </div>
-      </Card>
-    </div>
 
-    <section v-if="canReadLibrary" class="mt-8 min-w-0">
-      <h2 class="mb-3 text-sm font-medium text-surface-mid">your saved qr codes</h2>
-      <AdminListSkeleton v-if="listLoading && items.length === 0" />
-      <EmptyState v-else-if="!listLoading && items.length === 0">
-        no saved QR codes yet. generate one and save it.
-      </EmptyState>
-      <div v-else class="min-w-0">
-        <QrLibraryListItem
-          v-for="item in items"
-          :key="item.id"
-          :item="item"
-          :can-write="canWriteLibrary"
-          :deleting="deleting && deletingId === item.id"
-          @select="selectSaved(item)"
-          @delete="deleteSaved(item.id)"
-        />
+        <Card
+          variant="ghost"
+          class="flex w-full max-w-64 shrink-0 flex-col items-stretch self-center p-0 lg:self-start"
+        >
+          <div class="aspect-square w-full">
+            <p
+              v-if="!previewUrl"
+              class="flex h-full items-center justify-center px-3 text-center text-sm text-surface-mid"
+            >
+              Generate a code to preview it here.
+            </p>
+            <img
+              v-else
+              :src="previewUrl"
+              :alt="previewAlt"
+              width="256"
+              height="256"
+              class="h-full w-full rounded-md bg-white p-2 object-contain"
+            />
+          </div>
+        </Card>
       </div>
+
+      <section
+        v-if="canReadLibrary"
+        class="w-full min-w-0 self-stretch"
+        aria-label="saved QR codes"
+      >
+        <p v-if="guestLimitLabel" class="mb-2 text-xs text-surface-mid" role="status">
+          {{ guestLimitLabel }}
+        </p>
+        <AdminListSkeleton v-if="listLoading && items.length === 0" />
+        <EmptyState
+          v-else-if="!listLoading && items.length === 0"
+          description="no saved QR codes yet. generate one and save it."
+        />
+        <div v-else class="w-full min-w-0 self-stretch">
+          <AdminDataTable table-label="saved QR codes">
+            <template #header>
+              <th :class="ADMIN_TH_CLASS" scope="col">preview</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">label</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">content</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">level</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">updated</th>
+              <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
+            </template>
+            <QrLibraryListItem
+              v-for="item in items"
+              :key="item.id"
+              :item="item"
+              :can-write="canWriteLibrary"
+              :deleting="deleting && deletingId === item.id"
+              @select="selectSaved(item)"
+              @delete="deleteSaved(item.id)"
+            />
+          </AdminDataTable>
+        </div>
+      </section>
+    </div>
+    <template #footer>
       <AdminListFooter
-        v-if="items.length > 0"
+        v-if="canReadLibrary && items.length > 0"
         :total="total"
         :page="page"
         :total-pages="totalPages"
@@ -300,21 +412,6 @@ onMounted(() => {
         @next="goToPage(page + 1)"
         @last="goToPage(totalPages)"
       />
-    </section>
-    <section v-else class="mt-8 min-w-0">
-      <EmptyState
-        title="sign in to manage"
-        description="save and list your QR codes after signing in."
-      >
-        <template #action>
-          <RouterLink
-            :to="{ name: 'login', query: { redirect: '/qr-generator' } }"
-            class="nav-link inline"
-          >
-            sign in
-          </RouterLink>
-        </template>
-      </EmptyState>
-    </section>
+    </template>
   </PageShell>
 </template>

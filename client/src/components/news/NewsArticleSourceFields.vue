@@ -26,7 +26,7 @@ function applySource(sourceId: number | null): void {
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <BaseSelect
         :model-value="form.source_id ?? ''"
-        aria-label="source"
+        label="source"
         :disabled="!canWrite"
         @update:model-value="
           (value) => applySource(value === '' || value == null ? null : Number(value))
@@ -37,30 +37,25 @@ function applySource(sourceId: number | null): void {
           {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
         </option>
       </BaseSelect>
-      <BaseInput
-        v-model="form.source_name"
-        placeholder="source name"
-        aria-label="source name"
-        :disabled="!canWrite"
-      />
+      <BaseInput v-model="form.source_name" label="source name" :disabled="!canWrite" />
       <BaseInput
         v-model="form.source_url"
-        placeholder="article url (example.com or https://…)"
-        aria-label="article url (example.com or https://…)"
+        label="article url"
+        tip="example.com or https://…"
         type="url"
         :disabled="!canWrite"
       />
       <BaseInput
         v-model="form.source_feed_url"
-        placeholder="source feed/home url (example.com or https://…)"
-        aria-label="source feed/home url (example.com or https://…)"
+        label="feed url"
+        tip="example.com or https://…"
         type="url"
         :disabled="!canWrite"
       />
       <BaseInput
         v-model="form.source_published_at"
         type="datetime-local"
-        aria-label="source published at"
+        label="published at"
         :disabled="!canWrite"
       />
     </div>

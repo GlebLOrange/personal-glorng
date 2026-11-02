@@ -6,12 +6,12 @@ from fastapi.responses import HTMLResponse
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 
+from app.core.deps import AppSettings
 from app.core.google_oauth_state import consume_google_oauth_state
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_api
 from app.db.deps import DbRegistry
 from app.db.documents.credential import GoogleCredential
-from app.settings import get_settings
 
 router = APIRouter(dependencies=[Depends(rate_limit_api)])
 
@@ -39,10 +39,9 @@ async def google_oauth_callback(
     code: str,
     state: str,
     registry: DbRegistry,
+    settings: AppSettings,
 ) -> HTMLResponse:
     """Exchange OAuth code for refresh token and store it."""
-    settings = get_settings()
-
     if registry.credentials is None:
         return HTMLResponse(_ERROR_HTML, status_code=500)
 

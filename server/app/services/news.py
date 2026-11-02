@@ -3,6 +3,7 @@
 import html
 import json
 import re
+from datetime import date
 from html.parser import HTMLParser
 from math import ceil
 from typing import Any
@@ -15,6 +16,7 @@ from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
 from app.core.pagination import build_paginated
+from app.core.text import sanitize_fetched_text
 from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.utils import DEFAULT_PER_PAGE, paginate_params, utc_now
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
@@ -171,7 +173,7 @@ def _clean_metadata_text(value: str | None, *, max_length: int) -> str:
     """Normalize fetched metadata text."""
     if not value:
         return ""
-    return " ".join(html.unescape(value).split())[:max_length]
+    return sanitize_fetched_text(html.unescape(value), max_length=max_length)
 
 
 def _extract_title(document: str) -> str | None:
@@ -390,14 +392,15 @@ class NewsService:
         _require_public_feed_url(normalized_url)
         try:
             async with httpx.AsyncClient(timeout=_METADATA_TIMEOUT_SECONDS) as client:
-                response = await get_public_http_url(
+                result = await get_public_http_url(
                     client,
                     normalized_url,
                     headers={"Accept": "text/html,application/xhtml+xml"},
                 )
+            response = result.response
             try:
                 response.raise_for_status()
-                final_url = _canonical_url(str(response.url))
+                final_url = _canonical_url(result.url)
                 _require_public_feed_url(final_url)
                 content = response.content[:_METADATA_MAX_BYTES]
                 encoding = response.encoding or "utf-8"
@@ -567,6 +570,7 @@ class NewsService:
             total=total,
             page=safe_page,
             per_page=limit,
+            response_cls=NewsSourceListResponse,
         )
 
     async def list_all_sources(self) -> list[NewsSource]:
@@ -682,22 +686,35 @@ class NewsService:
         )
         return self._to_response(article)
 
+    async def draft_demo_articles(self) -> int:
+        """Move seeded demo articles to draft so the public list stays real."""
+        return await self._news().draft_demo_articles()
+
     async def list_articles(
         self,
         *,
         status: NewsStatus | None = "published",
+        tag: str | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None,
         page: int = 1,
         per_page: int = DEFAULT_PER_PAGE,
     ) -> NewsArticleListResponse:
-        """List articles with pagination."""
+        """List articles with pagination and optional public filters."""
         offset, limit = paginate_params(page, per_page)
         items = await self._news().list_articles(
             status=status,
+            tag=tag,
+            date_from=date_from,
+            date_to=date_to,
             offset=offset,
             limit=limit,
         )
         total = await self._news().count_articles(
             status=status,
+            tag=tag,
+            date_from=date_from,
+            date_to=date_to,
         )
         return NewsArticleListResponse(
             items=[self._to_response(item) for item in items],

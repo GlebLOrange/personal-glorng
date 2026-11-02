@@ -47,3 +47,5 @@ def test_seed_module_invokes_main() -> None:
     )
     assert result.returncode == 0, result.stderr
     assert "--skip-if-populated" in result.stdout
+    assert "--only" in result.stdout
+    assert "--no-multicooker" in result.stdout

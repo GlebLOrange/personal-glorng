@@ -20,12 +20,8 @@ vi.mock("@/composables/useClipboard", () => ({
   useClipboard: () => ({ copy: vi.fn() }),
 }));
 
-vi.mock("@/components/layout/AdminPageLayout.vue", () => ({
+vi.mock("@/components/layout/PageShell.vue", () => ({
   default: { template: "<div><slot /></div>" },
-}));
-
-vi.mock("@/components/admin/ShareableListItem.vue", () => ({
-  default: { template: "<div />" },
 }));
 
 describe("FileShareTool", () => {

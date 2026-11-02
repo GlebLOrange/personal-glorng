@@ -1,9 +1,4 @@
-import {
-  DEFAULT_DESCRIPTION,
-  DEFAULT_DOCUMENT_TITLE,
-  formatDocumentTitle,
-  SITE_NAME,
-} from "@/constants/seo";
+import { DEFAULT_DESCRIPTION, formatDocumentTitle, SITE_NAME } from "@/constants/seo";
 
 export type PageSeoInput = {
   title?: string | null;
@@ -12,8 +7,11 @@ export type PageSeoInput = {
   /** Absolute or root-relative path; defaults to current location. */
   path?: string | null;
   noindex?: boolean;
-  /** When true, set `<link rel="amphtml">` to absolute `/amp`; otherwise remove it. */
-  amphtml?: boolean;
+  /**
+   * JSON-LD graph for the page. Pass `null` to remove a previously injected script.
+   * Omit to leave existing JSON-LD untouched.
+   */
+  jsonLd?: Record<string, unknown> | null;
 };
 
 function upsertMeta(attr: "name" | "property", key: string, content: string): void {
@@ -43,19 +41,32 @@ export function absoluteUrl(pathOrUrl: string): string {
   return new URL(path, `${publicOrigin()}/`).href;
 }
 
-function setAmphtmlLink(enabled: boolean): void {
-  const existing = document.head.querySelector('link[rel="amphtml"]');
-  if (!enabled) {
+function setCanonicalLink(url: string): void {
+  let el = document.head.querySelector('link[rel="canonical"]');
+  if (!(el instanceof HTMLLinkElement)) {
+    el = document.createElement("link");
+    el.setAttribute("rel", "canonical");
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", url);
+}
+
+const JSON_LD_SCRIPT_ID = "glorng-json-ld";
+
+function setJsonLd(data: Record<string, unknown> | null): void {
+  const existing = document.getElementById(JSON_LD_SCRIPT_ID);
+  if (!data) {
     existing?.remove();
     return;
   }
-  let el = existing;
-  if (!(el instanceof HTMLLinkElement)) {
-    el = document.createElement("link");
-    el.setAttribute("rel", "amphtml");
+  let el: HTMLScriptElement | null = existing instanceof HTMLScriptElement ? existing : null;
+  if (!el) {
+    el = document.createElement("script");
+    el.id = JSON_LD_SCRIPT_ID;
+    el.type = "application/ld+json";
     document.head.appendChild(el);
   }
-  el.setAttribute("href", absoluteUrl("/amp"));
+  el.textContent = JSON.stringify(data);
 }
 
 /**
@@ -73,6 +84,7 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
 
   upsertMeta("name", "description", description);
   upsertMeta("name", "robots", input.noindex ? "noindex, nofollow" : "index, follow");
+  setCanonicalLink(url);
 
   upsertMeta("property", "og:site_name", SITE_NAME);
   upsertMeta("property", "og:type", "website");
@@ -86,17 +98,10 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
   upsertMeta("name", "twitter:description", description);
   upsertMeta("name", "twitter:image", image);
 
-  if (input.amphtml !== undefined) {
-    setAmphtmlLink(input.amphtml);
-  }
-}
+  // Always strip legacy amphtml links left from older builds.
+  document.head.querySelector('link[rel="amphtml"]')?.remove();
 
-/** Reset to the default portfolio SEO shell (used by catch-all / errors). */
-export function applyDefaultPageSeo(): void {
-  applyPageSeo({
-    title: DEFAULT_DOCUMENT_TITLE,
-    description: DEFAULT_DESCRIPTION,
-    path: "/",
-    amphtml: true,
-  });
+  if (input.jsonLd !== undefined) {
+    setJsonLd(input.jsonLd);
+  }
 }

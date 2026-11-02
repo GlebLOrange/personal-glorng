@@ -1,55 +1,42 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
+import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import GitHubReposStrip from "@/components/resume/GitHubReposStrip.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
-import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
-import type { DonationsConfig, PublicGitHubRepo, ResumeData } from "@/types";
+import type { PublicGitHubRepo, ResumeData } from "@/types";
 
-const FLAGSHIP_REPO_URL = "https://github.com/GlebLOrange/personal-glorng";
-/** ponytail: hide thin strip — hero already links the flagship; one card looks weak */
+/** ponytail: hide a one-card gallery — looks thin without a peer */
 const MIN_GITHUB_STRIP_REPOS = 2;
 
 const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
-const ProjectsGrid = defineAsyncComponent(() => import("@/components/resume/ProjectsGrid.vue"));
-const DonationsBlock = defineAsyncComponent(
-  () => import("@/components/donations/DonationsBlock.vue"),
-);
-const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
+const CaseStudies = defineAsyncComponent(() => import("@/components/resume/CaseStudies.vue"));
 
 const {
   data: resumeApi,
   loading: resumeLoading,
   fetch: fetchResume,
 } = useCachedApi<ResumeData>("/resume");
-const {
-  data: donations,
-  loading: donationsLoading,
-  fetch: fetchDonations,
-} = useCachedApi<DonationsConfig>("/donations/config");
 const apiError = ref(false);
-const donationsError = ref(false);
-const donationsFetched = ref(false);
-const donationsStarted = ref(false);
 const contactModal = ref<"inquiry" | null>(null);
-const supportSectionRef = ref<HTMLElement | null>(null);
 /** Filled via GET /github/repos when /resume returned a cold-cache empty strip. */
 const githubReposExtra = ref<PublicGitHubRepo[] | null>(null);
-let supportObserver: IntersectionObserver | null = null;
 let cancelGithubIdle: (() => void) | null = null;
 
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
+const currentRole = computed(() => resume.value.experience[0] ?? null);
 const githubProfileUrl = computed(() => resume.value.links.github);
 const highlightedRepos = computed(() => {
   const fromResume = resume.value.github?.repos ?? [];
@@ -61,7 +48,7 @@ const highlightedRepos = computed(() => {
     if (profileLogin && repo.name.toLowerCase() === profileLogin) return false;
     return true;
   });
-  // Hide a one-card gallery that duplicates the hero flagship link.
+  // Hide a one-card gallery — looks thin without a peer.
   if (publicRepos.length < MIN_GITHUB_STRIP_REPOS) {
     return [];
   }
@@ -83,8 +70,8 @@ function runWhenIdle(task: () => void): () => void {
     const id = window.requestIdleCallback(() => task(), { timeout: 2500 });
     return () => window.cancelIdleCallback(id);
   }
-  const id = window.setTimeout(task, 0);
-  return () => window.clearTimeout(id);
+  const id = globalThis.setTimeout(task, 0);
+  return () => globalThis.clearTimeout(id);
 }
 
 async function loadGithubReposIfNeeded(): Promise<void> {
@@ -98,52 +85,17 @@ async function loadGithubReposIfNeeded(): Promise<void> {
   }
 }
 
-async function loadDonations(): Promise<void> {
-  donationsStarted.value = true;
-  donationsError.value = false;
-  try {
-    await fetchDonations();
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    donationsError.value = true;
-  } finally {
-    donationsFetched.value = true;
-  }
-}
-
-function observeSupportSection(): void {
-  if (supportObserver || !supportSectionRef.value) {
-    return;
-  }
-
-  supportObserver = new IntersectionObserver(
-    (entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) {
-        return;
-      }
-      supportObserver?.disconnect();
-      supportObserver = null;
-      void loadDonations();
-    },
-    { rootMargin: "200px 0px" },
-  );
-  supportObserver.observe(supportSectionRef.value);
-}
-
 onMounted(() => {
   void loadResume().then(() => {
     cancelGithubIdle = runWhenIdle(() => {
       void loadGithubReposIfNeeded();
     });
   });
-  void nextTick(() => observeSupportSection());
 });
 
 onUnmounted(() => {
   cancelGithubIdle?.();
   cancelGithubIdle = null;
-  supportObserver?.disconnect();
-  supportObserver = null;
 });
 </script>
 
@@ -161,47 +113,68 @@ onUnmounted(() => {
 
     <SectionWrapper width="full">
       <HeroBlock
+        layout="status-rail"
         :name="resume.name"
         :title="resume.title"
         :tagline="resume.tagline"
         :location="resume.location"
         :availability="resume.availability"
-        :bio="resume.bio"
-        :github-url="githubProfileUrl"
-        :repo-url="FLAGSHIP_REPO_URL"
+        sample-note="this site is the sample"
         @inquire="contactModal = 'inquiry'"
       />
     </SectionWrapper>
 
-    <SectionWrapper id="about" title="about" width="full" dark alternate>
-      <p v-if="resume.hiring_note" class="text-body mb-6 max-w-3xl">
-        {{ resume.hiring_note }}
-      </p>
-      <PortfolioGlance :resume="resume" />
+    <SectionWrapper id="about" title="about" width="full" label-tone="primary">
+      <div class="space-y-4">
+        <p class="text-body w-full text-pretty">
+          {{ resume.bio }}
+        </p>
+        <aside
+          v-if="resume.hiring_note"
+          class="w-full border-l-2 border-accent-coral bg-surface-card/40 px-4 py-3"
+        >
+          <p class="text-label text-accent-coral mb-2">for recruiters</p>
+          <p class="text-body text-pretty">
+            {{ resume.hiring_note }}
+          </p>
+        </aside>
+      </div>
+      <div class="mt-6">
+        <PortfolioGlance :resume="resume" />
+      </div>
+      <div v-if="currentRole" class="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-meta">
+        <p class="text-label text-accent-coral">now</p>
+        <span> {{ currentRole.role }} · {{ currentRole.company }} · {{ currentRole.period }} </span>
+        <a href="#experience" class="text-link">experience</a>
+      </div>
+    </SectionWrapper>
+
+    <SectionWrapper id="case-studies" title="case studies" width="full" label-tone="secondary">
+      <Suspense>
+        <CaseStudies :projects="resume.projects" />
+        <template #fallback>
+          <div class="min-h-[28rem] space-y-4" aria-hidden="true">
+            <div v-for="n in 3" :key="n" class="h-36 animate-pulse rounded-lg bg-surface-card" />
+          </div>
+        </template>
+      </Suspense>
       <div v-if="highlightedRepos.length" class="mt-8 print:hidden">
         <GitHubReposStrip :repos="highlightedRepos" :profile-url="githubProfileUrl" />
       </div>
     </SectionWrapper>
 
-    <SectionWrapper id="experience" title="experience" width="full" dark>
+    <SectionWrapper id="experience" title="experience" width="full" label-tone="tertiary">
       <Suspense>
         <ExperienceList :experience="resume.experience" />
         <template #fallback>
-          <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
+          <div class="min-h-[28rem] space-y-4" aria-hidden="true">
+            <div v-for="n in 3" :key="n" class="h-36 animate-pulse rounded-lg bg-surface-card" />
+          </div>
         </template>
       </Suspense>
     </SectionWrapper>
 
-    <SectionWrapper id="projects" title="projects" width="full" dark alternate>
-      <Suspense>
-        <ProjectsGrid :projects="resume.projects" />
-        <template #fallback>
-          <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
-        </template>
-      </Suspense>
-    </SectionWrapper>
-
-    <SectionWrapper id="skills" title="skills" width="full" dark>
+    <SectionWrapper id="skills" title="skills" width="full" label-tone="custom">
       <SkillsGrid :skills="resume.skills" />
     </SectionWrapper>
 
@@ -210,71 +183,36 @@ onUnmounted(() => {
       id="education"
       title="education"
       width="prose"
-      dark
-      alternate
+      label-tone="secondary"
     >
       <EducationList :education="education" />
     </SectionWrapper>
 
-    <SectionWrapper
-      id="contacts"
-      title="contacts"
-      width="full"
-      dark
-      :alternate="education.length === 0"
-    >
+    <SectionWrapper id="contacts" title="contacts" width="full" label-tone="error">
       <p class="text-body mb-3 max-w-2xl">
         open to full-time and contract — usually reply within 24h (EU timezone)
       </p>
-      <p class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
-        <span>fastest: telegram or email. or</span>
-        <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
+      <div class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
+        <p>fastest: telegram or email. or</p>
+        <button
+          type="button"
+          class="cta-primary inline-flex items-center gap-1.5 print:hidden"
+          @click="contactModal = 'inquiry'"
+        >
+          <ChevronIcon class-name="size-3.5 shrink-0" />
           send inquiry
         </button>
-      </p>
+      </div>
       <div class="flex flex-wrap gap-4">
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
       </div>
-      <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
 
-    <!-- Footer-adjacent support strip — kept off the hire CTA band -->
-    <div ref="supportSectionRef" id="support" class="print:hidden border-t border-surface-border/60">
-      <div class="mx-auto w-full max-w-5xl px-6 py-10 md:py-12">
-        <div class="flex min-w-0 flex-wrap items-start justify-between gap-6">
-          <div class="min-w-0 max-w-xl">
-            <h2 class="section-title mb-3">support</h2>
-            <p class="text-body mb-2">
-              if my tools or writing have helped you, a small contribution keeps the work going
-            </p>
-            <p class="text-meta">
-              card, paypal, or monthly support — pick what works for you
-            </p>
-          </div>
-          <div class="flex min-w-0 flex-wrap items-center gap-4">
-            <div
-              v-if="donationsStarted && donationsLoading"
-              class="h-10 w-40 animate-pulse rounded-lg bg-surface-card"
-              aria-busy="true"
-            />
-            <DonationsBlock v-else-if="donations" :config="donations" />
-          </div>
-        </div>
-        <ErrorState
-          v-if="donationsError"
-          class="mt-6"
-          message="Donation options are temporarily unavailable."
-          show-retry
-          retry-label="retry"
-          @retry="loadDonations"
-        />
-        <EmptyState
-          v-else-if="donationsFetched && !donations"
-          class="mt-6"
-          title="no donation options"
-          description="support options are not configured right now."
-        />
-      </div>
-    </div>
+    <!-- Sync import + page-root mount: first CTA click opens without async delay -->
+    <FeedbackModal
+      :open="contactModal === 'inquiry'"
+      intent="inquiry"
+      @close="contactModal = null"
+    />
   </div>
 </template>

@@ -7,7 +7,7 @@ withDefaults(
     /** Accessible name for the icon-only control. */
     ariaLabel?: string;
     disabled?: boolean;
-    /** field = in-shell (same h-10 square); default chrome (h-10). */
+    /** field = in-shell (same h-11 square); default chrome (h-11). */
     size?: "md" | "field";
     /** Muted until hover; set false to match ghost 1xx wash (e.g. beside show). */
     quiet?: boolean;

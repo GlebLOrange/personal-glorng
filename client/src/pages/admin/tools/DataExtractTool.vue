@@ -2,7 +2,7 @@
 import DataExtractBatchPanel from "@/components/admin/data-extract/DataExtractBatchPanel.vue";
 import DataExtractOptionsPanel from "@/components/admin/data-extract/DataExtractOptionsPanel.vue";
 import DataExtractResultPanel from "@/components/admin/data-extract/DataExtractResultPanel.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
 import FileDropZone from "@/components/ui/FileDropZone.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -67,9 +67,14 @@ function loadSampleCsv(): void {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="data extract" back-to="/tools">
-    <div class="min-w-0">
-      <div class="mb-6 space-y-3">
+  <PageShell
+    title="data extract"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'data extract' }]"
+    back-to="/tools"
+    body-width="column"
+  >
+    <div class="w-full min-w-0 self-stretch">
+      <div class="page-tool-actions mb-6">
         <CollapsibleUsageGuide title="data extract usage guide">
           <template #start>
             <DataExtractOptionsPanel
@@ -89,6 +94,7 @@ function loadSampleCsv(): void {
             <ToolbarPillButton
               action="save"
               type="button"
+              class="w-auto"
               :disabled="loading || !selectedFile"
               @click="
                 activeTab = 'extract';
@@ -101,6 +107,7 @@ function loadSampleCsv(): void {
               v-if="canWrite"
               action="edit"
               type="button"
+              class="w-auto"
               :disabled="loading || !selectedFile"
               @click="
                 activeTab = 'import';
@@ -117,7 +124,7 @@ function loadSampleCsv(): void {
             </p>
 
             <div>
-              <h3 class="mb-2 font-bold text-accent-blue">Formats</h3>
+              <h3 class="mb-2 font-bold text-accent-coral">Formats</h3>
               <p class="text-surface-mid">
                 Accepted types are listed on the drop zone. Use options to override auto format
                 detection.
@@ -125,7 +132,7 @@ function loadSampleCsv(): void {
             </div>
 
             <div>
-              <h3 class="mb-2 font-bold text-accent-blue">Delimited &amp; pipe embed</h3>
+              <h3 class="mb-2 font-bold text-accent-coral">Delimited &amp; pipe embed</h3>
               <p class="text-surface-mid">
                 Configure delimiters and pipe-embed profile in options. Promote moves staged
                 pipe-embed rows into embed storage.
@@ -133,14 +140,14 @@ function loadSampleCsv(): void {
             </div>
 
             <div>
-              <h3 class="mb-2 font-bold text-accent-blue">XML</h3>
+              <h3 class="mb-2 font-bold text-accent-coral">XML</h3>
               <p class="text-surface-mid">
                 Set row tag and rows/tree mode in options when format is XML.
               </p>
             </div>
 
             <div>
-              <h3 class="mb-2 font-bold text-accent-blue">Workflow</h3>
+              <h3 class="mb-2 font-bold text-accent-coral">Workflow</h3>
               <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
                 <li>
                   <code class="text-surface-light">extract</code> — preview rows in the browser (no
@@ -160,6 +167,7 @@ function loadSampleCsv(): void {
         </CollapsibleUsageGuide>
 
         <FileDropZone
+          class="w-auto max-w-full"
           aria-label="choose a file to extract"
           :accept="acceptAttr"
           :hint="acceptHint"
@@ -167,7 +175,7 @@ function loadSampleCsv(): void {
           @select="selectFile"
         />
         <div class="mt-2">
-          <ToolbarPillButton action="create" type="button" @click="loadSampleCsv">
+          <ToolbarPillButton action="create" type="button" class="w-auto" @click="loadSampleCsv">
             load sample csv
           </ToolbarPillButton>
         </div>
@@ -209,5 +217,5 @@ function loadSampleCsv(): void {
         @download="downloadResult"
       />
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

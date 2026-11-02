@@ -50,6 +50,14 @@ def _init_sentry() -> None:
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     settings = get_settings()
 
+    if settings.UNTRUSTED_URL_TOOLS_ENABLED:
+        logger.warning(
+            "Untrusted URL tools enabled",
+            context={
+                "egress_isolated": settings.UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED,
+            },
+        )
+
     await init_redis(settings.REDIS_URL, settings.REDIS_CACHE_URL or None)
 
     if settings.elasticsearch_enabled():
@@ -163,13 +171,11 @@ def create_app() -> FastAPI:
     )
 
     from app.routers import api_router
-    from app.routers.amp import router as amp_router
     from app.routers.seo import router as seo_router
     from app.routers.tools.urlshortener import redirect_router
 
     application.include_router(api_router, prefix="/api")
     application.include_router(seo_router)
-    application.include_router(amp_router)
     application.include_router(redirect_router)
     if settings.UNTRUSTED_URL_TOOLS_ENABLED:
         from app.routers.tools.fileshare import download_router as file_download_router

@@ -19,10 +19,14 @@ def require_repos(registry: DatabaseRegistry) -> None:
 async def seed_admin(registry: DatabaseRegistry, settings: Settings) -> User | None:
     """Create admin user if not exists."""
     require_repos(registry)
+    users = registry.users
+    if users is None:
+        msg = "User repository is not initialized"
+        raise RuntimeError(msg)
     existing = await get_user_by_email(registry, settings.ALLOWED_EMAIL)
     if existing:
         if not existing.is_protected:
-            await registry.users.update_fields(existing.id, is_protected=True)
+            await users.update_fields(existing.id, is_protected=True)
         logger.info(
             "Admin user already exists", context={"email": settings.ALLOWED_EMAIL}
         )

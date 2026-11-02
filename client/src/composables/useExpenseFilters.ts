@@ -7,15 +7,19 @@ import {
   monthDateBounds,
   monthValueLocal,
 } from "@/utils/dates";
+import {
+  EXPENSE_CURRENCIES,
+  EXPENSE_DEFAULT_CURRENCY,
+  EXPENSE_EXCHANGE_RATE_TARGETS,
+  type CurrencyCode,
+} from "@/constants/expenseCatalog";
 import { formatDate } from "@/utils/format";
 
 export type MonthPreset = "this_month" | "last_month" | "custom" | "range";
 export type DateFilterMode = "month" | "range";
-export type CurrencyCode = "USD" | "EUR" | "PLN" | "BYN";
 
-export const EXPENSE_DEFAULT_CURRENCY: CurrencyCode = "PLN";
-export const EXPENSE_CURRENCIES: CurrencyCode[] = ["PLN", "EUR", "USD", "BYN"];
-export const EXPENSE_EXCHANGE_RATE_TARGETS: CurrencyCode[] = ["EUR", "USD", "BYN"];
+export type { CurrencyCode };
+export { EXPENSE_CURRENCIES, EXPENSE_DEFAULT_CURRENCY, EXPENSE_EXCHANGE_RATE_TARGETS };
 export const EXPENSE_CURRENCY_STORAGE_KEY = "expense_default_currency";
 export const EXPENSE_LAST_CATEGORY_STORAGE_KEY = "expense_last_category";
 

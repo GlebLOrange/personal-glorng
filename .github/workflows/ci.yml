@@ -15,71 +15,101 @@ permissions:
   actions: write
   pull-requests: read
 
-# P0 PR gate — path-filtered jobs + ci-ok aggregator (see docs/reference/testing.md).
+# P0 PR gate — backend + frontend.
+# Postgres, API Playwright, and docs freshness: ci-extended.yml (workflow_dispatch).
+# ci-ok fails when `changes` fails, a selected job fails, or a PR path is outside
+# the gate filters and the skip allowlist (the `outside` filter below).
 jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.select.outputs.backend }}
       frontend: ${{ steps.select.outputs.frontend }}
-      postgres: ${{ steps.select.outputs.postgres }}
-      e2e: ${{ steps.select.outputs.e2e }}
-      docs: ${{ steps.select.outputs.docs }}
+      outside: ${{ steps.select.outputs.outside }}
     steps:
       - uses: actions/checkout@v7
+      - name: Communities drift guard
+        run: bash scripts/check_communities_drift.sh
       - uses: dorny/paths-filter@v4
         id: filter
         if: github.event_name == 'pull_request'
         with:
+          # ponytail: outside negations duplicate the gate + skip lists.
+          # Upgrade path: generate the three filters from one path manifest.
           filters: |
             backend:
               - 'server/**'
-              - '.github/workflows/ci.yml'
+              - 'shared/**'
+              - 'rabbitmq/**'
+              - 'deploy/**'
+              - 'scripts/**'
+              - 'nginx/**'
+              - 'Makefile'
+              - 'docker-compose*.yml'
+              - '.github/workflows/**'
+              - '.env.example'
+              - '.env.production.example'
+              - '.dockerignore'
+              - '.pre-commit-config.yaml'
             frontend:
               - 'client/**'
-              - '.github/workflows/ci.yml'
-            postgres:
-              - 'server/**'
-              - '.github/workflows/ci.yml'
-            e2e:
-              - 'client/**'
-              - 'server/**'
-              - 'docker-compose*.yml'
+              - 'shared/**'
               - 'nginx/**'
-              - 'server/tests/env/ci-docker.env'
-              - '.github/workflows/ci.yml'
-            docs:
-              - 'docs/**'
-              - 'server/app/**'
-              - 'scripts/generate_docs.py'
-              - 'docker-compose.yml'
-              - 'Makefile'
-              - '.github/workflows/ci.yml'
+              - 'docker-compose*.yml'
+              - '.github/workflows/**'
+            outside:
+              - '**'
+              - '*'
+              - '.*'
+              - '**/.*'
+              - '**/.*/**'
+              - '!server/**'
+              - '!shared/**'
+              - '!rabbitmq/**'
+              - '!deploy/**'
+              - '!scripts/**'
+              - '!nginx/**'
+              - '!Makefile'
+              - '!docker-compose*.yml'
+              - '!.github/workflows/**'
+              - '!.env.example'
+              - '!.env.production.example'
+              - '!.dockerignore'
+              - '!.pre-commit-config.yaml'
+              - '!client/**'
+              - '!docs/**'
+              - '!**/*.md'
+              - '!**/*.mdc'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/FUNDING.yml'
+              - '!.github/copilot-instructions.md'
+              - '!.github/social-preview.png'
+              - '!.github/dependabot.yml'
+              - '!.cursor/**'
+              - '!.agents/**'
+              - '!.devcontainer/**'
+              - '!.vscode/**'
+              - '!postman/**'
+              - '!.editorconfig'
+              - '!.nvmrc'
+              - '!.gitignore'
+              - '!.ignore'
+              - '!.rgignore'
+              - '!.cursorignore'
+              - '!.gitleaks.toml'
+              - '!LICENSE'
       - name: Select jobs
         id: select
         run: |
           if [ "${{ github.event_name }}" != "pull_request" ]; then
             echo "backend=true" >> "$GITHUB_OUTPUT"
             echo "frontend=true" >> "$GITHUB_OUTPUT"
-            echo "postgres=true" >> "$GITHUB_OUTPUT"
-            echo "e2e=true" >> "$GITHUB_OUTPUT"
-            echo "docs=true" >> "$GITHUB_OUTPUT"
+            echo "outside=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          backend="${{ steps.filter.outputs.backend }}"
-          frontend="${{ steps.filter.outputs.frontend }}"
-          postgres="${{ steps.filter.outputs.postgres }}"
-          e2e="${{ steps.filter.outputs.e2e }}"
-          docs="${{ steps.filter.outputs.docs }}"
-          # E2E needs the frontend artifact — force frontend when e2e is selected.
-          if [ "$e2e" = "true" ]; then
-            frontend=true
-          fi
-          echo "backend=$backend" >> "$GITHUB_OUTPUT"
-          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
-          echo "postgres=$postgres" >> "$GITHUB_OUTPUT"
-          echo "e2e=$e2e" >> "$GITHUB_OUTPUT"
-          echo "docs=$docs" >> "$GITHUB_OUTPUT"
+          echo "backend=${{ steps.filter.outputs.backend }}" >> "$GITHUB_OUTPUT"
+          echo "frontend=${{ steps.filter.outputs.frontend }}" >> "$GITHUB_OUTPUT"
+          echo "outside=${{ steps.filter.outputs.outside }}" >> "$GITHUB_OUTPUT"
 
   backend:
     needs: changes
@@ -96,6 +126,7 @@ jobs:
           python-version: "3.15"
           enable-cache: true
           cache-dependency-glob: "server/uv.lock"
+      - uses: dtolnay/rust-toolchain@stable
       - name: Install dependencies
         run: uv sync --frozen
       - name: Ruff checks
@@ -105,9 +136,7 @@ jobs:
           wait "$ruff_check_pid"; ruff_check_exit=$?
           wait "$ruff_format_pid"; ruff_format_exit=$?
           exit $((ruff_check_exit || ruff_format_exit))
-      # Existing typing debt — keep signal without blocking merge gates.
-      - name: Mypy (advisory)
-        continue-on-error: true
+      - name: Mypy
         run: uv run mypy app
       - name: Pytest (P0 — exclude integration tier)
         env:
@@ -118,7 +147,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
+    env:
+      # Production vite build rejects localhost/missing origin (OG tags in index.html).
+      VITE_PUBLIC_ORIGIN: https://ci.example.test
     defaults:
       run:
         working-directory: client
@@ -139,176 +171,39 @@ jobs:
           exit $((lint_exit || format_exit))
       - run: npm run test:coverage
       - run: npm run build:check
-      - uses: actions/upload-artifact@v7
-        with:
-          name: client-dist
-          path: client/dist
-          retention-days: 1
-
-  # P1 postgres paths — audit/search dual-write (see docs/reference/testing.md).
-  postgres-tests:
-    needs: changes
-    if: needs.changes.outputs.postgres == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: server
-    services:
-      postgres:
-        image: postgres:18.4-alpine
-        env:
-          POSTGRES_USER: glorng
-          POSTGRES_PASSWORD: glorng_ci
-          POSTGRES_DB: glorng
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U glorng -d glorng"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
-        with:
-          python-version: "3.15"
-          enable-cache: true
-          cache-dependency-glob: "server/uv.lock"
-      - name: Install dependencies
-        run: uv sync --frozen
-      - name: Run Alembic migrations
-        env:
-          GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.postgres
-        run: uv run alembic upgrade head
-      - name: Postgres integration tests (P1)
-        env:
-          GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.postgres
-        run: uv run pytest -m postgres -v
-
-  e2e:
-    needs: [changes, frontend]
-    if: >-
-      always()
-      && needs.changes.outputs.e2e == 'true'
-      && needs.frontend.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    env:
-      DOCKER_BUILDKIT: 1
-      COMPOSE_DOCKER_CLI_BUILD: 1
-    steps:
-      - uses: actions/checkout@v7
-      - uses: docker/setup-buildx-action@v4
-      - uses: actions/download-artifact@v8
-        with:
-          name: client-dist
-          path: client/dist
-      - name: Write CI env file
-        run: |
-          cp server/tests/env/ci-docker.env .env
-          sed -i 's/^RUN_SEED=.*/RUN_SEED=true/' .env
-      - name: Start API stack
-        run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml build migrate server
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm migrate
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d server
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: client/package-lock.json
-      - name: Install client dependencies
-        working-directory: client
-        run: npm ci
       - name: Get Playwright version
         id: playwright-version
-        working-directory: client
         run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v6
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-      - name: Install Playwright
-        working-directory: client
+      - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-      - name: Playwright smoke tests
-        working-directory: client
+      - name: Built-shell smoke (vite preview, no API)
         env:
-          PLAYWRIGHT_SKIP_WEBSERVER: "1"
           E2E_BASE_URL: http://127.0.0.1:4173
-          E2E_API_URL: http://127.0.0.1:8000
-          E2E_EMAIL: admin@admin.admin
-          E2E_PASSWORD: MyTestPass123!
-        run: |
-          VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview &
-          PREVIEW_PID=$!
-          for i in $(seq 1 30); do
-            curl -sf http://127.0.0.1:4173/ >/dev/null && break
-            sleep 2
-          done
-          npm run e2e
-          kill $PREVIEW_PID
-
-  docs:
-    needs: changes
-    if: needs.changes.outputs.docs == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: docs/package-lock.json
-
-      - uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
-
-      - name: Generate docs artifacts
-        working-directory: server
-        env:
-          GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.test
-          UV_PROJECT_ENVIRONMENT: /tmp/glorng-server-venv
-        run: |
-          uv sync --frozen
-          uv run python ../scripts/generate_docs.py
-
-      - name: Check generated docs are committed
-        run: |
-          git add --intent-to-add docs/generated docs/public/openapi.json
-          git diff --exit-code -- docs/generated docs/public/openapi.json \
-            || (echo "::error::docs/generated is stale — run make docs-generate and commit" && exit 1)
-
-      - name: Build VitePress
-        working-directory: docs
-        run: |
-          npm ci
-          npm run build
+        run: npx playwright test e2e/built-shell.spec.ts
 
   ci-ok:
     if: always()
-    needs: [changes, backend, frontend, postgres-tests, e2e, docs]
+    needs: [changes, backend, frontend]
     runs-on: ubuntu-latest
     steps:
       - name: Verify selected jobs
         env:
+          CHANGES: ${{ needs.changes.result }}
           BACKEND: ${{ needs.changes.outputs.backend }}
           FRONTEND: ${{ needs.changes.outputs.frontend }}
-          POSTGRES: ${{ needs.changes.outputs.postgres }}
-          E2E: ${{ needs.changes.outputs.e2e }}
-          DOCS: ${{ needs.changes.outputs.docs }}
+          OUTSIDE: ${{ needs.changes.outputs.outside }}
           BACKEND_RESULT: ${{ needs.backend.result }}
           FRONTEND_RESULT: ${{ needs.frontend.result }}
-          POSTGRES_RESULT: ${{ needs.postgres-tests.result }}
-          E2E_RESULT: ${{ needs.e2e.result }}
-          DOCS_RESULT: ${{ needs.docs.result }}
         run: |
+          if [ "$CHANGES" != "success" ]; then
+            echo "changes: $CHANGES"
+            exit 1
+          fi
           fail=0
           check() {
             local name="$1" selected="$2" result="$3"
@@ -323,7 +218,10 @@ jobs:
           }
           check backend "$BACKEND" "$BACKEND_RESULT"
           check frontend "$FRONTEND" "$FRONTEND_RESULT"
-          check postgres-tests "$POSTGRES" "$POSTGRES_RESULT"
-          check e2e "$E2E" "$E2E_RESULT"
-          check docs "$DOCS" "$DOCS_RESULT"
+          if [ "$OUTSIDE" != "false" ]; then
+            echo "outside: changed paths are outside the PR gate and the skip allowlist ($OUTSIDE)"
+            fail=1
+          else
+            echo "outside: false"
+          fi
           exit "$fail"

@@ -1,0 +1,37 @@
+# Paths matching any pattern are skipped by check_staged_token_limit.sh.
+# One pattern per line. Blank lines and # comments are ignored.
+# Patterns use shell-style matching against the full relative path
+# (and basename for simple names). Prefix with / for repo-root-only.
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+poetry.lock
+uv.lock
+Cargo.lock
+composer.lock
+Gemfile.lock
+
+# Minified / generated artifacts
+*.min.js
+*.min.css
+*/dist/*
+*/build/*
+*/generated/*
+*.pb.go
+*_pb2.py
+openapi.json
+*openapi*generated*
+
+# Binary / asset files (byte size is not a useful token signal)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.otf

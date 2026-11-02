@@ -1,0 +1,22 @@
+# Merge these tables into your project's pyproject.toml (adjust target-version).
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "E", "F", "I", "N", "UP", "B", "SIM", "RUF",
+  "ANN", "C4", "PT", "T20", "S", "ARG",
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+  "ANN001", "ANN201", "ANN202", "ANN401", "S101", "S105", "S106", "S107",
+  "ARG001", "ARG002", "E501",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

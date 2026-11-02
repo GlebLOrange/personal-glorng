@@ -5,19 +5,17 @@
 
 Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Download the raw schema: [openapi.json](/openapi.json).
 
-**149** operations.
+**154** operations.
 
 | Method | Path | Tags | Summary |
 |--------|------|------|---------|
-| `GET` | `/amp` | amp | Get AMP portfolio page |
-| `GET` | `/api/admin/maintenance` | admin | Get DB maintenance status |
-| `POST` | `/api/admin/maintenance/run` | admin | Start DB maintenance |
+| `GET` | `/api/admin/maintenance` | admin | Get maintenance status |
+| `POST` | `/api/admin/maintenance/run` | admin | Start a maintenance job |
 | `GET` | `/api/admin/users` | admin | List users |
 | `GET` | `/api/admin/users/stats` | admin | Get user summary stats |
 | `GET` | `/api/admin/users/{public_id}` | admin | Get user |
 | `PATCH` | `/api/admin/users/{public_id}/permissions` | admin | Update user permissions |
 | `POST` | `/api/auth/change-password` | auth | Change password |
-| `POST` | `/api/auth/firebase` | auth | Log in with Firebase Google auth |
 | `POST` | `/api/auth/forgot-password` | auth | Request password reset |
 | `DELETE` | `/api/auth/github` | github | Unlink GitHub account |
 | `GET` | `/api/auth/github/authorize` | github | Start GitHub OAuth |
@@ -51,7 +49,11 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/platform/services` | platform | List platform services |
 | `GET` | `/api/ready` | health | Readiness check |
 | `GET` | `/api/resume` | resume | Get resume data |
+| `GET` | `/api/resume/json` | resume | Download resume JSON |
+| `GET` | `/api/resume/markdown` | resume | Download resume Markdown |
 | `GET` | `/api/resume/pdf` | resume | Download resume PDF |
+| `GET` | `/api/resume/profile` | resume | Get filtered shareable resume profile |
+| `GET` | `/api/resume/recruiter-profile` | resume | Get recruiter profile text |
 | `GET` | `/api/search` | search | Keyword search over public indexed content |
 | `GET` | `/api/time-date-weather-location/config` | weather | Get Weather Config |
 | `GET` | `/api/time-date-weather-location/locations` | weather | List Weather Locations |
@@ -134,6 +136,7 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/tools/search` | search | Keyword search over admin indexed content |
 | `GET` | `/api/tools/tasks` | tasks | List tasks |
 | `POST` | `/api/tools/tasks` | tasks | Create Task |
+| `POST` | `/api/tools/tasks/bot-ping` | tasks | Ping Telegram todobot |
 | `GET` | `/api/tools/tasks/intakes` | tasks | List task intakes |
 | `GET` | `/api/tools/tasks/stats` | tasks | Get task statistics |
 | `GET` | `/api/tools/tasks/sync-queue` | tasks | List calendar sync queue |
@@ -156,6 +159,8 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/weather/lookup/{location}` | weather | Lookup weather |
 | `GET` | `/api/weather/time/{location}` | weather | Lookup World Time |
 | `POST` | `/api/webhooks/{slug}` | webhooks | Inbound webhook |
+| `GET` | `/og/news/{slug}` | seo | News article Open Graph HTML |
+| `GET` | `/og/profile` | seo | Shareable profile Open Graph HTML |
 | `GET` | `/robots.txt` | seo | Get robots.txt |
 | `GET` | `/sitemap.xml` | seo | Get sitemap |
 

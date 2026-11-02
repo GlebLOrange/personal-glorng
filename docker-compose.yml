@@ -155,6 +155,7 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -177,6 +178,7 @@ services:
       - server_venv:/app/.venv
       - server_media:/app/media
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -222,10 +224,12 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
       OTEL_SERVICE_NAME: glorng-worker
+      NEWS_INGEST_ENABLED: "true"
     networks:
       - backend
     depends_on:
@@ -259,10 +263,12 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
       OTEL_SERVICE_NAME: glorng-beat
+      NEWS_INGEST_ENABLED: "true"
     networks:
       - backend
     depends_on:
@@ -296,6 +302,7 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -360,6 +367,7 @@ services:
       - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
       - ./nginx/proxy_sse_params.conf:/etc/nginx/proxy_sse_params.conf:ro
       - ./nginx/locations.conf:/etc/nginx/locations.conf:ro
+      - ./nginx/social_preview_map.conf:/etc/nginx/social_preview_map.conf:ro
       - server_media:/app/media:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"

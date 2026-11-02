@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CloseIcon from "@/components/icons/CloseIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
@@ -22,7 +24,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="space-y-3 min-w-0">
+  <section class="w-full min-w-0 space-y-3 self-stretch">
     <Card
       v-for="item in articles"
       :key="item.id"
@@ -37,79 +39,84 @@ const emit = defineEmits<{
       @click="canWrite ? emit('edit', item) : undefined"
       @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
-      <div class="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <StatusBadge
-            :label="newsStatusLabel(item.status)"
-            :class-name="newsStatusClass(item.status)"
-          />
-          <time
-            class="text-datetime whitespace-nowrap lowercase"
-            :datetime="item.published_at ?? item.created_at"
-          >
-            {{ formatNewsDate(item.published_at ?? item.created_at) }}
-          </time>
-          <span v-if="item.telegram_message_id" class="text-accent-blue">
-            Telegram #{{ item.telegram_message_id }}
-          </span>
-        </div>
+      <div class="mb-2 flex min-w-0 flex-wrap items-center gap-2 text-xs">
+        <time
+          class="text-datetime shrink-0 whitespace-nowrap lowercase"
+          :datetime="item.published_at ?? item.created_at"
+        >
+          {{ formatNewsDate(item.published_at ?? item.created_at) }}
+        </time>
         <a
           v-if="safeNavigationHref(item.source_url)"
           :href="safeNavigationHref(item.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
-          class="shrink-0 text-accent-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          class="text-link shrink-0"
           @click.stop
         >
           {{ item.source_name }}
         </a>
-        <span v-else class="shrink-0 text-accent-blue">{{ item.source_name }}</span>
-      </div>
-
-      <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
-      <p class="text-sm text-surface-mid mb-3 break-words">{{ item.summary }}</p>
-
-      <div class="flex w-full flex-col gap-3">
-        <div v-if="item.tags.length" class="flex flex-wrap gap-2">
+        <span v-else class="shrink-0 text-accent-coral">{{ item.source_name }}</span>
+        <StatusBadge
+          :label="newsStatusLabel(item.status)"
+          :class-name="newsStatusClass(item.status)"
+        />
+        <span v-if="item.telegram_message_id" class="shrink-0 text-accent-coral">
+          Telegram #{{ item.telegram_message_id }}
+        </span>
+        <div v-if="item.tags.length" class="ml-auto flex min-w-0 flex-wrap justify-end gap-2">
           <span
             v-for="tag in item.tags"
             :key="tag"
-            class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
+            class="rounded bg-accent-coral/10 px-2.5 py-1 text-xs text-accent-coral"
           >
             #{{ tag }}
           </span>
         </div>
+      </div>
 
-        <div v-if="canWrite" class="flex flex-wrap justify-end gap-2" @click.stop @keydown.stop>
-          <BaseButton
-            variant="ghost"
-            quiet
-            size="sm"
-            :disabled="actionLoading"
-            @click="emit('repost', item.id)"
-          >
-            repost telegram
-          </BaseButton>
-          <BaseButton
-            v-if="item.status !== 'published'"
-            variant="save"
-            size="sm"
-            :disabled="actionLoading"
-            @click="emit('setStatus', item.id, 'published')"
-          >
-            publish
-          </BaseButton>
-          <BaseButton
-            v-else
-            variant="ghost"
-            quiet
-            size="sm"
-            :disabled="actionLoading"
-            @click="emit('setStatus', item.id, 'private')"
-          >
-            unpublish
-          </BaseButton>
-        </div>
+      <h2 class="card-title mb-2 min-w-0 break-words">{{ item.title }}</h2>
+
+      <p class="mb-2 break-words text-sm text-surface-mid">{{ item.summary }}</p>
+
+      <div
+        v-if="canWrite"
+        class="flex w-full flex-wrap items-center justify-between gap-2"
+        @click.stop
+        @keydown.stop
+      >
+        <BaseButton
+          v-if="item.status !== 'published'"
+          variant="save"
+          size="sm"
+          :disabled="actionLoading"
+          @click="emit('setStatus', item.id, 'published')"
+        >
+          publish
+        </BaseButton>
+        <BaseButton
+          v-else
+          variant="ghost"
+          quiet
+          size="sm"
+          class="gap-1.5"
+          :disabled="actionLoading"
+          @click="emit('setStatus', item.id, 'private')"
+        >
+          <CloseIcon class-name="size-3.5 shrink-0" />
+          unpublish
+        </BaseButton>
+        <BaseButton
+          variant="ghost"
+          quiet
+          size="sm"
+          class="ml-auto gap-1.5"
+          :disabled="actionLoading"
+          @click="emit('repost', item.id)"
+        >
+          <RefreshIcon class-name="size-3.5 shrink-0" />
+          repost telegram
+        </BaseButton>
       </div>
     </Card>
   </section>

@@ -21,11 +21,6 @@ describe("recipeListFields", () => {
   });
 
   it("replaces a row with pasted lines", () => {
-    expect(replaceWithPasteLines(["a", "b", "c"], 1, ["x", "y"])).toEqual([
-      "a",
-      "x",
-      "y",
-      "c",
-    ]);
+    expect(replaceWithPasteLines(["a", "b", "c"], 1, ["x", "y"])).toEqual(["a", "x", "y", "c"]);
   });
 });

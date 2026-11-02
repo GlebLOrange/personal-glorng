@@ -1,7 +1,8 @@
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { api } from "@/composables/useApi";
 import PasswordGeneratorTool from "@/pages/tools/PasswordGeneratorTool.vue";
 
 vi.mock("@/composables/useApi", () => ({
@@ -10,15 +11,32 @@ vi.mock("@/composables/useApi", () => ({
   },
 }));
 
+// PageShell renders PinnedToolsRow/BackLink, which need router context. The
+// RouterLink stub must expose slot props because BackLink destructures them.
+vi.mock("vue-router", () => ({
+  useRoute: () => ({ name: null }),
+}));
+
+const routerLinkStub = {
+  name: "RouterLink",
+  props: ["to"],
+  setup() {
+    return { href: "/", navigate: () => {}, isActive: false };
+  },
+  template: '<a :href="href"><slot :href="href" :navigate="navigate" :isActive="isActive" /></a>',
+};
+
+const mountOptions = {
+  global: { stubs: { RouterLink: routerLinkStub } },
+};
+
 describe("PasswordGeneratorTool", () => {
+  beforeEach(() => {
+    vi.mocked(api.post).mockClear();
+  });
+
   it("renders with options dropdown first, then length input, then generate button and reset button", () => {
-    const wrapper = mount(PasswordGeneratorTool, {
-      global: {
-        stubs: {
-          PageShell: { template: "<div><slot /></div>" },
-        },
-      },
-    });
+    const wrapper = mount(PasswordGeneratorTool, mountOptions);
 
     const form = wrapper.find("form");
     expect(form.exists()).toBe(true);
@@ -37,18 +55,22 @@ describe("PasswordGeneratorTool", () => {
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 
-  it("resets options and forgets generated password when reset button is clicked", async () => {
-    const wrapper = mount(PasswordGeneratorTool, {
-      global: {
-        stubs: {
-          PageShell: { template: "<div><slot /></div>" },
-        },
-      },
-    });
+  it("auto-generates a masked password on mount", async () => {
+    const wrapper = mount(PasswordGeneratorTool, mountOptions);
 
-    const form = wrapper.find("form");
-    await form.trigger("submit");
-    await nextTick();
+    await vi.waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() =>
+      expect(wrapper.findAllComponents({ name: "BaseInput" })).toHaveLength(2),
+    );
+
+    const passwordInput = wrapper.findAllComponents({ name: "BaseInput" })[1];
+    expect(passwordInput?.props("label")).toBe("password");
+    expect(String(passwordInput?.props("modelValue") ?? "")).toMatch(/^•+$/);
+  });
+
+  it("resets options and forgets generated password when reset button is clicked", async () => {
+    const wrapper = mount(PasswordGeneratorTool, mountOptions);
+
     await vi.waitFor(() =>
       expect(wrapper.findAllComponents({ name: "BaseInput" })).toHaveLength(2),
     );
@@ -62,17 +84,10 @@ describe("PasswordGeneratorTool", () => {
 
   it("forgets generated password on field clear without resetting options", async () => {
     const wrapper = mount(PasswordGeneratorTool, {
-      global: {
-        stubs: {
-          PageShell: { template: "<div><slot /></div>" },
-        },
-      },
+      ...mountOptions,
       attachTo: document.body,
     });
 
-    const form = wrapper.find("form");
-    await form.trigger("submit");
-    await nextTick();
     await vi.waitFor(() =>
       expect(wrapper.findAllComponents({ name: "BaseInput" })).toHaveLength(2),
     );
