@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdminSortableTh from "@/components/admin/AdminSortableTh.vue";
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useRouter } from "vue-router";
 
@@ -10,7 +11,6 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import {
-  ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
   ADMIN_TD_TITLE_CLASS,
@@ -19,7 +19,6 @@ import {
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import ArchiveIcon from "@/components/icons/ArchiveIcon.vue";
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
@@ -130,10 +129,6 @@ function setFilter(next: StatusFilter): void {
 function toggleCreatedSort(): void {
   sort.value = sort.value === "created_desc" ? "created_asc" : "created_desc";
   page.value = 1;
-}
-
-function sortIndicator(): string {
-  return sort.value === "created_asc" ? " ↑" : " ↓";
 }
 
 function sortAriaSort(): "ascending" | "descending" {
@@ -257,20 +252,10 @@ onMounted(load);
       <div v-else class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="feedback messages">
           <template #header>
-            <th :class="ADMIN_TH_CLASS" :aria-sort="sortAriaSort()">
-              <button
-                type="button"
-                :class="ADMIN_SORT_HEADER_BUTTON_CLASS"
-                aria-label="sort by when"
-                @click="toggleCreatedSort"
-              >
-                <ChevronIcon class-name="size-3 shrink-0" />
-                when{{ sortIndicator() }}
-              </button>
-            </th>
-            <th :class="ADMIN_TH_CLASS">status</th>
-            <th :class="ADMIN_TH_CLASS">who</th>
-            <th :class="ADMIN_TH_CLASS">title</th>
+            <AdminSortableTh label="when" :direction="sortAriaSort()" @sort="toggleCreatedSort" />
+            <th :class="ADMIN_TH_CLASS" scope="col">status</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">who</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">title</th>
             <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
           </template>
 

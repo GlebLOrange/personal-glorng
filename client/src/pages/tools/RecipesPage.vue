@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
@@ -183,10 +184,10 @@ function editRecipeFromCard(recipe: Recipe): void {
       <div v-else-if="recipes.length" class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="recipes">
           <template #header>
-            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">thumb</th>
-            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">title</th>
-            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">meta</th>
-            <th class="w-px px-2 text-right text-xs tracking-wider" scope="col">actions</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">thumb</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">title</th>
+            <th :class="ADMIN_TH_CLASS" scope="col">meta</th>
+            <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
           </template>
           <RecipeCard
             v-for="recipe in recipes"

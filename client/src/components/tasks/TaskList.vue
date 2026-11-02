@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import AdminSortableTh from "@/components/admin/AdminSortableTh.vue";
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
-import { ADMIN_SORT_HEADER_BUTTON_CLASS, ADMIN_TH_CLASS } from "@/constants/adminDataTable";
+import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import type { TaskItem } from "@/types";
 
 defineProps<{
@@ -32,17 +32,7 @@ const emptyMessage = (filterStatus: string): string => {
   <div v-else class="min-w-0">
     <AdminDataTable table-label="tasks">
       <template #header>
-        <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="whenAriaSort">
-          <button
-            type="button"
-            :class="ADMIN_SORT_HEADER_BUTTON_CLASS"
-            aria-label="sort by when"
-            @click="emit('sortWhen')"
-          >
-            <ChevronIcon class-name="size-3 shrink-0" />
-            when{{ whenIndicator }}
-          </button>
-        </th>
+        <AdminSortableTh label="when" :direction="whenAriaSort" @sort="emit('sortWhen')" />
         <th :class="ADMIN_TH_CLASS" scope="col">status</th>
         <th :class="ADMIN_TH_CLASS" scope="col">title</th>
         <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
