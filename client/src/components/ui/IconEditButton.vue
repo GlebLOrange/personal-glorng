@@ -7,7 +7,7 @@ withDefaults(
     /** Accessible name for the icon-only control. */
     ariaLabel?: string;
     disabled?: boolean;
-    /** field = in-shell clear (fills parent shell height); default = CONTROL_SIZE square (h-10). */
+    /** field = in-shell clear (fills parent shell height); default = CONTROL_SIZE square (h-11). */
     size?: "md" | "field";
   }>(),
   {

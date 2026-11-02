@@ -8,11 +8,11 @@ export const ADMIN_TABLE_CLASS = "w-full min-w-0 font-data text-sm";
 export const ADMIN_THEAD_ROW_CLASS =
   "border-b border-surface-border bg-surface-card text-left text-surface-mid";
 
-export const ADMIN_TH_CLASS = "h-11 px-3 py-1.5 text-xs tracking-wider";
+export const ADMIN_TH_CLASS = "h-11 px-3 py-0 text-xs tracking-wider";
 
 /** Sortable When/column header control (audit, app logs, tasks, feedback). */
 export const ADMIN_SORT_HEADER_BUTTON_CLASS =
-  "inline-flex h-8 cursor-pointer items-center gap-1.5 text-left text-xs tracking-wider transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50";
+  "inline-flex h-11 min-h-11 cursor-pointer items-center gap-1.5 text-left text-xs tracking-wider transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50";
 
 export const ADMIN_TR_CLASS =
   "border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50";
