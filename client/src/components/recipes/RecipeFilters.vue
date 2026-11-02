@@ -13,7 +13,7 @@ const emit = defineEmits<{
 <template>
   <div class="mb-6 space-y-4">
     <div class="page-tool-actions mb-0">
-      <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
+      <div class="flex w-full min-w-0 flex-nowrap items-center justify-between gap-2">
         <SearchInput
           :model-value="search"
           class="min-w-0 flex-1"
@@ -22,7 +22,7 @@ const emit = defineEmits<{
           collapsible
           @update:model-value="emit('update:search', String($event ?? ''))"
         />
-        <div v-if="$slots.actions" class="ml-auto w-auto shrink-0">
+        <div v-if="$slots.actions" class="w-auto shrink-0">
           <slot name="actions" />
         </div>
       </div>
