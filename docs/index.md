@@ -14,7 +14,7 @@
 | [API endpoints](/generated/api-endpoints) | Generated OpenAPI path table |
 | [Architecture inventory](/generated/architecture-inventory) | Generated platform + Compose inventory |
 
-Published site: [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/) (GitHub Pages via Actions).
+Published site: [gleblorange.github.io/portfolio-glorng](https://gleblorange.github.io/portfolio-glorng/) (GitHub Pages via Actions).
 
 ## Browse locally
 
@@ -33,4 +33,4 @@ nginx/     Reverse proxy (:80)
 docs/      This handbook (VitePress)
 ```
 
-For Cursor agents: [AGENTS.md](https://github.com/GlebLOrange/personal-glorng/blob/main/AGENTS.md) (entry map), [CODING_STANDARDS.md](https://github.com/GlebLOrange/personal-glorng/blob/main/CODING_STANDARDS.md) (skill index), [Cloud VM](/operations/cloud-vm).
+For Cursor agents: [AGENTS.md](https://github.com/GlebLOrange/portfolio-glorng/blob/main/AGENTS.md) (entry map), [CODING_STANDARDS.md](https://github.com/GlebLOrange/portfolio-glorng/blob/main/CODING_STANDARDS.md) (skill index), [Cloud VM](/operations/cloud-vm).
