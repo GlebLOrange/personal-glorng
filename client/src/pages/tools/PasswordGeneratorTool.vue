@@ -177,41 +177,44 @@ onMounted(() => {
             </template>
           </AdminFilterDropdown>
 
-          <BaseInput
-            v-model.number="length"
-            type="number"
-            :min="PASSWORD_MIN_LENGTH"
-            :max="128"
-            label="length"
-            :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
-            class="shrink-0"
-          />
+          <div class="ml-auto flex min-w-0 flex-wrap items-end justify-end gap-2">
+            <BaseInput
+              v-model.number="length"
+              type="number"
+              :min="PASSWORD_MIN_LENGTH"
+              :max="128"
+              label="length"
+              :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
+              class="shrink-0"
+            />
 
-          <IconActionButton
-            action="create"
-            size="field"
-            class="shrink-0"
-            aria-label="reset options and clear generated password"
-            title="reset state & clear password"
-            @click="resetState"
-          >
-            <RefreshIcon class-name="size-3.5" />
-          </IconActionButton>
+            <IconActionButton
+              action="create"
+              class="shrink-0"
+              aria-label="reset options and clear generated password"
+              title="reset state & clear password"
+              @click="resetState"
+            >
+              <RefreshIcon class-name="size-3.5" />
+            </IconActionButton>
 
-          <BaseButton
-            variant="primary"
-            type="submit"
-            :icon="false"
-            class="shrink-0"
-            :disabled="loading || !hasCharset"
-          >
-            <span class="inline-grid justify-items-center">
-              <span class="invisible col-start-1 row-start-1" aria-hidden="true">generating…</span>
-              <span class="col-start-1 row-start-1">
-                {{ loading ? "generating…" : "generate" }}
+            <BaseButton
+              variant="primary"
+              type="submit"
+              :icon="false"
+              class="shrink-0"
+              :disabled="loading || !hasCharset"
+            >
+              <span class="inline-grid justify-items-center">
+                <span class="invisible col-start-1 row-start-1" aria-hidden="true"
+                  >generating…</span
+                >
+                <span class="col-start-1 row-start-1">
+                  {{ loading ? "generating…" : "generate" }}
+                </span>
               </span>
-            </span>
-          </BaseButton>
+            </BaseButton>
+          </div>
         </div>
 
         <div class="w-full min-w-0 space-y-1">
