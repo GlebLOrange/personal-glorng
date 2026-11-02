@@ -7,8 +7,8 @@ export const CONTROL_SIZE = "box-border h-11 min-h-11";
 export const CONTROL_SIZE_SQUARE = "w-11 min-w-11";
 
 /** Labeled button sizes — height from CONTROL_SIZE except lg. */
-export const CONTROL_BUTTON_MD = `${CONTROL_SIZE} px-4 text-sm`;
-export const CONTROL_BUTTON_SM = `${CONTROL_SIZE} px-3 text-xs`;
+export const CONTROL_BUTTON_MD = `${CONTROL_SIZE} px-(--spacing-btn-x) gap-(--spacing-btn-gap) text-sm`;
+export const CONTROL_BUTTON_SM = `${CONTROL_SIZE} px-(--spacing-btn-x-sm) gap-(--spacing-btn-gap) text-xs`;
 export const CONTROL_BUTTON_LG = "box-border h-12 px-6 text-base";
 export const CONTROL_BUTTON_ICON = `${CONTROL_SIZE} ${CONTROL_SIZE_SQUARE} px-0 text-sm`;
 

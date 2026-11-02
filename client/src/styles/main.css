@@ -183,10 +183,31 @@ html[data-theme="light"] {
   --color-accent-amber: var(--palette-status-warning);
   --radius-interactive: 0.5rem;
   --spacing-grid-gap: 0.5rem;
+  /* Default spacing tokens — buttons & navigation menus. */
+  --spacing-btn-x: 1rem;
+  --spacing-btn-x-sm: 0.75rem;
+  --spacing-btn-gap: 0.5rem;
+  --spacing-nav-x: 0.75rem;
+  --spacing-nav-y: 0.5rem;
+  --spacing-nav-gap: 0.25rem;
+}
+
+/** Nav menu item (desktop + mobile): shared 44px hit target and padding. */
+@utility nav-item {
+  @apply inline-flex min-h-11 items-center rounded-lg;
+  gap: var(--spacing-btn-gap);
+  padding: var(--spacing-nav-y) var(--spacing-nav-x);
+}
+
+/** Nav menu list: shared gap between items. */
+@utility nav-menu {
+  gap: var(--spacing-nav-gap);
 }
 
 @utility page-shell {
   @apply mx-auto w-full px-6;
+  /* Layout body never narrower than 768px (phones scroll horizontally). */
+  min-width: 768px;
   /* Reserve an end lane for fixed scroll controls when the outside gutter is too narrow. */
   @media (width < 1180px) {
     padding-right: calc(3.5rem + env(safe-area-inset-right));
@@ -216,7 +237,8 @@ html[data-theme="light"] {
 }
 
 @utility page-body {
-  @apply w-full min-w-0;
+  @apply w-full;
+  min-width: 768px;
   margin-top: var(--page-chrome-offset);
 }
 
