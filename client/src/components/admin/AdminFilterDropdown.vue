@@ -47,7 +47,7 @@ const props = withDefaults(
   }>(),
   {
     label: "filters",
-    showFilterIcon: true,
+    showFilterIcon: false,
     showClear: true,
     bare: false,
     matchTriggerWidth: true,
