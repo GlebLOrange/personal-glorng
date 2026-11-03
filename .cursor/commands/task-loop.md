@@ -11,7 +11,7 @@ If empty, ask once for the task text and stop.
 ## Constraints
 
 - Do not modify application code; delegate. No commit/push/PR/merge unless the user later asks.
-- Create `cursor/<slug>` before Developer (never `agent/TASK-*`); slug from Manager `branch_hint` or the request.
+- Do not create or switch branches during `/task-loop`; require an already active `cursor/<slug>` branch matching the Manager `branch_hint`.
 - Do not spawn Gortex, `qa`, or `code-reviewer`. Stop after Developer.
 
 ## 1 — Manager (Assign)
@@ -32,7 +32,7 @@ Wait for TASK yaml. If recommendations instead, ask once for Assign-mode yaml on
 
 ## 2 — Branch
 
-Create `cursor/<slug>` from `branch_hint` (or short kebab) if not already on it.
+Confirm the active branch is `cursor/<slug>` from `branch_hint` (or the request slug). If it does not match, stop before Developer and tell the user the expected branch. Do not create or switch branches.
 
 ## 3 — Developer
 
@@ -40,7 +40,7 @@ Spawn `developer` with the TASK yaml plus:
 
 ```text
 Implement this TASK from /task-loop.
-- Stay on existing branch cursor/<slug>; do not ask about the branch.
+- Stay on the already active branch cursor/<slug>; do not ask about the branch.
 - Read CODING_STANDARDS.md before app edits; stay in scope.
 - Gortex: .cursor/rules/gortex-workflow.mdc.
 - Run only TASK `checks:`; empty checks → SKIPPED (empty checks).
@@ -59,5 +59,5 @@ Wait for evidence, then stop.
 - Requirement bar: …
 - Changed: …
 - Checks: …
-- Next: you commit / open PR / merge when ready
+- Next: you decide whether to commit, open a PR, or merge
 ```
