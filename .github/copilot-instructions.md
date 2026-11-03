@@ -11,3 +11,31 @@ Use [`AGENTS.md`](../AGENTS.md) for the agent entry map (which doc to open when)
 Prefer those over inventing new conventions.
 
 Gortex code areas: `analyze(operation:"communities")` or [`.cursor/references/gortex-communities.md`](../.cursor/references/gortex-communities.md).
+
+<!-- gortex:communities:start -->
+## Community Skills
+
+| Area | Description | Explore |
+|------|-------------|---------|
+| App Services 13 Dirs Record | 438 symbols | `analyze(operation:"communities", id:"community-400")` |
+| Tests 6 Dirs Get | 412 symbols | `analyze(operation:"communities", id:"community-536")` |
+| Components Ui 30 Dirs | 361 symbols | `analyze(operation:"communities", id:"community-54")` |
+| Composables 4 Dirs Usetasks | 358 symbols | `analyze(operation:"communities", id:"community-123")` |
+| Tests 3 Dirs Post | 354 symbols | `analyze(operation:"communities", id:"community-533")` |
+| Tests 13 Dirs | 301 symbols | `analyze(operation:"communities", id:"community-546")` |
+| App Services 20 Dirs | 289 symbols | `analyze(operation:"communities", id:"community-485")` |
+| Db Repositories 7 Dirs | 264 symbols | `analyze(operation:"communities", id:"community-420")` |
+| Tests 15 Dirs | 258 symbols | `analyze(operation:"communities", id:"community-507")` |
+| App Schemas 10 Dirs | 252 symbols | `analyze(operation:"communities", id:"community-429")` |
+| Tests 10 Dirs | 241 symbols | `analyze(operation:"communities", id:"community-530")` |
+| Tests 9 Dirs | 203 symbols | `analyze(operation:"communities", id:"community-547")` |
+| App Services 7 Dirs | 184 symbols | `analyze(operation:"communities", id:"community-488")` |
+| Composables 10 Dirs | 176 symbols | `analyze(operation:"communities", id:"community-74")` |
+| App Services 13 Dirs Apierror | 161 symbols | `analyze(operation:"communities", id:"community-472")` |
+| Db Documents 8 Dirs | 160 symbols | `analyze(operation:"communities", id:"community-466")` |
+| 9 Dirs | 155 symbols | `analyze(operation:"communities", id:"community-459")` |
+| App Core 12 Dirs | 150 symbols | `analyze(operation:"communities", id:"community-401")` |
+| Tests 6 Dirs Create User | 138 symbols | `analyze(operation:"communities", id:"community-518")` |
+| Tests 11 Dirs | 136 symbols | `analyze(operation:"communities", id:"community-477")` |
+
+<!-- gortex:communities:end -->
