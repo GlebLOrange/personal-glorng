@@ -176,7 +176,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build production backend image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./server
           file: ./server/Dockerfile
@@ -188,7 +188,7 @@ jobs:
           cache-from: type=gha,scope=server-production
           cache-to: type=gha,scope=server-production,mode=max
       - name: Build production frontend image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./client/Dockerfile.prod
